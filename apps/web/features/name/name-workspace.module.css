@@ -1,0 +1,208 @@
+.hero,
+.dataSection {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.inner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.hero .inner {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+}
+
+.breadcrumb,
+.sectionHeading span,
+.sectionHeadingInverse span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.nameTitle {
+  min-width: 0;
+  margin: var(--space-8) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-6);
+}
+
+.nameTitle h1 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.nameTitle h1 span {
+  color: var(--accent);
+}
+
+.status {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.rpcError {
+  padding: var(--space-3);
+  border-left: 4px solid var(--danger);
+  color: var(--danger);
+}
+
+.dataSection {
+  padding-block: var(--space-18);
+}
+
+.sectionHeading,
+.sectionHeadingInverse {
+  margin-bottom: var(--space-12);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--grid-gutter);
+}
+
+.sectionHeading h2,
+.sectionHeadingInverse h2 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+}
+
+.dataGrid > div {
+  min-height: 112px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.dataGrid > div:nth-child(3n) {
+  border-right: 0;
+}
+
+.dataGrid span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.dataGrid strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono), monospace;
+}
+
+.dataGrid strong a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dataGrid strong a:hover {
+  color: var(--accent);
+}
+
+.identitySection {
+  padding-block: var(--space-18);
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.sectionHeadingInverse span {
+  color: #aeb2ba;
+}
+
+.identityGrid {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: var(--grid-gutter);
+}
+
+.profile {
+  display: grid;
+  align-content: start;
+  border-top: 1px solid #555961;
+}
+
+.profile p {
+  min-height: 120px;
+  margin: 0;
+  padding: var(--space-4) 0;
+  color: #c6c9cf;
+}
+
+.profile a,
+.profileValue {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 80px 1fr 20px;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #555961;
+  font-size: var(--text-sm);
+}
+
+.profile a span,
+.profileValue span {
+  color: #aeb2ba;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+}
+
+@media (max-width: 760px) {
+  .nameTitle,
+  .sectionHeading,
+  .sectionHeadingInverse,
+  .identityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .nameTitle {
+    align-items: start;
+  }
+
+  .dataGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dataGrid > div:nth-child(3n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .dataGrid > div:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dataGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dataGrid > div {
+    border-right: 0 !important;
+  }
+}

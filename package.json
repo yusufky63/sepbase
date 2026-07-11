@@ -1,0 +1,40 @@
+{
+  "name": "sepbase-name-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11.7.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @sepbase/web dev",
+    "build": "pnpm --filter @sepbase/sdk build && pnpm --filter @sepbase/react build && pnpm --filter @sepbase/web build",
+    "lint": "pnpm --filter @sepbase/sdk lint && pnpm --filter @sepbase/react lint && pnpm --filter @sepbase/web lint",
+    "typecheck": "pnpm --filter @sepbase/sdk typecheck && pnpm --filter @sepbase/react typecheck && pnpm --filter @sepbase/web typecheck && tsc -p tsconfig.scripts.json --noEmit",
+    "test": "pnpm --filter @sepbase/sdk test && pnpm --filter @sepbase/react test && pnpm --filter @sepbase/web test",
+    "contracts:fmt": "tsx scripts/forge.ts fmt --root contracts",
+    "contracts:build": "tsx scripts/forge.ts build --root contracts",
+    "contracts:sizes": "tsx scripts/forge.ts build --sizes --root contracts",
+    "contracts:test": "tsx scripts/forge.ts test -vvv --root contracts",
+    "contracts:deploy": "tsx scripts/deploy.ts",
+    "contracts:abi": "tsx scripts/export-abi.ts",
+    "chain:check": "tsx scripts/chain-check.ts",
+    "deployment:check": "tsx scripts/deployment-check.ts",
+    "release:check": "tsx scripts/release-check.ts",
+    "smoke:base-sepolia": "tsx scripts/base-sepolia-smoke.ts",
+    "manifest:generate": "tsx scripts/generate-manifest.ts",
+    "project:validate": "tsx scripts/validate-project.ts",
+    "clone:reset": "tsx scripts/reset-clone.ts"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.4.0",
+    "@types/node": "22.20.1",
+    "dotenv": "17.4.2",
+    "tsx": "4.23.0",
+    "typescript": "6.0.3",
+    "viem": "2.55.0",
+    "zod": "4.4.3"
+  }
+}

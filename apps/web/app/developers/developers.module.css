@@ -1,0 +1,446 @@
+.hero {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.inner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.hero .inner {
+  padding-top: var(--space-12);
+}
+
+.kicker,
+.sectionHeading > span,
+.sectionHeadingInverse > span,
+.sectionHeadingBlue > span,
+.deploymentState > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.titleRow {
+  padding-block: var(--space-8) var(--space-12);
+  display: grid;
+  grid-template-columns: 8fr 4fr;
+  align-items: end;
+  gap: var(--grid-gutter);
+}
+
+.titleRow h1 {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: .8;
+}
+
+.titleRow h1 span {
+  color: var(--accent);
+}
+
+.deploymentState {
+  min-width: 0;
+  padding-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  border-top: 1px solid var(--foreground);
+}
+
+.deploymentState strong {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.jumpNav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+}
+
+.jumpNav a {
+  min-height: 56px;
+  padding: var(--space-3);
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.jumpNav a:last-child {
+  border-right: 0;
+}
+
+.jumpNav a:hover {
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.section {
+  padding-block: var(--space-18);
+  border-bottom: 1px solid var(--foreground);
+  scroll-margin-top: 76px;
+}
+
+.sectionHeading,
+.sectionHeadingInverse,
+.sectionHeadingBlue {
+  margin-bottom: var(--space-12);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--grid-gutter);
+}
+
+.sectionHeading h2,
+.sectionHeadingInverse h2,
+.sectionHeadingBlue h2 {
+  max-width: 820px;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gutter);
+  align-items: start;
+}
+
+.twoColumn > * {
+  min-width: 0;
+}
+
+.copy {
+  max-width: var(--reading-max);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.copy p,
+.lead {
+  margin: 0;
+  color: var(--muted);
+}
+
+.code {
+  max-width: 100%;
+  margin: 0;
+  padding: var(--space-4);
+  overflow-x: auto;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-small);
+  background: var(--surface-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.resourceRows {
+  margin-top: var(--space-12);
+  border-top: 1px solid var(--foreground);
+}
+
+.contractFacts {
+  margin-top: var(--space-12);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+}
+
+.contractFacts > div {
+  min-width: 0;
+  min-height: 112px;
+  padding: var(--space-3);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.contractFacts > div:nth-child(3n) {
+  border-right: 0;
+}
+
+.contractFacts span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.contractFacts strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.resourceRows a {
+  min-height: 80px;
+  padding-block: var(--space-3);
+  display: grid;
+  grid-template-columns: 2fr 2fr 3fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.resourceRows a > span,
+.resourceRows a > strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.resourceRows a > strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.resourceRows a code {
+  overflow-wrap: anywhere;
+  color: var(--accent);
+}
+
+.resourceRows a p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.inverse {
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.inverse .sectionHeadingInverse > span,
+.inverse .lead {
+  color: #b8bdc6;
+}
+
+.inverse .lead {
+  max-width: 760px;
+  margin-bottom: var(--space-8);
+}
+
+.inverse .code {
+  margin-top: var(--space-8);
+  border-color: #555961;
+  background: #17191d;
+  color: var(--foreground-inverse);
+}
+
+.endpointRows {
+  border-top: 1px solid #555961;
+}
+
+.endpointRows > div {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 80px 2fr 3fr;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid #555961;
+}
+
+.endpointRows span {
+  color: var(--accent-on-inverse);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.endpointRows code {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.endpointRows p {
+  margin: 0;
+  color: #b8bdc6;
+  font-size: var(--text-sm);
+}
+
+.rules {
+  border-top: 1px solid var(--foreground);
+}
+
+.rules > div {
+  min-height: 112px;
+  padding: var(--space-3) 0;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.rules span {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.rules p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.rules code,
+.modelGrid code {
+  font-family: var(--font-mono), monospace;
+  font-size: .92em;
+  font-weight: 700;
+}
+
+.blueBand {
+  --price-reference-color: var(--accent-foreground);
+
+  border-bottom: 0;
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.sectionHeadingBlue > span {
+  color: var(--accent-foreground);
+}
+
+.modelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--accent-foreground);
+}
+
+.modelGrid > div {
+  min-height: 200px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--accent-foreground);
+  border-bottom: 1px solid var(--accent-foreground);
+}
+
+.modelGrid > div:nth-child(3n) {
+  border-right: 0;
+}
+
+.modelGrid .wideModel {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
+
+.modelGrid span {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.modelGrid strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+}
+
+.modelGrid p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 760px) {
+  .titleRow,
+  .sectionHeading,
+  .sectionHeadingInverse,
+  .sectionHeadingBlue,
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .jumpNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resourceRows a {
+    grid-template-columns: 1fr auto;
+  }
+
+  .resourceRows a code,
+  .resourceRows a p {
+    grid-column: 1 / -1;
+  }
+
+  .endpointRows > div {
+    padding-block: var(--space-3);
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .endpointRows p {
+    grid-column: 2;
+  }
+
+  .modelGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contractFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contractFacts > div:nth-child(3n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .contractFacts > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .modelGrid > div:nth-child(3n) {
+    border-right: 1px solid var(--accent-foreground);
+  }
+
+  .modelGrid > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .modelGrid .wideModel {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .jumpNav,
+  .modelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .jumpNav a {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .modelGrid > div {
+    border-right: 0 !important;
+  }
+
+  .modelGrid .wideModel {
+    grid-column: auto;
+  }
+
+  .contractFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .contractFacts > div {
+    border-right: 0 !important;
+  }
+
+  .rules > div {
+    grid-template-columns: 1fr;
+  }
+}

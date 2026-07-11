@@ -1,0 +1,27 @@
+.root {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-standard) ease,
+    transform var(--motion-standard) ease;
+}
+
+.root[data-motion="pending"] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.root[data-motion="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .root[data-motion="pending"],
+  .root[data-motion="visible"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

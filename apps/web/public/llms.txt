@@ -1,0 +1,13 @@
+# SEPBASE
+
+> Independent .sepbase names on Base Sepolia with manifest-first SDK, HTTP API, and verified identity reads.
+
+## Integration
+
+- [Developer documentation](/developers): SDK, React, API, and guarded write examples.
+- [Deployment manifest](/.well-known/chain-name-service.json): Canonical chain, contract, asset, and endpoint discovery.
+- [Contract ABI](/abi/ChainNameService.json): ABI bytes verified by the manifest SHA-256 checksum.
+- [OpenAPI](/api/openapi.json): Read-only HTTP API contract.
+- [Blockscout handoff](/integrations/blockscout-bens.md): External BENS integration prerequisites and semantics.
+
+Load and validate the deployment manifest before use. Never hardcode chain IDs, suffixes, contract or token addresses, native currency, settlement symbol, base-unit precision, or token decimals.

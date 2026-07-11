@@ -1,0 +1,52 @@
+:root {
+  --background: #ffffff;
+  --foreground: #0a0b0d;
+  --surface: #ffffff;
+  --surface-inverse: #0a0b0d;
+  --foreground-inverse: #ffffff;
+  --muted-inverse: #b8bdc6;
+  --accent-on-inverse: #ffffff;
+  --surface-muted: #eef0f3;
+  --muted: #5b616e;
+  --line: #b1b7c3;
+  --line-strong: #0a0b0d;
+  --accent: #0000ff;
+  --accent-foreground: #ffffff;
+  --focus: #0000ff;
+  --danger: #c81e1e;
+  --success: #08783e;
+  --content-max: 1120px;
+  --reading-max: 680px;
+  --grid-columns: 12;
+  --grid-gutter: 16px;
+  --baseline: 8px;
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --control-height: 52px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-18: 72px;
+  --motion-fast: 140ms;
+  --motion-standard: 200ms;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+  --text-display: 4.75rem;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --grid-gutter: 12px;
+    --text-2xl: 2rem;
+    --text-display: 3rem;
+    --space-18: 48px;
+  }
+}

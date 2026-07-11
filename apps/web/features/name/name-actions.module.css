@@ -1,0 +1,233 @@
+.registrationModule {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.registrationHeading {
+  padding-block: var(--space-6);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--grid-gutter);
+  align-items: start;
+}
+
+.registrationHeading > span,
+.registrationFacts > div > span,
+.registrationNotice > span,
+.registrationFooter > div > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.registrationHeading h2 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+
+.registrationLayout {
+  display: grid;
+  grid-template-columns: 4fr 6fr;
+  border-top: 1px solid var(--foreground);
+}
+
+.registrationTerm {
+  min-width: 0;
+  padding: var(--space-6) var(--space-8) var(--space-6) 0;
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-6);
+  border-right: 1px solid var(--line);
+}
+
+.registrationTerm p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.registrationFacts {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registrationFacts > div {
+  min-width: 0;
+  min-height: 112px;
+  padding: var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.registrationFacts > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.registrationFacts > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.registrationFacts strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+}
+
+.registrationNotice {
+  min-height: 48px;
+  padding: var(--space-3) 0;
+  display: grid;
+  grid-template-columns: minmax(150px, 3fr) minmax(0, 7fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.registrationNotice strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+}
+
+.registrationNotice button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.registrationError {
+  min-height: 48px;
+  padding: var(--space-3) 0;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+.registrationFooter {
+  min-height: 96px;
+  padding-block: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-top: 1px solid var(--foreground);
+}
+
+.registrationFooter > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.registrationFooter strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+}
+
+.actions p {
+  color: var(--muted);
+}
+
+.actionBar {
+  min-height: 96px;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.actionBar div {
+  display: grid;
+  gap: 4px;
+}
+
+.actionBar span {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 640px) {
+  .registrationHeading,
+  .registrationLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .registrationTerm {
+    padding: var(--space-6) 0 var(--space-8);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .registrationFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .registrationFacts > div,
+  .registrationFacts > div:nth-child(2n),
+  .registrationFacts > div:nth-last-child(-n + 2) {
+    min-height: 96px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .registrationFacts > div:last-child {
+    border-bottom: 0;
+  }
+
+  .registrationNotice {
+    grid-template-columns: 1fr auto;
+  }
+
+  .registrationNotice > span {
+    grid-column: 1 / -1;
+  }
+
+  .registrationFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registrationFooter button {
+    width: 100%;
+  }
+
+  .actions {
+    display: grid;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .actionBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

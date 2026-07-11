@@ -1,0 +1,120 @@
+.button,
+.iconButton {
+  min-height: 44px;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
+}
+
+.button {
+  min-width: 120px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.iconButton {
+  width: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  background: transparent;
+}
+
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--foreground);
+  border-color: var(--foreground);
+}
+
+.secondary {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.secondary:hover:not(:disabled),
+.iconButton:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+.quiet {
+  background: transparent;
+  border-color: var(--line);
+}
+
+.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+}
+
+.button:disabled,
+.iconButton:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface-muted);
+  border-color: var(--line);
+  text-decoration: line-through;
+}
+
+.dialog {
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-medium);
+  color: var(--foreground);
+  background: var(--surface);
+  overflow: auto;
+}
+
+.dialog::backdrop {
+  background: rgb(10 11 13 / 72%);
+}
+
+.dialogInner {
+  padding: var(--space-6);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.dialogHeader h2 {
+  margin: 4px 0 8px;
+  font-family: var(--font-display), Arial, sans-serif;
+  font-size: var(--text-xl);
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.dialogHeader p {
+  max-width: 480px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.moduleLabel {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  color: var(--accent) !important;
+}

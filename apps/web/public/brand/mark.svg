@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">SEPBASE mark</title>
+  <rect width="64" height="64" fill="#0a0b0d"/>
+  <rect x="8" y="8" width="20" height="8" fill="#ffffff"/>
+  <rect x="8" y="16" width="8" height="16" fill="#ffffff"/>
+  <rect x="8" y="28" width="20" height="8" fill="#ffffff"/>
+  <rect x="20" y="32" width="8" height="16" fill="#ffffff"/>
+  <rect x="8" y="48" width="20" height="8" fill="#ffffff"/>
+  <rect x="36" y="8" width="20" height="20" fill="#0000ff"/>
+  <rect x="36" y="36" width="20" height="20" fill="#ffffff"/>
+</svg>

@@ -1,0 +1,48 @@
+.accountButton {
+  min-height: 44px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.accountDot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+}
+
+.connectorList {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.connector {
+  min-height: 60px;
+  padding: 0 4px;
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.connector:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+.connectorAction {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}

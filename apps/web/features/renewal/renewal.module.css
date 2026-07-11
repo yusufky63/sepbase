@@ -1,0 +1,189 @@
+.inner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.watchSection {
+  padding-block: var(--space-18);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.watchHeading {
+  margin-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--grid-gutter);
+}
+
+.watchHeading > span,
+.watchRail > div > span,
+.reminderCopy > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.watchHeading h2 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.watchRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(280px, 1.4fr);
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.watchRail > div {
+  min-width: 0;
+  min-height: 112px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+}
+
+.watchRail > div:last-child {
+  border-right: 0;
+}
+
+.watchRail strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+}
+
+.watchActions {
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+
+.watchActions button {
+  width: 100%;
+}
+
+.reminder {
+  position: fixed;
+  top: max(88px, calc(env(safe-area-inset-top) + 72px));
+  right: max(var(--space-4), env(safe-area-inset-right));
+  z-index: 900;
+  width: min(390px, calc(100vw - 32px));
+  min-height: 132px;
+  padding: var(--space-4);
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 40px;
+  align-items: start;
+  gap: var(--space-3);
+  border: 1px solid var(--foreground);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  box-shadow: 6px 6px 0 var(--foreground);
+  animation: reminder-enter var(--motion-standard) ease-out;
+}
+
+.reminderIcon {
+  color: var(--accent);
+}
+
+.reminderCopy {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.reminderCopy strong,
+.reminderCopy p {
+  overflow-wrap: anywhere;
+}
+
+.reminderCopy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.reminderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.reminderActions a {
+  color: var(--accent);
+}
+
+.reminderActions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.reminderDismiss {
+  border-color: transparent;
+}
+
+@keyframes reminder-enter {
+  from {
+    transform: translateY(-12px);
+  }
+}
+
+@media (max-width: 900px) {
+  .watchRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .watchRail > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .watchRail > div:nth-child(-n+2) {
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 560px) {
+  .watchHeading,
+  .watchRail {
+    grid-template-columns: 1fr;
+  }
+
+  .watchRail > div,
+  .watchRail > div:nth-child(2) {
+    min-height: 88px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .watchRail > div:last-child {
+    border-bottom: 0;
+  }
+
+  .watchActions {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder {
+    top: max(72px, calc(env(safe-area-inset-top) + 64px));
+    right: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reminder {
+    animation: none;
+  }
+}

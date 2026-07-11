@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 3,
+  "contractVersion": "2.0.0",
+  "abiSha256": "2fb4dae9b0cea543b414b6980fba3f268116af0b3828156edca490dee30859c7",
+  "chainId": 84532,
+  "chainName": "Base Sepolia",
+  "testnet": true,
+  "requiredConfirmations": 1,
+  "nativeCurrency": {
+    "name": "Ether",
+    "symbol": "ETH",
+    "decimals": 18
+  },
+  "multicall3": {
+    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+    "blockCreated": 1059647
+  },
+  "suffix": "sepbase",
+  "nameRules": {
+    "minLength": 1,
+    "maxLength": 32,
+    "allowedYears": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "collection": {
+    "name": "Sepbase Names",
+    "symbol": "SEPBASE"
+  },
+  "contract": "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945",
+  "deploymentBlock": "44011800",
+  "deployedAt": "2026-07-11T17:44:48.000Z",
+  "owner": "0x78de409a6306550882328E2a67160471368387FF",
+  "treasury": "0x78de409a6306550882328E2a67160471368387FF",
+  "settlement": {
+    "kind": "native",
+    "tokenAddress": null,
+    "name": "Ether",
+    "symbol": "ETH",
+    "decimals": 18
+  },
+  "annualPriceBaseUnits": "500000000000000",
+  "shortNamePriceMultipliers": [
+    100,
+    25,
+    5
+  ],
+  "referenceFiat": null,
+  "gracePeriodSeconds": "2592000",
+  "referralRewardBps": 1000,
+  "referralAttributionSeconds": "2592000",
+  "marketplaceFeeBps": 0,
+  "metadataBaseURI": "http://localhost:3000/api/metadata/",
+  "rpcUrl": "https://sepolia.base.org",
+  "explorerUrl": "https://sepolia-explorer.base.org",
+  "abiUrl": "/abi/ChainNameService.json",
+  "docsUrl": "/developers",
+  "nameApiUrl": "/api/name/{label}",
+  "resolveApiUrl": "/api/resolve/{label}",
+  "reverseApiUrl": "/api/reverse/{address}",
+  "marketApiUrl": "/api/market",
+  "openApiUrl": "/api/openapi.json",
+  "solidityVersion": "0.8.36",
+  "openzeppelinVersion": "5.4.0",
+  "gitCommit": null
+}

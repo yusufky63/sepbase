@@ -1,0 +1,94 @@
+.codeBlock {
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-small);
+  background: var(--surface-muted);
+}
+
+.codeToolbar {
+  min-height: 44px;
+  padding-left: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+
+.codeToolbar span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.codeBlock pre {
+  max-width: 100%;
+  margin: 0;
+  padding: var(--space-4);
+  overflow-x: auto;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.inverse {
+  border-color: #555961;
+  background: #17191d;
+  color: var(--foreground-inverse);
+}
+
+.inverse .codeToolbar {
+  border-bottom-color: #555961;
+}
+
+.inverse .codeToolbar span {
+  color: #b8bdc6;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--foreground);
+  border-bottom: 0;
+}
+
+.examples {
+  min-width: 0;
+}
+
+.tabs button {
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-right: 1px solid var(--foreground);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.tabs button:last-child {
+  border-right: 0;
+}
+
+.tabs button[aria-selected="true"] {
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.examples .codeBlock {
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+}
+
+@media (max-width: 560px) {
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs button,
+  .tabs button:last-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--foreground);
+  }
+}

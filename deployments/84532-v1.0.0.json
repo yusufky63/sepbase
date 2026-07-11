@@ -1,0 +1,9 @@
+{
+  "contract": "0x89290aFE9f2B11d482D2684cE1D299DA58B05c7a",
+  "contractVersion": "1.0.0",
+  "deploymentBlock": "44008727",
+  "deployedAtTimestamp": "1783785742",
+  "owner": "0x78de409a6306550882328E2a67160471368387FF",
+  "treasury": "0x78de409a6306550882328E2a67160471368387FF",
+  "transactionHash": "0x8e05399ebe95b1eebbd56b445160df209c58186e21c93bfc1cd24b6adf91e347"
+}

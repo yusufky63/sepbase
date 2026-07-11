@@ -1,0 +1,14 @@
+.reference {
+  display: block;
+  color: var(--price-reference-color, var(--muted));
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.amount {
+  min-width: 0;
+  display: inline-grid;
+  gap: 2px;
+}

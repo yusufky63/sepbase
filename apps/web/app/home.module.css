@@ -1,0 +1,350 @@
+.hero {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.heroInner,
+.sectionInner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.heroInner {
+  min-height: min(760px, calc(100svh - 72px));
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  display: grid;
+  align-content: center;
+  gap: var(--space-6);
+}
+
+.heroIndex {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-2);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  animation: moduleEnter var(--motion-standard) ease 20ms both;
+}
+
+.hero h1 {
+  margin: 0;
+  display: grid;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  font-weight: 700;
+  line-height: 0.78;
+  letter-spacing: 0;
+}
+
+.hero h1 span:last-child {
+  color: var(--accent);
+}
+
+.hero h1 span {
+  animation: moduleEnter var(--motion-standard) ease 60ms both;
+}
+
+.hero h1 span:last-child {
+  animation-delay: 100ms;
+}
+
+.motto {
+  max-width: 560px;
+  margin: 0;
+  font-size: var(--text-lg);
+  animation: moduleEnter var(--motion-standard) ease 140ms both;
+}
+
+.heroSearch {
+  animation: moduleEnter var(--motion-standard) ease 180ms both;
+}
+
+.protocolFacts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+  animation: moduleEnter var(--motion-standard) ease 220ms both;
+}
+
+.protocolFacts div {
+  min-height: 72px;
+  padding: var(--space-3);
+  display: grid;
+  align-content: center;
+  border-right: 1px solid var(--line);
+}
+
+.protocolFacts div:last-child {
+  border-right: 0;
+}
+
+.protocolFacts span,
+.sectionHeading p,
+.sectionHeadingInverse p {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.protocolFacts strong {
+  font-family: var(--font-mono), monospace;
+}
+
+.protocolFacts small {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+}
+
+.statsSection,
+.pricingSection,
+.objectSection,
+.recentSection {
+  padding-block: var(--space-18);
+}
+
+.statsSection,
+.pricingSection {
+  border-bottom: 1px solid var(--line);
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.pricingGrid > div {
+  min-width: 0;
+  min-height: 190px;
+  padding: var(--space-4);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-5);
+  border-right: 1px solid var(--line);
+}
+
+.pricingGrid > div:last-child {
+  border-right: 0;
+}
+
+.pricingGrid > div > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.tierIndex,
+.pricingGrid small {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.pricingGrid strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+  line-height: 1.05;
+}
+
+.pricingGrid > div > span:last-child {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.sectionHeading,
+.sectionHeadingInverse {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: var(--space-3);
+  align-items: start;
+  margin-bottom: var(--space-12);
+}
+
+.sectionHeading > p,
+.sectionHeadingInverse > p {
+  grid-column: 1 / 4;
+  grid-row: 1;
+}
+
+.sectionHeading > h2,
+.sectionHeadingInverse > h2 {
+  grid-column: 5 / 13;
+  grid-row: 1;
+}
+
+.sectionHeadingReverse > p {
+  grid-column: 10 / 13;
+  text-align: right;
+}
+
+.sectionHeadingReverse > h2 {
+  grid-column: 1 / 9;
+}
+
+.sectionHeading p,
+.sectionHeadingInverse p,
+.sectionHeading h2,
+.sectionHeadingInverse h2 {
+  margin: 0;
+}
+
+.sectionHeading h2,
+.sectionHeadingInverse h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1.05;
+}
+
+.processSection {
+  padding-block: var(--space-18);
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.sectionHeadingInverse p {
+  color: #aeb2ba;
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid #555961;
+}
+
+.processGrid > div {
+  position: relative;
+  min-height: 210px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid #555961;
+  overflow: hidden;
+}
+
+.processGrid > div::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent);
+  content: "";
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--motion-standard) ease;
+}
+
+.processGrid > div:hover::before {
+  transform: scaleY(1);
+}
+
+.processGrid > div:last-child {
+  border-right: 0;
+}
+
+.processGrid span {
+  color: var(--accent-on-inverse);
+  font-family: var(--font-mono), monospace;
+}
+
+.processGrid strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+}
+
+.processGrid p {
+  margin: 0;
+  color: #c6c9cf;
+  font-size: var(--text-sm);
+}
+
+@keyframes moduleEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroIndex,
+  .hero h1 span,
+  .motto,
+  .heroSearch,
+  .protocolFacts {
+    animation: none;
+  }
+
+  .processGrid > div::before {
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroInner {
+    min-height: calc(100svh - 64px);
+    padding-inline: 12px;
+  }
+
+  .protocolFacts,
+  .pricingGrid,
+  .processGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .protocolFacts div:nth-child(2),
+  .pricingGrid > div:nth-child(2),
+  .processGrid > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .pricingGrid > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sectionHeading,
+  .sectionHeadingInverse {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeading > p,
+  .sectionHeadingInverse > p,
+  .sectionHeading > h2,
+  .sectionHeadingInverse > h2 {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .sectionHeadingReverse > p {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .protocolFacts,
+  .pricingGrid,
+  .processGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .protocolFacts div,
+  .pricingGrid > div,
+  .processGrid > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pricingGrid > div:last-child {
+    border-bottom: 0;
+  }
+}

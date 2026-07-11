@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 64" role="img" aria-labelledby="title">
+  <title id="title">SEPBASE</title>
+  <rect width="64" height="64" fill="#0a0b0d"/>
+  <path d="M8 8h20v8H16v12h12v8H16v12h12v8H8V8Z" fill="#fff"/>
+  <path d="M36 8h20v20H36z" fill="#0000ff"/>
+  <path d="M36 36h20v20H36z" fill="#fff"/>
+  <g fill="#0a0b0d" font-family="Arial, Helvetica, sans-serif" font-weight="700" letter-spacing="0">
+    <text x="80" y="28" font-size="24">SEP</text>
+    <text x="80" y="54" font-size="24">BASE</text>
+  </g>
+  <rect x="142" y="8" width="4" height="48" fill="#0000ff"/>
+</svg>

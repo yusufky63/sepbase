@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+dist/
+*.tsbuildinfo
+.vercel/
+
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+
+# local tools and test artifacts
+.tools/
+coverage/
+output/
+.playwright-cli/
+playwright-report/
+test-results/
+
+# environment and deployment secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Deployment records contain public release metadata and are reviewed artifacts.
+
+# editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+*.tgz
+
+# generated Vitest config output; TypeScript sources are canonical
+packages/react/vitest.config.js*
+packages/react/vitest.config.d.ts*
+packages/react/vitest.setup.js*
+packages/react/vitest.setup.d.ts*
+
+.vercel

@@ -1,0 +1,110 @@
+.search {
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.control {
+  min-height: 116px;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto 72px;
+  align-items: center;
+}
+
+.index {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid var(--line);
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.control input {
+  min-width: 0;
+  height: 114px;
+  padding: 0 var(--space-6);
+  border: 0;
+  outline: 0;
+  color: var(--foreground);
+  background: transparent;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+.control input::placeholder {
+  color: #9ca1aa;
+}
+
+.suffix {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.control button {
+  align-self: stretch;
+  margin-left: var(--space-4);
+  border: 0;
+  border-left: 1px solid var(--foreground);
+  color: #ffffff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.control button:hover:not(:disabled) {
+  background: var(--foreground);
+}
+
+.control button:disabled {
+  color: var(--muted);
+  background: var(--surface-muted);
+  cursor: not-allowed;
+}
+
+.state {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.good {
+  color: var(--success);
+}
+
+.bad {
+  color: var(--danger);
+}
+
+@media (max-width: 680px) {
+  .control {
+    min-height: 92px;
+    grid-template-columns: minmax(0, 1fr) auto 60px;
+  }
+
+  .index {
+    display: none;
+  }
+
+  .control input {
+    height: 90px;
+    padding-inline: var(--space-3);
+    font-size: var(--text-xl);
+  }
+
+  .suffix {
+    font-size: var(--text-lg);
+  }
+
+  .control button {
+    margin-left: var(--space-2);
+  }
+}
