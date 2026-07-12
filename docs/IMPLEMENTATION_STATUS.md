@@ -18,7 +18,7 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - Settlement: native ETH for this profile; shared code supports native or one standard ERC-20
 - Standard annual price for 4-32 characters: `0.0005` configured settlement units
 - Short-name annual multipliers for 1/2/3 characters: `100x / 25x / 5x`
-- Base Sepolia fiat reference: intentionally `null`; test ETH is not assigned a USD value
+- Base Sepolia protocol fiat reference: intentionally `null`; optional cached UI market reference remains display-only
 - Referral reward: `1000` BPS; marketplace fee: `0` BPS
 - Design: Modular Typography, black/white with configured Base Blue `#0000ff`, alternating left/right section headings, a structured sticky-bottom footer, restrained reveal motion, and reduced-motion support
 
@@ -44,7 +44,7 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 
 - `ChainNameService.sol`: ERC-721 Enumerable names, 1-32 character validation, short-name tiers, lifecycle/grace, profiles, forward-confirmed primary names, referrals, fixed-price marketplace, pull payments, pause controls, expected-value guards, and solvency checks.
 - Web routes: `/`, `/name/[label]`, `/me`, `/market`, `/developers`, plus wallet-gated `/admin`.
-- UX: page-level registration term/quote/referral configuration, summary-only registration confirmation, receipt-driven active-query refresh, explicit transaction completion states, market/account destinations after writes, one-time accessible market transaction toasts, in-modal wallet connection, settlement amounts, and config-driven optional dated fiat references.
+- UX: page-level registration term/quote/referral configuration, automatic configured-chain switching with manual retry, chain-aware registration network-fee estimates, concise cached USD market references, summary-only registration confirmation, receipt-driven active-query refresh, explicit transaction completion states, market/account destinations after writes, one-time accessible market transaction toasts, in-modal wallet connection, settlement amounts, and config-driven optional dated fiat references.
 - Renewal watch: device-local opt-in, 30-day in-app attention window, 24-hour dismissal, renewal-date resync, and portable ICS export with 30/7/1-day alarms.
 - Home stats: onchain name-object count plus registration, marketplace, and payment availability; unavailable reads remain distinct from a real zero.
 - Admin: live owner/pending-owner plus configured viewer allowlist, overview health/economics, chunked contract event activity, viewer read-only controls, and simulated owner/pending-owner writes for every supported admin function.
@@ -54,7 +54,7 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - SDK: manifest-first client, exact ABI checksum and contract-version validation, runtime/Multicall checks, typed errors, name/profile/state/market/settlement/health reads, single-block `verifyAddress`/`verifyName`, and manifest-declared API paths.
 - React integration: `@sepbase/react` provider, hook, and address-fallback identity component with stable loading/verified/unverified/error states and CSS custom-property theming.
 - Explorer handoff: configured explorer links on name details plus a public Blockscout BENS event/semantics runbook. The required external subgraph and BENS service are not claimed as deployed.
-- Portability: gas and settlement metadata remain separate; common code uses configured decimals and base units.
+- Portability: gas and settlement metadata remain separate; common code uses configured decimals/base units and selects standard or OP Stack fee estimation from chain config.
 
 ## Verification
 
@@ -63,7 +63,7 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - `forge build --sizes --root contracts`: passed; runtime `24,502 B`, EIP-170 margin `74 B`.
 - `forge test -vvv --root contracts`: 29 passed, 0 failed, including native and 6-decimal ERC-20 settlement, fee-on-transfer rejection, fuzz, and invariant suites.
 - `pnpm lint`, `pnpm typecheck`, and `pnpm build`: passed.
-- `pnpm test`: SDK 10 passed; React 2 passed; web 44 passed.
+- `pnpm test`: SDK 10 passed; React 2 passed; web 56 passed.
 - `pnpm audit --prod`: no known vulnerabilities; pnpm 11 overrides Next's vulnerable transitive PostCSS `8.4.31` with exact patched `8.5.16`.
 - `pnpm deployment:check`: passed against v2 bytecode, contract/version, collection, suffix, owner, treasury, settlement, short-name quotes, fees, grace period, Multicall3, and metadata URI.
 - `pnpm smoke:base-sepolia`: passed with ephemeral buyer/referrer wallets across guarded registration, renewal, profile, primary, referral accrual/claim, listing, cancellation, purchase, seller claim, treasury withdrawal, and solvency checks. Temporary gas was swept in cleanup.
@@ -71,7 +71,8 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - Playwright: desktop/mobile checks across all public routes plus `/admin` disconnected, unauthorized, configured-viewer and live-owner states; overview/activity/controls, owner review dialog, no write broadcast, no horizontal overflow, no visible WCAG text-contrast failures, and zero application console errors/warnings after RPC request consolidation.
 - Home-page browser QA: live `4 / OPEN / OPEN / READY` state read on Base Sepolia, four total RPC requests including global checks and recent names, no extra stats polling, no mobile overflow, and zero application console errors/warnings.
 - Home/footer browser QA: 02-06 headings alternate across the desktop 12-column grid and collapse to code-first mobile rows; footer remains at document bottom without overlay, canonical Docs/Manifest/`llms.txt` links resolve, and no contrast or overflow failures were found.
-- Registration browser QA: term changes update the verified settlement quote before confirmation; the modal preserves the selected term and amount without duplicating the selector; desktop and 375px mobile layouts have no horizontal overflow or application console errors.
+- Registration browser QA: term changes update the verified settlement quote before confirmation; configured-chain mismatch triggers an automatic wallet switch and retains a manual switch action; the modal preserves the selected term and amount without duplicating the selector. A live Base Sepolia OP Stack smoke returned a total fee estimate, application/network amounts render concise cached USD references, and desktop/375px layouts have no horizontal overflow or application console errors.
+- Market-reference API smoke: the no-auth Coinbase spot route returned a validated ETH/USD quote with 60-second shared caching; malformed/upstream failures remain non-cacheable UI-only errors and never affect protocol quote/write state.
 - HTTP smoke: API success/error cache policy, cross-origin resource policy, real invalid-label 404, robots, sitemap, and public artifact caching passed.
 - Hosted release: private `yusufky63/sepbase` `main` source and the READY Vercel production alias `https://sepbase.vercel.app` are live.
 - Production browser/API smoke: seven application routes passed desktop and 375px mobile checks with no overflow, overlays, or console errors; public API and integration artifacts returned expected status, CORS, cache, CSP, and HSTS headers; Vercel reported no runtime errors or warnings after the smoke.

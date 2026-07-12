@@ -24,6 +24,9 @@ The shared implementation does not assume ETH, wei, 18 decimals, a token address
 
 - ERC-721 name ownership with active, grace, released, reserved, and available lifecycle states
 - Configured annual pricing with guarded 1-5 year registration and renewal
+- Automatic configured-chain switching before registration with a manual retry fallback
+- Chain-aware registration network-fee estimation, including OP Stack L1/L2 fees
+- Optional cached USD market reference display that never changes protocol quotes or write guards
 - Forward resolution, forward-confirmed primary names, and public profiles
 - Onchain referral attribution with claimable pull-payment rewards
 - Fixed-price settlement-asset marketplace with seller pull payments
@@ -43,6 +46,7 @@ The shared implementation does not assume ETH, wei, 18 decimals, a token address
 | `/market` | Fixed-price marketplace discovery and purchase flow |
 | `/developers` | SDK, React, ABI, API, manifest, and guarded write documentation |
 | `/admin` | Authorized protocol health, activity, and owner controls |
+| `/api/market-reference` | Optional cached UI-only settlement market reference |
 
 ## Architecture
 
@@ -59,7 +63,7 @@ Next.js dApp / SDK / React / HTTP API
            Base Sepolia RPC
 ```
 
-The contract is the source of truth. The application has no required database or indexer. API responses pin related reads to one block, and verified identity reads fail closed to the checksummed wallet address when ownership, lifecycle, primary mapping, and forward resolution do not agree.
+The contract is the source of truth. The application has no required database or indexer. API responses pin related reads to one block, and verified identity reads fail closed to the checksummed wallet address when ownership, lifecycle, primary mapping, and forward resolution do not agree. The optional market-reference route is display-only: it is cached, does not enter settlement math, and cannot change transaction availability or expected-value guards.
 
 ## Repository layout
 
@@ -123,7 +127,7 @@ Current verified baseline:
 - Solidity: `29` unit, fuzz, and invariant tests passing
 - SDK: `10` tests passing
 - React package: `2` tests passing
-- Web: `44` tests passing
+- Web: `56` tests passing
 - Contract runtime: `24,502 B` with `74 B` remaining below EIP-170
 - Production dependency audit: no known vulnerabilities
 

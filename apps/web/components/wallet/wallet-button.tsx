@@ -2,11 +2,12 @@
 
 import { LogOut, Wallet } from "lucide-react";
 import { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { configuredChain } from "@/lib/chain";
 import { shortenAddress } from "@/lib/formatting";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { useConfiguredChainSwitch } from "./use-configured-chain-switch";
 import styles from "./wallet.module.css";
 
 export function WalletButton() {
@@ -14,14 +15,14 @@ export function WalletButton() {
   const { address, chainId, isConnected } = useAccount();
   const { connectors, connect, isPending } = useConnect();
   const { disconnect } = useDisconnect();
-  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const { switchToConfiguredChain, isSwitching } = useConfiguredChainSwitch();
 
   if (isConnected && address) {
     if (chainId !== configuredChain.id) {
       return (
         <Button
           variant="secondary"
-          onClick={() => switchChain({ chainId: configuredChain.id })}
+          onClick={() => void switchToConfiguredChain()}
           disabled={isSwitching}
         >
           {isSwitching ? "Switching..." : `Switch to ${configuredChain.name}`}

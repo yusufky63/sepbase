@@ -7,9 +7,12 @@ import { type Address, isAddress, zeroAddress } from "viem";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { NetworkFeeAmount } from "@/components/price/network-fee-amount";
 import { SettlementAmount } from "@/components/price/settlement-amount";
+import { useConfiguredChainSwitch } from "@/components/wallet/use-configured-chain-switch";
 import { WalletButton } from "@/components/wallet/wallet-button";
 import { projectConfig } from "@/config/project.config";
+import { configuredChain } from "@/lib/chain";
 import { deploymentManifest, protocolDeployed } from "@/lib/deployment-manifest";
 import { protocolErrorMessage } from "@/lib/errors";
 import { shortenAddress } from "@/lib/formatting";
@@ -28,6 +31,7 @@ import { NAME_STATUS, type NameProfile, type NameRecord } from "@/lib/contract/t
 import { useSettlementApproval } from "@/features/transactions/settlement-approval";
 import { TransactionComplete } from "@/features/transactions/transaction-complete";
 import { TransactionStatus } from "@/features/transactions/transaction-status";
+import { useRegistrationNetworkFee } from "./use-registration-network-fee";
 import txStyles from "@/features/transactions/transactions.module.css";
 import styles from "./name-actions.module.css";
 
@@ -52,6 +56,27 @@ function amountLabel(amount: bigint) {
   return `${formatSettlementAmount(amount, deploymentManifest.settlement.decimals)} ${deploymentManifest.settlement.symbol}`;
 }
 
+function RegistrationNetworkFee({
+  address,
+  amount,
+  isError,
+  isLoading,
+  wrongNetwork,
+}: {
+  address: Address | undefined;
+  amount: bigint | undefined;
+  isError: boolean;
+  isLoading: boolean;
+  wrongNetwork: boolean;
+}) {
+  if (amount !== undefined) return <NetworkFeeAmount amountBaseUnits={amount} />;
+  if (isLoading) return <>Estimating...</>;
+  if (!address) return <>Connect wallet to estimate</>;
+  if (wrongNetwork) return <>Switch to {configuredChain.name} to estimate</>;
+  if (isError) return <>Final fee shown by wallet</>;
+  return <>Preparing estimate...</>;
+}
+
 function referralFromCookie(): Address | null {
   if (typeof document === "undefined") return null;
   const raw = document.cookie
@@ -64,6 +89,9 @@ function referralFromCookie(): Address | null {
 type RegisterConfirmationProps = {
   amount: bigint;
   label: string;
+  networkFeeBaseUnits: bigint | undefined;
+  networkFeeError: boolean;
+  networkFeeLoading: boolean;
   onClose: () => void;
   onConfirmed: () => void | Promise<unknown>;
   onReferralConsumed: () => void;
@@ -77,6 +105,9 @@ type RegisterConfirmationProps = {
 function RegisterConfirmation({
   amount,
   label,
+  networkFeeBaseUnits,
+  networkFeeError,
+  networkFeeLoading,
   onClose,
   onConfirmed,
   onReferralConsumed,
@@ -87,10 +118,12 @@ function RegisterConfirmation({
   years,
 }: RegisterConfirmationProps) {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const health = useProtocolHealth();
   const transaction = useProtocolTransaction();
   const approval = useSettlementApproval(amount);
+  const wrongNetwork = Boolean(address && chainId !== configuredChain.id);
+  const chainSwitch = useConfiguredChainSwitch(wrongNetwork);
   const confirmationHandled = useRef(false);
 
   useEffect(() => {
@@ -141,19 +174,50 @@ function RegisterConfirmation({
         <div><span>Name</span><strong>{label}.{projectConfig.brand.suffix}</strong></div>
         <div><span>Registration term</span><strong>{years} {years === 1 ? "year" : "years"}</strong></div>
         <div><span>Application payment</span><strong><SettlementAmount amountBaseUnits={amount} /></strong></div>
-        <div><span>Network fee</span><strong>{projectConfig.chain.nativeCurrency.symbol} / wallet estimate</strong></div>
+        <div>
+          <span>Network fee</span>
+          <strong>
+            <RegistrationNetworkFee
+              address={address}
+              amount={networkFeeBaseUnits}
+              isError={networkFeeError}
+              isLoading={networkFeeLoading}
+              wrongNetwork={wrongNetwork}
+            />
+          </strong>
+        </div>
         <div>
           <span>Referral</span>
           <strong>{referrer ? `${formatBps(referralRewardBps)} / ${shortenAddress(referrer, 4)}` : "None"}</strong>
         </div>
       </div>
       <TransactionStatus transaction={transaction} />
+      {wrongNetwork ? (
+        <div
+          className={chainSwitch.error ? `${txStyles.notice} ${txStyles.error}` : txStyles.notice}
+          role={chainSwitch.error ? "alert" : "status"}
+        >
+          {chainSwitch.isSwitching
+            ? `Confirm the switch to ${configuredChain.name} in your wallet.`
+            : chainSwitch.error
+              ? `Automatic network switch was not completed. Select ${configuredChain.name} in your wallet, then try again.`
+              : `Switch your wallet to ${configuredChain.name} to continue.`}
+        </div>
+      ) : null}
       {quoteError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The current registration quote could not be verified.</div> : null}
       {approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
       <div className={txStyles.actions}>
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
         {!address ? (
           <WalletButton />
+        ) : wrongNetwork ? (
+          <Button
+            type="button"
+            onClick={() => void chainSwitch.switchToConfiguredChain()}
+            disabled={chainSwitch.isSwitching}
+          >
+            {chainSwitch.isSwitching ? "Switching..." : `Switch to ${configuredChain.name}`}
+          </Button>
         ) : !approval.ready ? (
           <Button type="button" disabled>{approval.error ? "Payment unavailable" : "Checking allowance..."}</Button>
         ) : approval.required ? (
@@ -506,13 +570,14 @@ export function NameActions({
   const [action, setAction] = useState<Action>(null);
   const [registrationYears, setRegistrationYears] = useState(1);
   const [registrationReferrer, setRegistrationReferrer] = useState<Address | null>(() => referralFromCookie());
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const health = useProtocolHealth();
   const balances = useAccountBalances(address);
   const isOwner = Boolean(address && record.owner?.toLowerCase() === address.toLowerCase());
   const active = record.status === NAME_STATUS.ACTIVE;
   const grace = record.status === NAME_STATUS.GRACE;
   const canRegister = record.available && !record.reserved;
+  const wrongRegistrationNetwork = Boolean(address && chainId !== configuredChain.id);
   const registrationQuote = useQuote(record.label, registrationYears, canRegister || action === "register");
   const registrationAmount = (registrationQuote.data as bigint | undefined)
     ?? annualPriceForLength(
@@ -525,20 +590,36 @@ export function NameActions({
     address && registrationReferrer?.toLowerCase() === address.toLowerCase(),
   );
   const effectiveReferrer = selfReferral ? null : registrationReferrer;
+  const feeUsesConnectedWallet = Boolean(address && !wrongRegistrationNetwork);
+  const manifestOwner = deploymentManifest.owner as Address | null;
+  const feeAccount = feeUsesConnectedWallet ? address : (manifestOwner ?? undefined);
+  const feeRecipient = address ?? feeAccount;
+  const registrationNetworkFee = useRegistrationNetworkFee({
+    account: feeAccount,
+    amount: registrationAmount,
+    enabled: canRegister && registrationQuoteReady,
+    expectedReferralRewardBps: health.referralRewardBps,
+    label: record.label,
+    recipient: feeRecipient,
+    referrer: feeUsesConnectedWallet ? effectiveReferrer : null,
+    years: registrationYears,
+  });
   const clearRegistrationReferral = useCallback(() => {
     setRegistrationReferrer(null);
     clearReferralAttribution();
   }, []);
   const consumeRegistrationReferral = useCallback(() => setRegistrationReferrer(null), []);
-  const registrationState = health.registrationsPaused
-    ? "REGISTRATION PAUSED"
-    : !health.solvent
-      ? "PROTOCOL UNAVAILABLE"
-      : registrationQuote.isError
-        ? "QUOTE ERROR"
-        : registrationQuoteReady
-          ? "QUOTE VERIFIED"
-          : "VERIFYING QUOTE";
+  const registrationState = wrongRegistrationNetwork
+    ? `SWITCH TO ${configuredChain.name.toUpperCase()}`
+    : health.registrationsPaused
+      ? "REGISTRATION PAUSED"
+      : !health.solvent
+        ? "PROTOCOL UNAVAILABLE"
+        : registrationQuote.isError
+          ? "QUOTE ERROR"
+          : registrationQuoteReady
+            ? "QUOTE VERIFIED"
+            : "VERIFYING QUOTE";
 
   if (isPreview || !protocolDeployed) {
     return (
@@ -592,7 +673,18 @@ export function NameActions({
             <div className={styles.registrationFacts}>
               <div><span>FULL NAME</span><strong>{record.label}.{projectConfig.brand.suffix}</strong></div>
               <div><span>APPLICATION PAYMENT</span><strong><SettlementAmount amountBaseUnits={registrationAmount} /></strong></div>
-              <div><span>NETWORK FEE</span><strong>{projectConfig.chain.nativeCurrency.symbol} / wallet estimate</strong></div>
+              <div>
+                <span>NETWORK FEE</span>
+                <strong>
+                  <RegistrationNetworkFee
+                    address={address}
+                    amount={registrationNetworkFee.data}
+                    isError={registrationNetworkFee.isError}
+                    isLoading={registrationNetworkFee.isPending || registrationNetworkFee.isFetching}
+                    wrongNetwork={wrongRegistrationNetwork}
+                  />
+                </strong>
+              </div>
               <div><span>REFERRAL REWARD</span><strong>{effectiveReferrer ? `${formatBps(health.referralRewardBps)} to referrer` : "None"}</strong></div>
             </div>
           </div>
@@ -617,9 +709,9 @@ export function NameActions({
             <Button
               disabled={!registrationQuoteReady || health.registrationsPaused || !health.solvent}
               onClick={() => setAction("register")}
-              icon={<BadgeCheck size={18} />}
+              icon={wrongRegistrationNetwork ? <ArrowRightLeft size={18} /> : <BadgeCheck size={18} />}
             >
-              Register
+              {wrongRegistrationNetwork ? "Switch & register" : "Register"}
             </Button>
           </div>
         </section>
@@ -648,6 +740,9 @@ export function NameActions({
           <RegisterConfirmation
             amount={registrationAmount}
             label={record.label}
+            networkFeeBaseUnits={registrationNetworkFee.data}
+            networkFeeError={registrationNetworkFee.isError}
+            networkFeeLoading={registrationNetworkFee.isPending || registrationNetworkFee.isFetching}
             onClose={() => setAction(null)}
             onConfirmed={onRecordRefresh}
             onReferralConsumed={consumeRegistrationReferral}

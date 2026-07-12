@@ -38,6 +38,11 @@ export const projectConfig = projectConfigSchema.parse({
       symbol: "ETH",
       decimals: 18,
     },
+    feeEstimation: {
+      kind: "op-stack",
+      gasPriceOracleAddress: "0x420000000000000000000000000000000000000F",
+      l1BlockAddress: "0x4200000000000000000000000000000000000015",
+    },
     multicall3: {
       address: "0xca11bde05977b3631167028862be2a173976ca11",
       blockCreated: 1_059_647,
@@ -60,6 +65,12 @@ export const projectConfig = projectConfigSchema.parse({
     annual: "0.0005",
     shortNameMultipliers: [100, 25, 5],
     referenceFiat: null,
+    marketReference: {
+      provider: "coinbase",
+      asset: "ETH",
+      currency: "USD",
+      cacheSeconds: 60,
+    },
   },
   referrals: {
     rewardBps: 1000,

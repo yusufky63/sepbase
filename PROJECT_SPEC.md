@@ -57,7 +57,7 @@ Core palette: black, white, Base Blue #0000ff
 
 Gas currency ile settlement asset ayrı kavramlardır. Kullanıcı transaction gas'ını her zaman chain'in native coin'iyle öder; kayıt, yenileme, marketplace, referral ve seller proceeds ise seçilen settlement asset ile hesaplanır. Settlement asset deployment sırasında constructor'a verilir ve mevcut yükümlülüklerin para birimini değiştirmemek için o deployment'ta immutable kalır. Başka asset için yeni deployment yapılır.
 
-`0.0005 ETH`, ürünün gelecekteki production ekonomisi için yaklaşık `$1` hedefi düşünülerek seçilmiş bir test miktarıdır; ancak Base Sepolia test ETH'sinin gerçek piyasa değeri yoktur. Bu nedenle ilk test profili fiat karşılığı göstermez. Production deployment'ında fiat referansı kullanılacaksa currency, amount ve `asOf` tarihi config'ten gelir; oracle yokken bağlayıcı fiyat veya canlı kur gibi sunulmaz. Stablecoin deployment'ında da tokenın peg'i garanti edilmez.
+`0.0005 ETH`, ürünün gelecekteki production ekonomisi için yaklaşık `$1` hedefi düşünülerek seçilmiş bir test miktarıdır; ancak Base Sepolia test ETH'sinin gerçek piyasa değeri yoktur. Bu nedenle ilk test profilinde protocol `referenceFiat` değeri `null` kalır. UI, ödeme veya expected-value guard hesabına katılmayan ve açıkça `USD REFERENCE` olarak etiketlenen config-driven bir mainnet spot market göstergesi kullanabilir; bu gösterge test ETH'sine redeemable fiat değeri atfetmez. Production deployment'ında fiat referansı kullanılacaksa currency, amount ve `asOf` tarihi config'ten gelir; oracle yokken bağlayıcı fiyat gibi sunulmaz. Stablecoin deployment'ında da tokenın peg'i garanti edilmez.
 
 Marka adı ve suffix deployment öncesinde ayrıca seçilecektir. Proje Base'in resmi isim servisi olduğunu iddia etmemeli ve resmi Base markasıyla karışacak bir isim kullanmamalıdır.
 
@@ -245,6 +245,7 @@ Aşağıdakiler merkezi konfigürasyondan değişmelidir:
 - settlement modu (`NATIVE` veya `ERC20`),
 - settlement token adresi, name, symbol ve decimals,
 - opsiyonel ve tarihli fiat referansı,
+- opsiyonel UI market-reference provider/asset/currency/cache ayarları,
 - owner,
 - treasury.
 
@@ -438,6 +439,12 @@ type ProjectPaymentConfig = {
       asOf: string;
       maxAgeDays: number;
     };
+    marketReference: null | {
+      provider: 'coinbase';
+      asset: string;
+      currency: string;
+      cacheSeconds: number;
+    };
   };
 };
 ```
@@ -464,6 +471,8 @@ Deployment script'i her durumda `parseUnits(pricing.annual, settlement.decimals)
 Çarpanların her biri `1..255` içinde, `one >= two >= three >= 1` olmalıdır. Maksimum annual-price guard'ı en yüksek olası çarpan ve beş yıllık süreyi hesaba katar. Manifest çarpan tuple'ını açık biçimde yayınlar; consumer tutarı kendi başına tahmin etmek yerine kritik write öncesinde kontrat `quote` sonucunu yeniden okur.
 
 Fiat referansı opsiyoneldir, yalnızca display amaçlıdır ve ödeme hesabına katılmaz. `currency` ISO 4217 kodu, `amount` pozitif decimal string, `asOf` ISO `YYYY-MM-DD` tarihi, `maxAgeDays` pozitif integer olmalıdır. Base Sepolia gibi testnet deployment'larında `referenceFiat` zorunlu olarak `null` kalır. Oracle olmayan production profillerinde referans tarihi görünür; `asOf + maxAgeDays` geçmişse fiat satırı otomatik gizlenir.
+
+`marketReference`, protocol manifest fiyatı veya oracle değildir. Configured settlement symbol ile aynı `asset`, display currency ve kısa cache süresiyle server-side public spot endpoint'i okur; yalnız UI'da `~ USD ... REFERENCE` biçiminde gösterilir. Fetch hatası registration/market/write akışını engellemez. Bu veri quote, allowance, expected amount, reward, fee, proceeds veya contract write argümanına hiçbir zaman katılmaz.
 
 ## 5.3 Kayıt süresi
 
@@ -1701,7 +1710,7 @@ Global footer kısa sayfalarda viewport tabanında kalır fakat `position: fixed
 
 `registrationsPaused == true` ise search/read çalışmaya devam eder; available name ekranı kayıtların geçici olarak kapalı olduğunu gösterir ve register transaction başlatmaz. Renewal ve claim akışları etkilenmez.
 
-`referenceFiat` null veya `asOf + maxAgeDays` geçmişse fiat satırı tamamen kaldırılır; boş placeholder, eski kur veya testnet `$1` etiketi gösterilmez.
+`referenceFiat` null veya `asOf + maxAgeDays` geçmişse tarihli protocol fiat satırı tamamen kaldırılır. Ayrı `marketReference` configured ise kısa canlı `USD REFERENCE` satırı gösterilebilir; provider hatasında protocol fiyatı, quote veya transaction availability değişmez.
 
 ## 9.2 Name sayfası `/name/[label]`
 
@@ -2020,7 +2029,7 @@ Satın alma öncesinde listing, owner, ACTIVE status ve exact price yeniden okun
 
 Market işlem toast'ı URL query parametresi kullanmaz. Notice; schema/chain/contract scope'lu `sessionStorage` key'inde en fazla 10 dakika tutulur, route değişiminde bir kez okunup storage'dan hemen silinir, 6 saniyede kapanır ve kullanıcı tarafından erken dismiss edilebilir. Storage erişimi kapalıysa işlem ve yönlendirme yine tamamlanır; toast yalnız ek geri bildirimdir. `role=status`, `aria-live=polite`, reduced-motion ve mobil safe-area davranışı zorunludur.
 
-Bütün fiyat, reward ve proceeds etiketleri configured `settlement.symbol` ve `settlement.decimals` ile formatlanır. Güncel `referenceFiat` bulunan production profilinde kayıt/renewal toplamı, listing fiyatı, buy toplamı, referral reward ve seller proceeds aynı exact base-unit oranından türetilen yaklaşık fiat referansını ve `asOf` tarihini gösterir. Testnet veya stale/null referansta fiat satırı hiç render edilmez. Network fee ayrı satırda chain native currency ile gösterilir. ERC-20 settlement modunda allowance yetersizse dialog approval ve ana işlem adımlarını ayrı transaction olarak gösterir; tek işlem izlenimi vermez.
+Bütün fiyat, reward ve proceeds etiketleri configured `settlement.symbol` ve `settlement.decimals` ile formatlanır. Güncel `referenceFiat` bulunan production profilinde kayıt/renewal toplamı, listing fiyatı, buy toplamı, referral reward ve seller proceeds aynı exact base-unit oranından türetilen yaklaşık fiat referansını ve `asOf` tarihini gösterir. Ayrı `marketReference` configured ise settlement tutarları kısa canlı `USD REFERENCE` satırını gösterebilir. Network fee ayrı satırda chain native currency ile ve chain config'inin `standard` veya `op-stack` fee modeliyle tahmin edilir; OP Stack modelinde L1 data, L2 execution ve mevcutsa operator fee birlikte hesaplanır. ERC-20 settlement modunda allowance yetersizse dialog approval ve ana işlem adımlarını ayrı transaction olarak gösterir; tek işlem izlenimi vermez.
 
 Approval ekranı exact human amount yanında raw base-unit amount'ı expandable detail olarak gösterir; token/spender adresini yalnızca symbol ile gizlemez. Unlimited approval hiçbir CTA'nın varsayılanı değildir.
 
@@ -3026,7 +3035,7 @@ String güncellemeleri gas tüketir. Buna karşılık backend, login ve veritaba
 
 ### Settlement asset ve fiyat riski
 
-Oracle yoktur. Configured yıllık fiyat settlement asset cinsindendir ve owner tarafından manuel güncellenir. Native coin volatil olabilir; stablecoin ise depeg, blacklist veya issuer riski taşır. UI tarihli fiat referansını bağlayıcı fiyat veya canlı kur gibi sunmaz; test tokenlarında fiat referansı göstermez.
+Protocol pricing oracle'ı yoktur. Configured yıllık fiyat settlement asset cinsindendir ve owner tarafından manuel güncellenir. Native coin volatil olabilir; stablecoin ise depeg, blacklist veya issuer riski taşır. UI tarihli `referenceFiat` değerini bağlayıcı fiyat gibi sunmaz. Opsiyonel canlı `marketReference` yalnız display verisidir; testnet veya production fark etmeksizin settlement/guard hesabına katılmaz ve hata vermesi write akışını kapatmaz.
 
 Fee-on-transfer, rebasing veya transfer amount'ını değiştiren tokenlar desteklenmez. ERC-20 settlement tokenı güvenilir, standart ve mümkünse yaygın kullanılan bir contract olmalıdır. Settlement tokenın sonradan değiştirilememesi mevcut referral/seller yükümlülüklerini farklı para birimlerine karıştırmayı engeller.
 
@@ -3521,7 +3530,7 @@ Proje ancak aşağıdaki koşulların tümü sağlandığında V1 tamamlanmış 
 - Collection name/symbol ve metadata base URI config/manifest/contract arasında eşleşiyor.
 - Native gas currency ve settlement kind/token/name/symbol/decimals ile base-unit fiyat manifest/config'ten ayrı alanlardan geliyor.
 - Transaction confirmation sayısı chain config/manifest'ten geliyor.
-- Testnet profili fiat değer göstermiyor; production fiat referansı tarihli ve süre-sınırlı.
+- Testnet protocol `referenceFiat` değeri null; opsiyonel UI `marketReference` protocol fiyatından ayrıdır ve production fiat referansı tarihli/süre-sınırlıdır.
 - Logo/motto/suffix tek merkezden değişiyor.
 - Eski deployment adresleri clone sırasında temizleniyor.
 - Eski settlement token address/base-unit fiyatı clone sırasında yanlışlıkla taşınmıyor.

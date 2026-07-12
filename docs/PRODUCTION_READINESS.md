@@ -20,7 +20,7 @@ Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uy
 | UI | Hazir | Bes route, responsive, transaction completion, account tabs, wallet-in-modal |
 | Hosted testnet web | Hazir | Private GitHub `main` + Vercel production alias `sepbase.vercel.app` |
 | Home platform ozeti | Hazir | `totalSupply` + registration/market/payment state; global Multicall cache'ini paylasir, polling eklemez |
-| Fiat display mimarisi | Hazir | Config-driven, dated, stale-safe; testnet profilde bilerek kapali |
+| Fiat display mimarisi | Hazir | Protocol `referenceFiat` testnette kapali; UI market reference cache'li ve settlement guard'larindan ayri |
 | Entegrasyon | Hazir | CORS-enabled manifest/ABI/API, OpenAPI, `llms.txt`, SDK source |
 | HTTP/SEO hardening | Hazir | Hata yanitlari `no-store`, public artifact cache/CORS, gercek 404, robots, sitemap ve guvenlik header'lari |
 | Release gate | Hazir | `pnpm release:check` final HTTPS, server RPC, WalletConnect ve metadata-origin tutarliligini zorunlu kilar |

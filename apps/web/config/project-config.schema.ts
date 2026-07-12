@@ -37,6 +37,15 @@ const routePath = z
 
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
+const feeEstimationSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("standard") }).strict(),
+  z.object({
+    kind: z.literal("op-stack"),
+    gasPriceOracleAddress: addressSchema,
+    l1BlockAddress: addressSchema,
+  }).strict(),
+]);
+
 const fiatReferenceSchema = z.object({
   currency: z.string().regex(/^[A-Z]{3}$/),
   amount: z.string().min(1).max(100).regex(/^\d+(?:\.\d+)?$/).refine((value) => Number(value) > 0),
@@ -45,6 +54,13 @@ const fiatReferenceSchema = z.object({
     return Number.isFinite(timestamp) && timestamp <= Date.now();
   }, "Fiat reference date must be a valid, non-future UTC date."),
   maxAgeDays: z.number().int().min(1).max(365),
+}).strict();
+
+const marketReferenceSchema = z.object({
+  provider: z.literal("coinbase"),
+  asset: z.string().regex(/^[A-Z0-9]{2,16}$/),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  cacheSeconds: z.number().int().min(30).max(3600),
 }).strict();
 
 export const projectConfigSchema = z
@@ -78,6 +94,7 @@ export const projectConfigSchema = z
         rpcUrl: z.string().url(),
         explorerUrl: z.string().url(),
         nativeCurrency: assetSchema,
+        feeEstimation: feeEstimationSchema,
         multicall3: z.object({
           address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
           blockCreated: z.number().int().nonnegative().safe(),
@@ -108,6 +125,7 @@ export const projectConfigSchema = z
           z.number().int().min(1).max(255),
         ]),
         referenceFiat: z.union([z.null(), fiatReferenceSchema]),
+        marketReference: z.union([z.null(), marketReferenceSchema]),
       })
       .strict(),
     referrals: z
@@ -175,6 +193,12 @@ export const projectConfigSchema = z
     }
     if (config.chain.testnet && config.pricing.referenceFiat !== null) {
       issue(["pricing", "referenceFiat"], "Testnet profiles cannot publish a fiat reference.");
+    }
+    if (
+      config.pricing.marketReference
+      && config.pricing.marketReference.asset !== config.settlement.symbol
+    ) {
+      issue(["pricing", "marketReference", "asset"], "Market reference asset must match the settlement symbol.");
     }
     const [whole, fraction = ""] = config.pricing.annual.split(".");
     const [oneCharacterMultiplier, twoCharacterMultiplier, threeCharacterMultiplier] = config.pricing.shortNameMultipliers;

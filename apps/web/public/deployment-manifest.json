@@ -66,5 +66,5 @@
   "openApiUrl": "/api/openapi.json",
   "solidityVersion": "0.8.36",
   "openzeppelinVersion": "5.4.0",
-  "gitCommit": "b87fc2e83a9f6f404a56535b2272d4a83ae07c4c"
+  "gitCommit": "b11d543f84cd546d5ae3e391cf1c0638304d68c7"
 }
