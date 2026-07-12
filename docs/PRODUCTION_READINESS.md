@@ -1,12 +1,12 @@
 # Production Readiness Report
 
-Tarih: 2026-07-11
+Tarih: 2026-07-12
 
 ## Sonuc
 
-SEPBASE, Base Sepolia test release'i icin hazirdir. V2 kontrati canli, source-verified ve gercek coklu hesap write smoke'undan gecmistir. Web, SDK source, ABI, manifest, OpenAPI ve read-only API ayni deployment'i kullanir.
+SEPBASE, Base Sepolia test release'i icin hazirdir. V2 kontrati canli, source-verified ve gercek coklu hesap write smoke'undan gecmistir. HTTPS web release'i `https://sepbase.vercel.app` adresinde canlidir; web, SDK source, ABI, manifest, OpenAPI ve read-only API ayni deployment'i kullanir.
 
-Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uygulama veya test hatasi degil; final HTTPS origin, metadata URI cutover, authenticated RPC, SDK package release, multisig operasyonu ve bagimsiz audit gibi deployment disi release gate'lerinin tamamlanmamis olmasidir.
+Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uygulama veya test hatasi degil; metadata URI cutover, authenticated RPC, WalletConnect, SDK package release, multisig operasyonu ve bagimsiz audit gibi release gate'lerinin tamamlanmamis olmasidir.
 
 ## Hazir olanlar
 
@@ -18,6 +18,7 @@ Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uy
 | Marketplace | Hazir | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
 | Solvency | Hazir | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
 | UI | Hazir | Bes route, responsive, transaction completion, account tabs, wallet-in-modal |
+| Hosted testnet web | Hazir | Private GitHub `main` + Vercel production alias `sepbase.vercel.app` |
 | Home platform ozeti | Hazir | `totalSupply` + registration/market/payment state; global Multicall cache'ini paylasir, polling eklemez |
 | Fiat display mimarisi | Hazir | Config-driven, dated, stale-safe; testnet profilde bilerek kapali |
 | Entegrasyon | Hazir | CORS-enabled manifest/ABI/API, OpenAPI, `llms.txt`, SDK source |
@@ -27,15 +28,15 @@ Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uy
 
 ## Production oncesi zorunlu
 
-1. **Final HTTPS origin:** `NEXT_PUBLIC_SITE_URL` final domain ile build edilmeli ve tum manifest/API URL'leri hosted release'te tekrar dogrulanmali.
-2. **Metadata URI cutover:** Kontrattaki localhost metadata base URI final HTTPS API'ye admin islemiyle alinmali; manifest yeniden uretilmeli ve `pnpm deployment:check` tekrar kosmali.
-3. **Authenticated RPC:** Kod server-only `RPC_URL` ile public browser RPC'sini ayirir; hosted ortamda rate limit ve availability SLA'si olan provider degeri halen tanimlanmalidir. Secret provider URL'si `NEXT_PUBLIC_*` icine konmamalidir.
+1. **Metadata URI cutover:** Kontrattaki localhost metadata base URI final HTTPS API'ye admin islemiyle alinmali; manifest yeniden uretilmeli ve `pnpm deployment:check` tekrar kosmali.
+2. **Authenticated RPC:** Kod server-only `RPC_URL` ile public browser RPC'sini ayirir; hosted ortamda rate limit ve availability SLA'si olan provider degeri halen tanimlanmalidir. Secret provider URL'si `NEXT_PUBLIC_*` icine konmamalidir.
+3. **WalletConnect:** Production mobile/QR coverage icin project ID eklenmeli ve gercek cihaz smoke'u kosmali.
 4. **Package release:** `@sepbase/sdk` ve `@sepbase/react` semver, provenance ve changelog ile npm'e yayinlanmali. Bugun iki package da workspace/source olarak hazirdir.
 5. **Yetki operasyonu:** Owner ve treasury deger tasiyan release'te multisig adreslerine alinmali; raw deployer key rutin admin araci olarak kullanilmamali.
 6. **Bagimsiz audit:** Mainnet veya ekonomik deger oncesi kontrat ve deployment/admin runbook'u bagimsiz guvenlik incelemesinden gecmeli.
-7. **Hosted smoke:** Final domain uzerinde wallet connect, register, referral deep link, list/buy/claim, metadata ve cross-origin SDK akisi yeniden kosmali.
+7. **Hosted write smoke:** Final domain uzerinde wallet connect, register, referral deep link, list/buy/claim ve metadata cutover sonrasi cross-origin SDK akisi yeniden kosmali.
 
-Final HTTPS hostname, server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tamamlanana kadar `pnpm release:check` bilerek basarisiz olur.
+Server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tamamlanana kadar `pnpm release:check` bilerek basarisiz olur. HTTPS site origin Vercel production ortaminda tamamlanmistir; lokal `.env` gelistirme icin localhost kullanmaya devam eder.
 
 ## Olsa daha iyi olurdu
 

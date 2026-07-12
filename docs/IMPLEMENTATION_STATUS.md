@@ -4,7 +4,7 @@ Last updated: 2026-07-12
 
 ## Current phase
 
-The v2 Base Sepolia test release is implemented, deployed, source-verified, and exercised with a real multi-account write smoke. The web app, read-only API, manifest, ABI, OpenAPI, SDK/React package sources, referral flow, fixed-price marketplace, verified identity reads, and local renewal watch all target the same live registry. A live home-page platform summary reuses the global health Multicall without adding polling. Final HTTPS hosting and release operations remain external launch tasks.
+The v2 Base Sepolia test release is implemented, deployed, source-verified, and exercised with a real multi-account write smoke. The web app is live at `https://sepbase.vercel.app`; the read-only API, manifest, ABI, OpenAPI, SDK/React package sources, referral flow, fixed-price marketplace, verified identity reads, and local renewal watch all target the same live registry. A live home-page platform summary reuses the global health Multicall without adding polling. The onchain metadata URI cutover and the remaining value-bearing release gates are still pending.
 
 Live contract: `0xe000de3efe798Aa4F834fd952Bef35BAE1B16945`, version `2.0.0`, deployment block `44011800`. No private deployment credential is present in public artifacts.
 
@@ -37,7 +37,8 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - [x] Phase 10A: v2 Base Sepolia broadcast, source verification, manifest, and live reads
 - [x] Phase 10B: real multi-account register/referral/marketplace/claim smoke
 - [x] Phase 10C: verified identity SDK/React adapter, renewal watch, and Blockscout BENS handoff
-- [ ] Phase 10D: final HTTPS site release and metadata URI cutover
+- [x] Phase 10D: private GitHub source release and Vercel HTTPS testnet deployment
+- [ ] Phase 10E: metadata URI cutover, authenticated RPC, WalletConnect, multisig, and audit gates
 
 ## Implemented surfaces
 
@@ -72,18 +73,20 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - Home/footer browser QA: 02-06 headings alternate across the desktop 12-column grid and collapse to code-first mobile rows; footer remains at document bottom without overlay, canonical Docs/Manifest/`llms.txt` links resolve, and no contrast or overflow failures were found.
 - Registration browser QA: term changes update the verified settlement quote before confirmation; the modal preserves the selected term and amount without duplicating the selector; desktop and 375px mobile layouts have no horizontal overflow or application console errors.
 - HTTP smoke: API success/error cache policy, cross-origin resource policy, real invalid-label 404, robots, sitemap, and public artifact caching passed.
+- Hosted release: private `yusufky63/sepbase` `main` source and the READY Vercel production alias `https://sepbase.vercel.app` are live.
+- Production browser/API smoke: seven application routes passed desktop and 375px mobile checks with no overflow, overlays, or console errors; public API and integration artifacts returned expected status, CORS, cache, CSP, and HSTS headers; Vercel reported no runtime errors or warnings after the smoke.
 
 Expected Foundry timestamp lint notices remain because expiration and grace-period behavior is intentionally timestamp-based.
 
 ## Release pending
 
-1. Deploy the web app with its final HTTPS `NEXT_PUBLIC_SITE_URL`.
-2. Update the on-chain metadata base URI from localhost to the final site URL, regenerate the manifest, and rerun `pnpm deployment:check`.
-3. Use an authenticated production RPC and add availability/rate monitoring for the hosted read API.
+1. Update the on-chain metadata base URI from localhost to the final site URL, regenerate the manifest, and rerun `pnpm deployment:check`.
+2. Use an authenticated production RPC and add availability/rate monitoring for the hosted read API.
+3. Add a WalletConnect project ID for production mobile wallet coverage.
 4. Publish and version `@sepbase/sdk` and `@sepbase/react`; until then consumers must use workspace packages or ABI/OpenAPI surfaces.
 5. Before any value-bearing mainnet profile, move owner/treasury roles to reviewed multisig operations and obtain an independent smart-contract audit.
 
-`pnpm release:check` currently fails as designed on the unresolved hosted-release inputs: localhost/non-HTTPS site URL, missing server-only `RPC_URL`, and missing WalletConnect project ID. After the site URL changes, it also requires the manifest/on-chain metadata base URI to match that final origin.
+The Vercel production environment has the final HTTPS site origin. `pnpm release:check` remains intentionally blocked until the server-only `RPC_URL`, WalletConnect project ID, and manifest/on-chain metadata base URI all match the hosted release. Local development continues to use `http://localhost:3000`.
 
 ## Architecture notes
 
