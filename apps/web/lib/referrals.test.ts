@@ -5,7 +5,6 @@ import {
   isV3ReferralOperational,
   referralAttributionCookieName,
   referralCookieName,
-  v3ReferralCookieName,
   v3ReferralCookieNameFor,
 } from "./referrals";
 
@@ -28,14 +27,14 @@ function candidate(): V3SuiteManifest {
 }
 
 describe("referral attribution scope", () => {
-  it("rejects draft attribution but scopes the current candidate to V3", () => {
+  it("keeps V2 attribution active until the V3 release is live", () => {
     expect(isV3ReferralOperational(draft)).toBe(false);
-    expect(referralAttributionCookieName).toBe(v3ReferralCookieName);
-    expect(referralAttributionCookieName).not.toBe(referralCookieName);
+    expect(isV3ReferralOperational(candidate())).toBe(false);
+    expect(referralAttributionCookieName).toBe(referralCookieName);
   });
 
   it("binds a V3 cookie name to the exact suite release, chain and controller", () => {
-    const first = candidate();
+    const first = { ...candidate(), releaseStatus: "live" } as const satisfies V3SuiteManifest;
     const firstName = v3ReferralCookieNameFor(first);
     expect(isV3ReferralOperational(first)).toBe(true);
     expect(firstName).toMatch(/^cns_ref_v3_84532_[a-f0-9]{64}_[a-f0-9]{40}$/);

@@ -23,6 +23,7 @@ if (calculatedSuiteReleaseId !== _suiteReleaseId) {
 export const v3Deployed = (v3Manifest.releaseStatus === "candidate" || v3Manifest.releaseStatus === "live")
   && Object.values(v3Manifest.contracts).every((module) => module.address && module.runtimeCodeHash)
   && v3Manifest.wiring.suiteConfigured;
+export const v3PublicUiActive = v3Deployed && v3Manifest.releaseStatus === "live";
 export const v3PaidX402Operational = X402_PAID_EXECUTION_IMPLEMENTED
   && v3Manifest.releaseStatus === "live"
   && v3Manifest.capabilities.paidX402

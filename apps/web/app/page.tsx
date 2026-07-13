@@ -10,7 +10,7 @@ import { V3Home } from "@/features/v3/home/v3-home";
 import { deploymentManifest } from "@/lib/deployment-manifest";
 import { annualPriceForLength } from "@/lib/pricing";
 import { formatBps } from "@/lib/settlement";
-import { v3Deployed } from "@/lib/v3-api";
+import { v3PublicUiActive } from "@/lib/v3-api";
 import styles from "./home.module.css";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  if (v3Deployed) return <V3Home />;
+  if (v3PublicUiActive) return <V3Home />;
 
   const heroNameParts = projectConfig.brand.shortName.split("/");
   const standardAnnualPrice = BigInt(deploymentManifest.annualPriceBaseUnits);

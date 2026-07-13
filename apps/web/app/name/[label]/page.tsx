@@ -5,12 +5,12 @@ import { NameWorkspace } from "@/features/name/name-workspace";
 import { V3RegistrationWorkspace } from "@/features/v3/registration/v3-registration-workspace";
 import { projectConfig } from "@/config/project.config";
 import { normalizeLabel } from "@/lib/name-normalization";
-import { v3Deployed, v3Manifest } from "@/lib/v3-api";
+import { v3Manifest, v3PublicUiActive } from "@/lib/v3-api";
 
 type PageProps = { params: Promise<{ label: string }> };
 
 function normalizeRouteLabel(input: string) {
-  if (!v3Deployed) return normalizeLabel(input, projectConfig.brand.suffix);
+  if (!v3PublicUiActive) return normalizeLabel(input, projectConfig.brand.suffix);
   try {
     const normalized = normalizeName(input, v3Manifest.suffix, {
       minCodePoints: v3Manifest.nameRules.minCodepoints,
@@ -57,7 +57,7 @@ export default async function NamePage({ params }: PageProps) {
 
   if (!normalized.valid) notFound();
   if (input !== normalized.label) permanentRedirect(`/name/${encodeURIComponent(normalized.label)}`);
-  return v3Deployed
+  return v3PublicUiActive
     ? <V3RegistrationWorkspace label={normalized.label} />
     : <NameWorkspace label={normalized.label} />;
 }
