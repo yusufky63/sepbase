@@ -230,6 +230,7 @@ async function buildCandidate(
   draft: V3SuiteManifest,
   evidence: ParsedV3BroadcastRun,
   verified: VerifiedChainEvidence,
+  sourceCommit: string,
 ): Promise<V3SuiteManifest> {
   const identity = assertV3DeploymentArguments(evidence, draft);
   const candidate = structuredClone(draft);
@@ -249,7 +250,7 @@ async function buildCandidate(
   };
   candidate.migration.startsAt = identity.migrationStartsAt;
   candidate.migration.endsAt = identity.migrationEndsAt;
-  candidate.gitCommit = evidence.commit ?? draft.gitCommit;
+  candidate.gitCommit = sourceCommit;
   candidate.suiteReleaseId = await calculateV3SuiteReleaseId(candidate);
   return parseV3SuiteManifest(candidate);
 }
@@ -325,7 +326,7 @@ export async function promoteV3Manifest(options: PromoteV3ManifestOptions) {
   assertLocalDeploymentSource(root, expectedCommit);
   assertV3DeploymentArguments(evidence, draft);
   const verified = await verifyChainEvidence(root, rpcUrl, draft, evidence);
-  const candidate = await buildCandidate(draft, evidence, verified);
+  const candidate = await buildCandidate(draft, evidence, verified, expectedCommit);
   await verifyCandidateWithSdk(root, rpcUrl, candidate);
 
   const unchangedDraft = await readFile(manifestPath);
