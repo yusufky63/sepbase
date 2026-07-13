@@ -18,11 +18,11 @@ SEPBASE is an independent, single-chain onchain name registry for Base Sepolia. 
 | Marketplace fee | `0%` for the current deployment |
 | Design direction | Modular Typography, black/white, Base Blue `#0000ff` |
 
-> Repository/live status: current source is `Ready` on production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` at [sepbase.vercel.app](https://sepbase.vercel.app). Final-origin checks pass schema-4 discovery, OpenAPI `1.7.0`, `llms.txt`, four public pages, all eight ABIs and the exact 8+39 MCP inventories. Authenticated Base Sepolia RPC and WalletConnect configuration are present. Managed PostgreSQL, encrypted-CAS secrets and schema were provisioned after that deployment and require a fresh release/smoke before runtime availability is claimed; V3 addresses remain null and paid execution remains unavailable.
+> Repository/live status: the V3 suite is deployed and source-verified on Base Sepolia, and the repository publishes a chain-verified `candidate` manifest. The current production origin may still serve the preceding draft until the new hosted release is completed and smoked. Paid x402 execution remains unavailable.
 
 ## V3 production target
 
-The next major version is an approved implementation and release target for Base Sepolia operated with mainnet discipline. Seven contract implementations, generated ABIs, an address-free draft manifest, V3 SDK/read-API/MCP source and local tests now exist, but **V3 is not acceptance-complete or evidenced as deployed**. The live contract and current hosted application remain v2 until the versioned cutover gates pass.
+The next major version is an approved implementation and release target for Base Sepolia operated with mainnet discipline. Seven no-proxy contracts are now deployed and source-verified, their one-time suite wiring is locked, and a receipt/runtime-hash-verified `candidate` manifest exists. **V3 is still not acceptance-complete, live-cut-over, audited or paid-runtime ready.** The default product remains v2 until the remaining hosted, funded-E2E and operational gates pass.
 
 V3 supersedes the former future-version exclusions and targets:
 
@@ -35,7 +35,7 @@ V3 supersedes the former future-version exclusions and targets:
 - official paid x402 V2 execution using a facilitator, durable idempotency/workflow and a limited managed keeper;
 - explicit v2 migration, final HTTPS metadata cutover, multisig, independent audit and production observability.
 
-Local source evidence and live release evidence are different. `pnpm contracts:test` currently passes 62 V3 tests within a 91/91 combined contract run, and the seven-module artifact validator is green; neither result supplies Base Sepolia V3 addresses, audit, soak or paid execution. Public npm publication and hosted-draft parity have separate evidence below and do not make V3 live. Current truth:
+Local source evidence, a deployed candidate and a live product release are different states. `pnpm contracts:test` currently passes 62 V3 tests within a 91/91 combined contract run; the seven-module artifact validator is green; all seven Base Sepolia sources are verified; and `pnpm manifest:v3:promote` reproduced the candidate identity from canonical receipts and pinned-block reads. None of that supplies audit, soak, funded wallet E2E or paid execution. Current truth:
 
 | Capability | Live v2 | V3 source / release target |
 |---|---|---|
@@ -45,13 +45,25 @@ Local source evidence and live release evidence are different. `pnpm contracts:t
 | Marketplace | Fixed listing only | Fixed + offers + English auctions |
 | x402 | Free quote in configured v2 deployments; paid POST fail-closed | Activation-gated durable official V2 paid execution after all gates |
 | Packages | `@sepbase/sdk`, `@sepbase/react`, `@sepbase/mcp` `0.1.0` public with SLSA provenance | Exact public versions pass an anonymous clean-consumer TypeScript/runtime smoke; this is distribution evidence, not a deployed-V3 receipt |
-| Deployment | v2 Base Sepolia | Seven-address source + address-free draft manifest; Base Sepolia deployment pending |
+| Deployment | v2 Base Sepolia | Seven-address Base Sepolia suite, source-verified candidate; live cutover pending |
+
+V3 candidate addresses (Base Sepolia):
+
+| Module | Address |
+|---|---|
+| Registry | [`0xE992C59bd54DF6EEDa146dd7Ce4D676182AA4245`](https://sepolia.basescan.org/address/0xE992C59bd54DF6EEDa146dd7Ce4D676182AA4245#code) |
+| Controller | [`0xFD9FFC18d4528b4C5e36911673FF57b1395Fee21`](https://sepolia.basescan.org/address/0xFD9FFC18d4528b4C5e36911673FF57b1395Fee21#code) |
+| Resolver | [`0xd0B3aA5E5Be6c783eFf4c2C0dC2d74ca2d13D25b`](https://sepolia.basescan.org/address/0xd0B3aA5E5Be6c783eFf4c2C0dC2d74ca2d13D25b#code) |
+| Universal Resolver helper | [`0xFBAA8396d1A170a6cb0f9187B14E73758B104c5E`](https://sepolia.basescan.org/address/0xFBAA8396d1A170a6cb0f9187B14E73758B104c5E#code) |
+| Marketplace | [`0xC67Bc2B9d0F58dD41A36AEf970c7f110f642D521`](https://sepolia.basescan.org/address/0xC67Bc2B9d0F58dD41A36AEf970c7f110f642D521#code) |
+| MarketLens | [`0x17A045F4D3F76de65A34991afB5738F45e28d908`](https://sepolia.basescan.org/address/0x17A045F4D3F76de65A34991afB5738F45e28d908#code) |
+| Migration | [`0x707Ab7806eDA18fFC52343a65D15500deE7781C8`](https://sepolia.basescan.org/address/0x707Ab7806eDA18fFC52343a65D15500deE7781C8#code) |
 
 The attestor does not replace the normalizer or own names. Web/SDK/API/MCP use the exact pinned normalization profile and fixture corpus; the controller verifies a short-lived EIP-712 statement binding profile hash, chain, controller, normalized label hash, recipient and expiry. The commitment binds that exact attestation hash. The attestor address cannot be rotated by the owner; loss or compromise requires a reviewed controller/suite release and manifest cutover.
 
-The draft machine-readable target is published at [`apps/web/public/deployment-manifest.v3.json`](apps/web/public/deployment-manifest.v3.json). Its null addresses and `releaseStatus: "draft"` are deliberate: ABI/config discovery is not deployment, acceptance or live evidence.
+The machine-readable candidate is published at [`apps/web/public/deployment-manifest.v3.json`](apps/web/public/deployment-manifest.v3.json). It binds all seven addresses, runtime hashes, receipts, the immutable attestor and locked suite wiring under release ID `sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34`. `releaseStatus: "candidate"` deliberately keeps default V3 writes and paid x402 fail closed until live promotion.
 
-Migration eligibility can be audited reproducibly with `V3_MIGRATION_SOURCE_BLOCK=44054186 pnpm migration:v3:dry-run`; the checked report is `evidence/v3-migration/84532-44054186.json` (6/6 active v2 names eligible at that block, embedded `reportSha256` `492ab72338895dc101b3ce4b0b4bb1971d7521fd9797c28ddb20882ded5b4551`). This fixed-block report is preflight only: no V3 deployment, claim transaction or cutover has occurred.
+Migration eligibility can be audited reproducibly with `V3_MIGRATION_SOURCE_BLOCK=44054186 pnpm migration:v3:dry-run`; the checked report is `evidence/v3-migration/84532-44054186.json` (6/6 active v2 names eligible at that block, embedded `reportSha256` `492ab72338895dc101b3ce4b0b4bb1971d7521fd9797c28ddb20882ded5b4551`). The migration controller is deployed, but the reviewed claim window starts on 22 July 2026 and no claim transaction or product cutover has occurred.
 
 Start with [V3 Architecture](docs/V3_ARCHITECTURE.md), [V3 Threat Model](docs/THREAT_MODEL_V3.md), [V3 Web UX](docs/V3_WEB_UX.md), [hood.ag Comparison](docs/HOOD_COMPARISON.md), [Marketplace/Referral/Proceeds Guide](docs/USER_MARKETPLACE_GUIDE.md), [Migration Plan](docs/MIGRATION_V2_TO_V3.md), [Acceptance Matrix](docs/V3_ACCEPTANCE_MATRIX.md), and [Transaction Evidence](docs/TRANSACTION_EVIDENCE.md).
 

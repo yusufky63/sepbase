@@ -4,20 +4,20 @@ Tarih: 2026-07-13
 
 ## V3 production target kararı
 
-V3; immutable EIP-712 attestor'lı ENSIP-15 canonicalization, altı authority/state kontratı + bounded read-only MarketLens'ten oluşan yedi-adres no-proxy release, commit-reveal, fixed+offer+auction marketplace, unified refund liabilities, public npm packages, paid x402 V2, migration, multisig/audit ve observability hedefler. **Source veya belge varlığı bunları acceptance-complete, deploy edilmiş ya da live yapmaz.** `docs/V3_ACCEPTANCE_MATRIX.md` içinde seçili local contract ve public-package satırları `PASS` kanıtı taşır; funded browser, V3 Base Sepolia deployment, live-V3 hosted cutover, audit/soak ve paid-execution runtime kapıları hâlâ `NOT RUN` durumundadır.
+V3; immutable EIP-712 attestor'lı ENSIP-15 canonicalization, altı authority/state kontratı + bounded read-only MarketLens'ten oluşan yedi-adres no-proxy release, commit-reveal, fixed+offer+auction marketplace, unified refund liabilities, public npm packages, paid x402 V2, migration, multisig/audit ve observability hedefler. Yedi kontrat Base Sepolia'ya deploy ve source-verify edildi; zincir kanıtlı manifest `candidate` durumundadır. **Deployment kanıtı tek başına acceptance-complete veya live anlamına gelmez.** Funded browser, live-V3 hosted cutover, audit/soak ve paid-execution runtime kapıları hâlâ `NOT RUN` durumundadır.
 
 | V3 gate | Bugünkü durum |
 |---|---|
 | ENSIP-15/ENS conformance corpus | Source PASS; deployment/cross-service runtime pending |
 | Immutable EIP-712 attestor/domain/expiry/replacement drill | Contract/source PASS; immutable signer provisioning and incident drill pending |
-| Seven addresses: six authority/state contracts + bounded read-only MarketLens | Source/size/tests PASS; Base Sepolia deployment pending |
-| One-time registry suite wiring | Source/tests PASS; deployed binding pending |
+| Seven addresses: six authority/state contracts + bounded read-only MarketLens | Base Sepolia deploy + source verification + candidate runtime-hash validation PASS |
+| One-time registry suite wiring | `configureSuite` receipt and pinned-block binding verification PASS |
 | Commit-reveal | Source/tests PASS; funded browser/Base Sepolia E2E pending |
 | Offers/auctions/unified refund liabilities | Source/fuzz/invariant tests PASS; funded deployed E2E pending |
-| Migration controller/dry run | Source and fixed-block 6/6 eligibility dry run PASS; deployed claim pending |
+| Migration controller/dry run | Controller deployed; fixed-block 6/6 eligibility dry run PASS; claim window/transaction pending |
 | Public npm SDK/React/MCP | `0.1.0` public + SLSA provenance + anonymous exact-version clean-consumer smoke PASS |
 | Official durable paid x402 V2 | Activation-gated source PASS; external services/funded E2E pending |
-| Multisig + independent audit | Safe 1.4.1 2-of-2 deployed; V3 role transfer and independent audit pending |
+| Multisig + independent audit | Safe 1.4.1 2-of-2 is immutable V3 owner/treasury; independent audit pending |
 | Observability/incident drill | Pending |
 | Final metadata/discovery cutover | V2 metadata and hosted draft discovery PASS; live-V3 cutover pending |
 
@@ -31,11 +31,11 @@ Production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` [sepbase.vercel.app](ht
 
 `@sepbase/sdk`, `@sepbase/react` ve `@sepbase/mcp` `0.1.0`, public GitHub source'tan workflow `29246721839` ile public npm'e SLSA provenance taşıyarak yayınlanmıştır. Exact sürümler authorization header olmadan isolated strict-NodeNext consumer'a kurulmuş, type/runtime smoke geçmiştir. Integrity ve attestation kanıtı `evidence/npm-release/2026-07-13-v0.1.0.json` içindedir.
 
-x402 kaynak durumu **activation-gated**'dir. Official x402 `2.18.0` adapter, encrypted external CAS, payment/authorization uniqueness, server-side secret plan persistence, managed signer, on-chain calldata/receipt/post-state doğrulaması ve Workflow `4.6.0` continuation route'a bağlanmıştır. Buna rağmen mevcut V3 manifest address-free draft olduğu ve gerçek facilitator/store/signer/attestor/keeper altyapısı ile funded E2E bulunmadığı için hosted paid availability hâlâ `false` ve route `503` kalır. Environment değerlerinin varlığı tek başına readiness sağlamaz.
+x402 kaynak durumu **activation-gated**'dir. Official x402 `2.18.0` adapter, encrypted external CAS, payment/authorization uniqueness, server-side secret plan persistence, managed signer, on-chain calldata/receipt/post-state doğrulaması ve Workflow `4.6.0` continuation route'a bağlanmıştır. V3 manifest artık deployed `candidate` olsa da managed signer/attestor/keeper, funded E2E, monitoring ve bağımsız inceleme tamamlanmadığı için paid availability `false` ve route fail closed kalır. Environment değerlerinin varlığı tek başına readiness sağlamaz.
 
 V3 Base Sepolia target settlement/payment profile `eip155:84532`, Circle test USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`, 6 decimals'dır. Aynı asset immutable protocol settlement ve x402 payment tarafında kullanılmadan paid execution açılamaz. Gas test ETH ile ayrı kalır; test USDC/test ETH'ye fiat değeri atanmaz. Canlı V2 native profile değişmez.
 
-Base Sepolia V3 release'i henüz hazır değildir. Authenticated RPC ve WalletConnect config hosted source'a alınmıştır; V3 suite deployment/source verification, managed attestor/keeper, provisioned CAS, Safe role operations, hosted rate limiting/monitoring, independent audit ve funded desktop/mobile E2E tamamlanmalıdır. Base mainnet bu release'in hedefi değildir.
+Base Sepolia V3 release'i henüz live değildir. Suite deployment/source verification ve CAS provisioning tamamlandı; managed attestor/keeper, hosted candidate smoke, Safe operasyon runbook'u, rate limiting/monitoring, bağımsız audit ve funded desktop/mobile E2E tamamlanmalıdır. Base mainnet bu release'in hedefi değildir.
 
 ## Durum matrisi
 
@@ -47,22 +47,23 @@ Base Sepolia V3 release'i henüz hazır değildir. Authenticated RPC ve WalletCo
 | Marketplace | Hazır | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
 | Solvency | Hazır | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
 | Existing hosted web | Production draft hazır | `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` canonical origin, 4 page + 8 ABI + 8/39 MCP, disconnected browser ve zero-error log smoke PASS; live-V3 değil |
-| Agent discovery + MCP | Production draft hazır | Schema-4 discovery, OpenAPI, `llms.txt`, 8 current-v2 + 39 V3 tool final-origin smoke PASS; V3 deployment calls draft nedeniyle fail closed |
+| V3 contract candidate | Zincirde hazır | Yedi source-verified adres, locked wiring, 8 başarılı receipt ve pinned-block candidate doğrulaması PASS; live cutover değil |
+| Agent discovery + MCP | Production draft hazır | Schema-4 discovery, OpenAPI, `llms.txt`, 8 current-v2 + 39 V3 tool final-origin smoke PASS; candidate hosted redeploy/smoke bekliyor |
 | x402 quote | Ücretsiz quote hazır | Production HMAC key ID `sepbase-quote-2026-07-13-v1` ile short-lived quote PASS; paid execution unavailable |
 | x402 paid execution | Source-ready / activation-gated | Runtime wiring ve local failure/replay tests mevcut; live V3, external services, funded E2E ve audit yok |
-| Entegrasyon | Kısmen hazır | Manifest/ABI/API/OpenAPI/`llms.txt`, hosted agent routes ve public/provenanced packages hazır; deployed-V3 runtime bekliyor |
+| Entegrasyon | Kısmen hazır | Candidate manifest/ABI/API/OpenAPI/`llms.txt` ve public/provenanced packages hazır; hosted candidate ve funded runtime kanıtı bekliyor |
 | CI tanımı | Doğrulandı | SHA-pinned GitHub Actions release gates ve npm publish workflow `29246721839` başarılı; branch protection ayrıca yönetilmeli |
 | Release gate | Hazır | `pnpm release:check` environment/deployment girdilerini; `pnpm hosted:check` final-origin page/manifest/ABI/OpenAPI/llms/MCP/x402 parity'sini kontrol eder |
 
 ## Production öncesi zorunlu
 
-1. **V3 deployment:** Yedi no-proxy adres Base Sepolia'ya deploy/source-verify edilmeli; dört registry binding'i, Universal Resolver ve MarketLens binding'leri manifest/ABI/runtime hash/receipt ile kanıtlanmalıdır.
+1. **V3 hosted candidate:** Tamamlanan deploy/source-verify/binding kanıtı final origin'e alınmalı; manifest/ABI/OpenAPI/MCP parity ve pinned-block read smoke tekrarlanmalıdır.
 2. **Authenticated RPC:** Server-only `RPC_URL` hosted ortamda tanımlanmıştır; sohbette açığa çıkan credential rotate edilmeli, ardından rate-limit/availability monitoring eklenmelidir. Provider URL'si hiçbir `NEXT_PUBLIC_*`, manifest, hata veya log alanına yazılmamalıdır.
 3. **WalletConnect:** Project ID production deployment'tadır; gerçek iOS/Android connect, chain-switch, disconnect-all ve funded transaction smoke'u çalışmalıdır.
 4. **Funded V3 hosted E2E:** External normalization attestation, commit/reveal, resolver/primary, fixed/offer/auction ve bütün claim/refund yolları desktop/mobile wallet'larla final origin üzerinde receipt/post-state ile doğrulanmalıdır.
 5. **MCP edge güvenliği:** Streamable HTTP Origin doğrulaması, bounded body/timeouts, rate limiting ve abuse monitoring production trafiğine açılmadan tamamlanmalıdır.
 6. **Trusted publishing:** Üç npm package için `publish-packages.yml` + `npm-production` GitHub OIDC trusted publisher tanımlanmalı; doğrulandıktan sonra bootstrap granular token revoke edilmelidir.
-7. **Yetki operasyonu:** Base Sepolia 2-of-2 Safe hazırdır; V3 owner/treasury rolleri deploy/cutover runbook'uyla bu adrese bağlanmalı, raw deployer key rutin admin aracı olmamalıdır.
+7. **Yetki operasyonu:** Base Sepolia 2-of-2 Safe V3 owner/treasury olarak bağlıdır; admin/cutover runbook'u doğrulanmalı, raw deployer key rutin admin aracı olmamalıdır.
 8. **Bağımsız audit:** Mainnet veya ekonomik değer öncesi kontrat, deployment/admin runbook'u ve agent/payment trust boundary bağımsız güvenlik incelemesinden geçmelidir.
 9. **Hosted write smoke:** V3 cutover sonrasında final domain üzerinde wallet connect, register, referral deep link, resolver, primary, list/offer/auction/buy/claim/refund ve cross-origin SDK akışı çalıştırılmalıdır.
 

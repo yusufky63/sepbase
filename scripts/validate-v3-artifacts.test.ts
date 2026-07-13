@@ -47,7 +47,7 @@ async function manifestOverride(
 }
 
 const report = await validateV3Artifacts({ root });
-assert.equal(report.releaseStatus, "draft");
+assert.ok(["draft", "candidate", "live"].includes(report.releaseStatus));
 assert.equal(Object.keys(report.moduleAbiSha256).length, 7);
 
 const releaseDrift = await manifestOverride((manifest) => {
@@ -75,11 +75,34 @@ await assert.rejects(
   /manifest validation failed/i,
 );
 
-const candidateWithoutEvidence = await manifestOverride((manifest) => {
-  manifest.releaseStatus = "candidate";
-});
+const candidateWithoutEvidence = JSON.parse(
+  await readFile(manifestPath, "utf8"),
+) as V3SuiteManifest;
+candidateWithoutEvidence.releaseStatus = "candidate";
+for (const key of V3_SUITE_MODULE_KEYS) {
+  candidateWithoutEvidence.contracts[key].address = null;
+  candidateWithoutEvidence.contracts[key].runtimeCodeHash = null;
+}
+candidateWithoutEvidence.normalization.attestor = null;
+candidateWithoutEvidence.wiring.suiteConfigured = false;
+candidateWithoutEvidence.deployment = {
+  blockNumber: null,
+  deployedAt: null,
+  transactionHashes: [],
+  owner: null,
+  treasury: null,
+};
+candidateWithoutEvidence.suiteReleaseId = await calculateV3SuiteReleaseId(
+  candidateWithoutEvidence,
+);
+const candidateWithoutEvidenceOverride = new Map<string, Uint8Array>([
+  [manifestPath, Buffer.from(JSON.stringify(candidateWithoutEvidence))],
+]);
 await assert.rejects(
-  validateV3Artifacts({ root, readFile: readerWith(candidateWithoutEvidence) }),
+  validateV3Artifacts({
+    root,
+    readFile: readerWith(candidateWithoutEvidenceOverride),
+  }),
   /candidate\/live manifests require/i,
 );
 

@@ -76,15 +76,23 @@
     "productionSecretsConfigured": true,
     "hostedRuntimeRedeployed": false
   },
+  "postDeploymentUpdate": {
+    "observedAt": "2026-07-13T19:10:00.000+03:00",
+    "sourceCommit": "a2d3ac739a3ae5ccaf63fd4bc20c97b124de7c72",
+    "deploymentEvidence": "evidence/v3-deployment/2026-07-13.json",
+    "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
+    "releaseStatus": "candidate",
+    "allSevenSourcesVerified": true,
+    "paidExecutionAvailable": false
+  },
   "releaseBlockers": [
     "Authenticated RPC_URL, WalletConnect and fail-closed encrypted-CAS source are production-deployed and hosted-smoked, but no funded wallet transaction or provisioned CAS runtime was exercised.",
     "The supplied authenticated RPC credential was exposed in chat and must be rotated after setup.",
     "No external managed normalization issuer is configured or funded-E2E verified for the immutable attestor.",
-    "The current SOURCE_COMMIT environment value does not equal the clean reviewed HEAD and therefore cannot broadcast.",
     "Encrypted CAS source, Neon resource, production secrets and checksum-guarded schema are ready, but fresh hosted authenticated smoke, backup/restore and distributed concurrency evidence are pending.",
     "No managed keeper signer endpoint is configured.",
     "No keeper address, per-order/daily limit, USDC allowance/balance or test-ETH gas evidence exists.",
     "Paid x402 monitoring, abuse protection, reconciliation/refund drill, independent review and funded Base Sepolia E2E remain pending."
   ],
-  "conclusion": "Contract deployment inputs pass the non-broadcast source/chain preflight, but immutable-attestor and operational release prerequisites intentionally prevent broadcast and paid activation."
+  "conclusion": "The preflight was followed by a successful seven-contract Base Sepolia deployment, one-time suite configuration, source verification and candidate-manifest promotion. Live cutover and paid activation remain blocked by the listed operational acceptance gates."
 }

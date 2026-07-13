@@ -133,12 +133,22 @@ V3_LIVE_ACTIVATION_WRITE=true pnpm manifest:v3:live
 pnpm manifest:generate
 ```
 
-The 2026-07-13 non-broadcast ceremony passed against Base Sepolia and is recorded in
-`evidence/v3-preflight/2026-07-13.json`. Broadcast remains intentionally blocked:
-the configured immutable attestor has no reviewed external issuer, no managed keeper
-signer exists, and no funded paid-x402 E2E stack exists. The Neon resource, production
-CAS secrets and checksum-guarded schema are now provisioned, but a new hosted deployment,
-authenticated route smoke, distributed-concurrency/restore evidence and monitoring remain.
+The 2026-07-13 non-broadcast ceremony is recorded in
+`evidence/v3-preflight/2026-07-13.json`. The subsequent authorized broadcast deployed
+seven no-proxy contracts from source commit
+`a2d3ac739a3ae5ccaf63fd4bc20c97b124de7c72`; all seven sources were verified and
+`configureSuite` permanently locked the four stateful registry bindings. Canonical
+receipts, addresses, blocks and candidate limits are recorded in
+`evidence/v3-deployment/2026-07-13.json`.
+
+`pnpm manifest:v3:promote` verified the CREATE/configuration transactions, runtime
+bytecode hashes, versions, authorities, settlement metadata, economics and helper
+bindings at a pinned confirmed block, then wrote release ID
+`sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34`
+with `releaseStatus: candidate`. This is not a live promotion. The configured immutable
+attestor still has no reviewed external issuer, no managed keeper signer exists, and no
+funded paid-x402 E2E stack exists. Neon/CAS is provisioned; hosted deployment/smoke,
+distributed-concurrency/restore evidence and monitoring remain.
 Authenticated production RPC,
 WalletConnect and the fail-closed encrypted-CAS source are now deployed and hosted-
 smoked in `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy`. The 22 July–20 October window is only

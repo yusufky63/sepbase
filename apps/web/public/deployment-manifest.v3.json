@@ -1,8 +1,8 @@
 {
   "schemaVersion": 4,
   "suiteVersion": "3.0.0",
-  "releaseStatus": "draft",
-  "suiteReleaseId": "sha256:e57be6cdfbf141f9acf5e38338661e133f2887f7be40a2f009a5aad5a3dc051a",
+  "releaseStatus": "candidate",
+  "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
   "chainId": 84532,
   "chainName": "Base Sepolia",
   "testnet": true,
@@ -43,70 +43,79 @@
     "profileId": "ensip15:@adraffy/ens-normalize@1.11.1:unicode-17.0.0:cldr-47",
     "profileHash": "0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638",
     "fixtureSha256": "d912fe8e376a22b9e67483afc2fa8fac2cc42244ca4993046843d6693d8c7e49",
-    "attestor": null,
+    "attestor": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
     "maxAttestationValiditySeconds": "900"
   },
   "contracts": {
     "registry": {
-      "address": null,
+      "address": "0xE992C59bd54DF6EEDa146dd7Ce4D676182AA4245",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameRegistryV3.json",
       "abiSha256": "b3f1361d1083da21568978e194ebabbf1f1530ff7c27bb53b8aef64468c9c43b",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0x6828898ab64e921488f5f6635c6762c21292587953ac6b1f4190f7135590cd80"
     },
     "controller": {
-      "address": null,
+      "address": "0xFD9FFC18d4528b4C5e36911673FF57b1395Fee21",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameControllerV3.json",
       "abiSha256": "5ba27fd0e780bce23503ea9838379f85b9c612ee414d7391471808f52455e01d",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0xe9f90ab8b85055c3344795031bb42376feabe2925059d1193dd131fb44044cdb"
     },
     "resolver": {
-      "address": null,
+      "address": "0xd0B3aA5E5Be6c783eFf4c2C0dC2d74ca2d13D25b",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameResolverV3.json",
       "abiSha256": "a59ccf011d8ab3ab3949d35728a85eb2cd4ef9b31b1dfa81b9fc156139bc1a47",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0xf2a5fe459e565d0056b87ef2e5ed6e4c3e607e2dce256895fd584701b663cba8"
     },
     "universalResolver": {
-      "address": null,
+      "address": "0xFBAA8396d1A170a6cb0f9187B14E73758B104c5E",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameUniversalResolverV3.json",
       "abiSha256": "c5531cf990c6547edb44aebd333841ba5255b60dfa7ac1c88d68759a3c3cb326",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0xa021021a28287e11de05930f833f401db650ef20626cb61551dd356917caea3f"
     },
     "marketplace": {
-      "address": null,
+      "address": "0xC67Bc2B9d0F58dD41A36AEf970c7f110f642D521",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameMarketplaceV3.json",
       "abiSha256": "bc87508f6e42621fa8db7561a29584400f65a870ef88e6ce2bb6ead29e85dda7",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0x471e4f84607a5abb29dbdb0fa85482d199f7461a81a29d3e1ed35c8cc9f19af8"
     },
     "marketLens": {
-      "address": null,
+      "address": "0x17A045F4D3F76de65A34991afB5738F45e28d908",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameMarketLensV3.json",
       "abiSha256": "d466c0b987f72dd8fbae1e154ea557e5965b730aab7fe9ed86eb33e4730b5742",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0xec3409358253c1df241e3c77cdb327e846204be9e1fda0ffd2003de68836e96b"
     },
     "migration": {
-      "address": null,
+      "address": "0x707Ab7806eDA18fFC52343a65D15500deE7781C8",
       "version": "3.0.0",
       "abiUrl": "/abi/v3/ChainNameMigrationV3.json",
       "abiSha256": "9ea266452148d4338d253212d4a996792ed69335ca37930b0d64877a61f1065a",
-      "runtimeCodeHash": null
+      "runtimeCodeHash": "0x268aac1a0a951f73a0d1bdbb9650ce6b0dc4de06ea2bb36c30e5458b20e58e50"
     }
   },
   "wiring": {
-    "suiteConfigured": false,
+    "suiteConfigured": true,
     "configureSuiteSelector": "0x3d229c48"
   },
   "deployment": {
-    "blockNumber": null,
-    "deployedAt": null,
-    "transactionHashes": [],
-    "owner": null,
-    "treasury": null
+    "blockNumber": "44094615",
+    "deployedAt": "2026-07-13T15:45:18.000Z",
+    "transactionHashes": [
+      "0xf6b8dddc1a47d15b0673d48475a41b0426f33f60ab304ec39ed4728054e68441",
+      "0xb7af48d7e9a41daaca34baadf6cd750ae2aa9b16451543a28dcec4a194657c99",
+      "0x1d954f7e236623dbd6b23f9e2f8417c83c603f56d5a1dd3783af25745d464dd9",
+      "0x3ede8ca214cca4d666122cd1dc1b13d8ff3f18a4355e7e4a467b3b8967a1e0ed",
+      "0x63ce09b41f1d32148b6772869f955ceb62ca46de3210dfc5f3387bc184819751",
+      "0xb1939a016944a2d3f5d6da29d25a76f0fbc073087c6319216acdfcc857a04e2b",
+      "0xcf3398911d1fbc61321ec534bd8998c6d1c53ac8fb970e302345ce2e499453df",
+      "0xf9b02c9db702455b296443f35e0d13ec70b699e267e89a108da5d6d8614e5f7d"
+    ],
+    "owner": "0x4f1D07EB3BbB6c8c24f96CD5E5A14e4d53Afa630",
+    "treasury": "0x4f1D07EB3BbB6c8c24f96CD5E5A14e4d53Afa630"
   },
   "settlement": {
     "kind": "erc20",
@@ -140,8 +149,8 @@
   "migration": {
     "legacyContract": "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945",
     "sourceChainId": 84532,
-    "startsAt": null,
-    "endsAt": null
+    "startsAt": "1784678400",
+    "endsAt": "1792454400"
   },
   "capabilities": {
     "ensRegistryRead": true,
@@ -184,5 +193,5 @@
     "solidity": "0.8.36",
     "openzeppelin": "5.4.0"
   },
-  "gitCommit": null
+  "gitCommit": "a2d3ac739a3ae5ccaf63fd4bc20c97b124de7c72"
 }
