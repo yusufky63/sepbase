@@ -4,6 +4,8 @@ SEPBASE uses Foundry scripts. Hardhat is not part of the toolchain.
 
 ## Version boundary
 
+The current product target is Base Sepolia (`84532`) only. “Mainnet discipline” in this repository is a quality bar, not an active Base mainnet release plan. Base mainnet would require a fresh seven-address suite and namespace; no Base Sepolia address or name state can be reused there.
+
 The commands below deploy and operate the **current v2 contract**. They do not deploy v3.
 
 V3 is an approved, actively implemented seven-address release: six authority/state contracts plus one bounded read-only MarketLens for ENS/text/Unicode, commit-reveal, fixed+offer+auction marketplace discovery and migration. Base Sepolia deployment and cutover are in scope once the gates below pass. It must use separate versioned deployment records and ABI/manifests. Never overwrite `deployments/84532.json`, point the v2 UI at a partial v3 module, or describe work-in-progress as deployed.
@@ -57,7 +59,7 @@ Required for Base Sepolia broadcast:
 The V3 wrapper additionally requires `SOURCE_COMMIT`,
 `V3_SUITE_CONFIGURATOR_ADDRESS`, `NORMALIZATION_ATTESTOR_ADDRESS`,
 `V3_REVIEWED_MULTISIG_ADDRESSES`, the exact V3 constructor profile from
-`.env.example`, and an explicit future migration window. Owner and treasury
+`.env.example`, and an explicit future Base Sepolia v2-to-v3 migration window. Owner and treasury
 must be allowlisted deployed Safe contracts with threshold at least two; the
 temporary configurator and immutable attestor must remain separate roles.
 If the credential address has an EIP-7702 delegation designator, its exact
@@ -65,6 +67,8 @@ deployed implementation target must additionally appear in
 `V3_ALLOWED_CONFIGURATOR_DELEGATION_TARGETS`; arbitrary contract code and
 unreviewed delegation targets fail closed. A classical EOA leaves this list empty.
 `V3_BROADCAST=false` is the default and runs only fail-closed preflight/gates.
+
+The selected Base Sepolia claim policy requires at least seven days between the deployment preflight and claim-window start, then exactly 90 days of claim availability. The currently reviewed local ceremony values are `2026-07-22T00:00:00Z` through `2026-10-20T00:00:00Z`. These dates migrate eligible names only from the existing Base Sepolia v2 contract into the new Base Sepolia V3 suite; they have no Base mainnet meaning.
 
 Required for the final hosted web release:
 
@@ -128,6 +132,18 @@ pnpm manifest:v3:live
 V3_LIVE_ACTIVATION_WRITE=true pnpm manifest:v3:live
 pnpm manifest:generate
 ```
+
+The 2026-07-13 non-broadcast ceremony passed against Base Sepolia and is recorded in
+`evidence/v3-preflight/2026-07-13.json`. Broadcast remains intentionally blocked:
+the configured immutable attestor has no reviewed external issuer, no managed keeper
+signer exists, and no funded paid-x402 E2E stack exists. The Neon resource, production
+CAS secrets and checksum-guarded schema are now provisioned, but a new hosted deployment,
+authenticated route smoke, distributed-concurrency/restore evidence and monitoring remain.
+Authenticated production RPC,
+WalletConnect and the fail-closed encrypted-CAS source are now deployed and hosted-
+smoked in `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy`. The 22 July–20 October window is only
+the reviewed Base Sepolia v2-to-V3 claim window; it is not a mainnet migration.
+Workflow and facilitator health do not satisfy paid-runtime readiness.
 
 The authenticated `RPC_URL` remains server-only and is passed to Foundry through
 the child environment rather than command-line arguments. Promotion parses the
@@ -202,6 +218,8 @@ Protected Preview deployments may provide `HOSTED_RELEASE_BYPASS_SECRET` from th
 
 At the 2026-07-13 audit, production deployment `dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj` is `Ready` at canonical origin `https://sepbase.vercel.app`. `HOSTED_RELEASE_EXPECTATION=draft pnpm hosted:check` passed four public pages, both manifests, all eight ABI artifacts, OpenAPI/`llms.txt`, exact 8+39 MCP tool inventories, configured-browser-origin and origin-less access, a production-authenticated free x402 quote and the expected paid/V3 draft fail-closed paths. Desktop/mobile browser smoke reported no page or console errors, and a one-hour runtime error-log query returned zero entries. Evidence is `evidence/hosted-release/2026-07-13-draft-production.json`. This is a hosted draft cutover only: all seven V3 addresses remain null, paid execution remains unavailable, and authenticated RPC/WalletConnect/live-V3 funded gates are still open.
 
+The later production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` is also `Ready` on the canonical origin. It adds authenticated Base Sepolia RPC, WalletConnect configuration and the encrypted internal CAS route. Final-origin smoke again passed 4 pages, 8 ABIs and the exact 8+39 MCP inventories; disconnected `/`, `/me` and `/market` browser checks had zero page/console errors, and a 15-minute error-log query returned zero entries. With no CAS resource/secrets the internal route correctly fails closed with `503 CAS_AUTH_NOT_CONFIGURED`; the paid route remains `503 X402_PAID_EXECUTION_AWAITING_V3`. Evidence is `evidence/hosted-release/2026-07-13-cas-source-production.json`. The working tree was dirty when deployed, so the release must be committed and redeployed before it is reproducible from Git.
+
 Before exposing MCP publicly, enforce Origin validation, bounded request size/timeouts, rate limiting and abuse monitoring at the route/hosting boundary. MCP remains read/preparation-only and must never receive a private key, signer, wallet session or broadcast capability.
 
 ## V3 paid x402 execution release gate
@@ -209,6 +227,16 @@ Before exposing MCP publicly, enforce Origin validation, bounded request size/ti
 This section is a release gate, not a configuration-only activation procedure. The activation-gated implementation uses exact-pinned `@x402/core`, `@x402/evm`, `@x402/extensions` `2.18.0` and `workflow` `4.6.0`; it persists pre-payment secret-bearing plans and paid orders in the authenticated encrypted CAS, never returns the secret plan to the caller, and requires exact payment/asset/payTo plus managed-signer bindings. Operational activation additionally requires a compatible live ERC-20 V3 deployment, reviewed facilitator, authenticated RPC, durable service protocol, pre-funded keeper allowance and gas, attestor service, reconciliation/refund runbook, testnet replay/failure E2E and independent security review.
 
 Clients must persist the returned `paymentIdentifier` and `planId`. After any timeout they query `GET /api/x402/registration/status`; they do not create another payment until the durable order is conclusively absent. The status response intentionally omits payment payloads, authorization hashes, quote HMAC material and secret-bearing calldata.
+
+The repository now includes the internal authenticated CAS route at `/api/internal/x402/store`, application-level AES-256-GCM envelopes, PostgreSQL serializable transactions, global payment-authorization/plan/quote uniqueness and monotonically increasing fencing leases. Managed Postgres is provisioned through the Vercel Marketplace; `DATABASE_URL`, `X402_STORE_ENCRYPTION_KEY_ID`, `X402_STORE_ENCRYPTION_KEY` and `X402_IDEMPOTENCY_STORE_AUTH_TOKEN` are scoped to the hosted boundary. Apply or verify the checksum-guarded schema from a trusted shell with:
+
+```bash
+pnpm x402:store:migrate
+```
+
+Set `X402_IDEMPOTENCY_STORE_URL=https://sepbase.vercel.app/api/internal/x402/store` only after the database, schema and secrets exist. The route authenticates before body parsing, has a 512 KiB body limit, never enables CORS, performs no core name/market indexing and fails closed if Postgres or decryption is unavailable. Database backup/restore, encryption-key rotation/re-encryption and reconciliation drills remain acceptance gates.
+
+The creator/configurator wallet may fund the initial **dedicated managed keeper** with Base Sepolia test ETH for gas and test USDC for controller allowance. The client’s x402 payment receiver, keeper address and managed signer address must be the same limited keeper, so a successful settlement replenishes the keeper. Do not copy the creator raw deployment key into Vercel or use `X402_KEEPER_PRIVATE_KEY`; select a managed signer (`turnkey`, cloud KMS or reviewed external service), enforce per-order/daily limits, and retain the Safe as owner/treasury. See `docs/X402_OPERATIONS.md`.
 
 For v3 this release gate is an explicit product target, but it remains disabled until the complete order state machine and section J of `docs/V3_ACCEPTANCE_MATRIX.md` pass. Commit-reveal makes the keeper workflow multi-step: verified payment cannot be treated as completed registration until attestation scope/expiry, commitment age, reveal receipt and configured confirmations reconcile. Evidence must follow `docs/TRANSACTION_EVIDENCE.md`.
 
@@ -225,3 +253,7 @@ For v3 this release gate is an explicit product target, but it remains disabled 
 9. Keep v2 referral/seller claims reachable for the published support period.
 
 No cutover step moves v2 liabilities into v3 treasury accounting.
+
+## Future Base mainnet delta (out of current scope)
+
+A future decision to launch on Base mainnet changes chain ID to `8453`, CAIP-2 to `eip155:8453`, RPC/explorer/facilitator to production services and settlement to the separately verified Base mainnet asset profile. All seven contracts, verification receipts, manifest release ID, keeper funds/limits, audit, soak and incident evidence must be new. Code and schemas are largely reusable, but contracts, namespace/state and economic approval are not; Base Sepolia remains an independent test product.

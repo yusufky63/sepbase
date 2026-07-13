@@ -24,6 +24,8 @@ Bu bölüm 12 Temmuz 2026 tarihli ürün kararıdır ve aşağıdaki v2/V1 metni
 
 İlk v3 release adayı Base Sepolia (`84532`) üzerinde çalışır fakat mainnet standardında tasarlanır:
 
+Bu ürünün mevcut yayın hedefi **yalnız Base Sepolia**'dır. Bu metindeki “mainnet disiplini” güvenlik, kanıt ve operasyon kalitesini ifade eder; Base mainnet deployment'ı, testnet adlarını mainnet'e taşıma veya cross-chain claim bu release'in parçası değildir. Gelecekte Base mainnet kararı verilirse chain `8453`, ayrı settlement/RPC/facilitator profili, yeni yedi kontrat adresi ve ayrı acceptance evidence ile yeni bir release açılır; Base Sepolia kontratları ya da isim state'i yeniden kullanılmaz.
+
 - threat model, bağımsız audit, fuzz/invariant, testnet soak, incident runbook ve multisig olmadan production-ready denmez;
 - bütün contract, API, SDK, MCP ve x402 sonuçları chain ID, contract/suite ID, normalized name, settlement asset ve block/confirmation bağlamı taşır;
 - ekonomik state optimistic UI veya in-memory server state'e emanet edilmez;

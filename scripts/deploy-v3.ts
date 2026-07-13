@@ -23,6 +23,9 @@ const REQUIRED_PROFILE_HASH =
   "0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638";
 const BASE_SEPOLIA_USDC = getAddress("0x036CbD53842c5426634e7929541eC2318f3dCF7e");
 const UINT64_MAX = (1n << 64n) - 1n;
+const DAY_SECONDS = 86_400n;
+const MIN_MIGRATION_NOTICE_SECONDS = 7n * DAY_SECONDS;
+const MIGRATION_WINDOW_SECONDS = 90n * DAY_SECONDS;
 const safeAbi = parseAbi([
   "function getOwners() view returns (address[])",
   "function getThreshold() view returns (uint256)",
@@ -273,8 +276,11 @@ async function preflight(
   const client = createPublicClient({ transport: http(rpcUrl, { retryCount: 2, timeout: 15_000 }) });
   if (await client.getChainId() !== manifest.chainId) fail("RPC chain ID differs from the draft manifest.");
   const latest = await client.getBlock({ blockTag: "latest" });
-  if (authorities.migrationStartsAt <= latest.timestamp) {
-    fail("migration start must remain in the future at deployment preflight.");
+  if (authorities.migrationStartsAt < latest.timestamp + MIN_MIGRATION_NOTICE_SECONDS) {
+    fail("the Base Sepolia v2-to-v3 claim window requires at least seven days of notice after deployment preflight.");
+  }
+  if (authorities.migrationEndsAt - authorities.migrationStartsAt !== MIGRATION_WINDOW_SECONDS) {
+    fail("the selected Base Sepolia v2-to-v3 claim window must remain open for exactly 90 days.");
   }
   const reviewed = reviewedMultisigs();
   if (!reviewed.has(authorities.owner)) {

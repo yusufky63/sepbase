@@ -48,6 +48,7 @@
     "migration:v3:dry-run": "tsx scripts/v3-migration-dry-run.ts",
     "examples:v3:typecheck": "pnpm --filter @sepbase/example-v3-integrations typecheck",
     "packages:smoke": "tsx scripts/package-release-smoke.ts",
+    "x402:store:migrate": "pnpm --filter @sepbase/web x402:store:migrate",
     "hosted:check": "tsx scripts/hosted-release-smoke.ts",
     "clone:reset": "tsx scripts/reset-clone.ts"
   },

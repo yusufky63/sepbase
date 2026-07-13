@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "draft",
+  "environment": "production",
+  "sourceCommit": "6d2e929e389dd8a27572fd69d0f8cc133ca539f4",
+  "sourceTreeClean": false,
+  "deploymentId": "dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy",
+  "deploymentUrl": "https://sepbase-6xg15ascb-yusufky63s-projects.vercel.app",
+  "canonicalOrigin": "https://sepbase.vercel.app",
+  "createdAtEpochMs": 1783955843454,
+  "createdAt": "2026-07-13T15:17:23.454Z",
+  "verification": {
+    "deployment": {
+      "status": "READY",
+      "target": "production",
+      "nodeRuntime": "22.x",
+      "internalCasRouteBundled": true
+    },
+    "hostedDraftSmoke": {
+      "status": "passed",
+      "pages": 4,
+      "abiArtifacts": 8,
+      "v2McpTools": 8,
+      "v3McpTools": 39
+    },
+    "authenticatedRpc": {
+      "status": "passed",
+      "expectedChainId": 84532,
+      "observedChainId": 84532,
+      "credentialRedacted": true
+    },
+    "walletConnect": {
+      "status": "source-deployment-smoke-passed",
+      "connectorRenderedOn": [
+        "/",
+        "/me",
+        "/market"
+      ],
+      "fundedMobileConnectionRun": false
+    },
+    "encryptedCas": {
+      "sourceAndUnitTests": "passed",
+      "route": "/api/internal/x402/store",
+      "unconfiguredStatus": 503,
+      "unconfiguredCode": "CAS_AUTH_NOT_CONFIGURED",
+      "cacheControl": "no-store",
+      "crossOriginResourcePolicy": "same-origin",
+      "databaseProvisioned": false,
+      "schemaApplied": false,
+      "liveConcurrencyRun": false
+    },
+    "paidRegistration": {
+      "status": 503,
+      "code": "X402_PAID_EXECUTION_AWAITING_V3",
+      "network": "eip155:84532",
+      "paidExecutionAvailable": false
+    },
+    "browser": {
+      "status": "passed",
+      "routes": [
+        "/",
+        "/me",
+        "/market"
+      ],
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "walletTransactionExecuted": false
+    },
+    "runtimeErrorLog": {
+      "window": "15m",
+      "level": "error",
+      "entries": 0
+    }
+  },
+  "limits": [
+    "The deployment was built from a dirty local working tree; it is not yet reproducible from the recorded Git commit alone.",
+    "All seven V3 contract addresses remain null in the draft manifest; no V3 transaction was broadcast.",
+    "Neon terms/resource provisioning, DATABASE_URL, CAS authentication/encryption secrets, schema migration and distributed runtime evidence remain pending.",
+    "No managed keeper signer or managed normalization issuer has been provisioned or funded.",
+    "No funded wallet, migration, marketplace or paid x402 execution was run.",
+    "The authenticated RPC credential was exposed in chat and must be rotated."
+  ]
+}

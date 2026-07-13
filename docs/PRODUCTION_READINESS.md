@@ -27,7 +27,7 @@ Canlı v2'nin test/smoke kanıtı bu v3 gate'lerini kapatmaz.
 
 Bu bölüm v2 historical/current durumu anlatır: SEPBASE v2 kontratı Base Sepolia üzerinde canlı, source-verified ve gerçek çoklu hesap write smoke'undan geçmiştir. Metadata URI transaction `0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b` ile final HTTPS API'ye taşınmış ve beş confirmation sonrasında doğrulanmıştır.
 
-Production deployment `dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj` `https://sepbase.vercel.app` üzerinde `Ready` durumundadır. Canonical-origin smoke dört sayfayı, sekiz ABI artifact'ını, sekiz current-v2 MCP tool'unu, 39 opt-in V3 MCP tool'unu ve production-authenticated ücretsiz x402 quote'u doğrulamıştır. Desktop/mobile browser smoke'unda page/console error yoktur; bir saatlik runtime error log sorgusu sıfır kayıt döndürmüştür. Kanıt `evidence/hosted-release/2026-07-13-draft-production.json` içindedir. Bu hosted draft kanıtıdır: yedi V3 adresi hâlâ null, paid execution unavailable ve deployed-V3 kabul satırları açıktır.
+Production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` [sepbase.vercel.app](https://sepbase.vercel.app) üzerinde `Ready` durumundadır. Canonical-origin smoke dört sayfayı, sekiz ABI artifact'ını ve exact 8+39 MCP tool envanterini doğrulamıştır. Authenticated Base Sepolia RPC ve WalletConnect config deployment'a alınmıştır; disconnected `/`, `/me` ve `/market` browser smoke'unda page/console error yoktur. Bu release sırasında PostgreSQL/secrets henüz yoktu ve encrypted CAS route'u doğru şekilde `503 CAS_AUTH_NOT_CONFIGURED` döndürdü; paid route da `503 X402_PAID_EXECUTION_AWAITING_V3` durumundaydı. Neon resource, CAS secrets ve schema daha sonra provision edildi ve yeni deployment/smoke bekliyor. On beş dakikalık error-log sorgusu sıfır kayıt döndürmüştür. Kanıt `evidence/hosted-release/2026-07-13-cas-source-production.json` içindedir. Deployment dirty working tree'den üretildiği için henüz Git commit'inden tek başına reproducible değildir. Bu hosted draft/source kanıtıdır: yedi V3 adresi hâlâ null, paid execution unavailable ve deployed-V3 kabul satırları açıktır.
 
 `@sepbase/sdk`, `@sepbase/react` ve `@sepbase/mcp` `0.1.0`, public GitHub source'tan workflow `29246721839` ile public npm'e SLSA provenance taşıyarak yayınlanmıştır. Exact sürümler authorization header olmadan isolated strict-NodeNext consumer'a kurulmuş, type/runtime smoke geçmiştir. Integrity ve attestation kanıtı `evidence/npm-release/2026-07-13-v0.1.0.json` içindedir.
 
@@ -35,7 +35,7 @@ x402 kaynak durumu **activation-gated**'dir. Official x402 `2.18.0` adapter, enc
 
 V3 Base Sepolia target settlement/payment profile `eip155:84532`, Circle test USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`, 6 decimals'dır. Aynı asset immutable protocol settlement ve x402 payment tarafında kullanılmadan paid execution açılamaz. Gas test ETH ile ayrı kalır; test USDC/test ETH'ye fiat değeri atanmaz. Canlı V2 native profile değişmez.
 
-Değer taşıyan V3 production/mainnet release'i hazır değildir. V3 suite deployment/source verification, authenticated RPC, WalletConnect, Safe role operations, hosted rate limiting/monitoring, independent audit ve funded E2E tamamlanmalıdır.
+Base Sepolia V3 release'i henüz hazır değildir. Authenticated RPC ve WalletConnect config hosted source'a alınmıştır; V3 suite deployment/source verification, managed attestor/keeper, provisioned CAS, Safe role operations, hosted rate limiting/monitoring, independent audit ve funded desktop/mobile E2E tamamlanmalıdır. Base mainnet bu release'in hedefi değildir.
 
 ## Durum matrisi
 
@@ -46,7 +46,7 @@ Değer taşıyan V3 production/mainnet release'i hazır değildir. V3 suite depl
 | Referral | Hazır | On-chain attribution, expected BPS guard, pull-payment claim smoke |
 | Marketplace | Hazır | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
 | Solvency | Hazır | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
-| Existing hosted web | Production draft hazır | `dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj` canonical origin, desktop/mobile ve zero-error log smoke PASS; live-V3 değil |
+| Existing hosted web | Production draft hazır | `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` canonical origin, 4 page + 8 ABI + 8/39 MCP, disconnected browser ve zero-error log smoke PASS; live-V3 değil |
 | Agent discovery + MCP | Production draft hazır | Schema-4 discovery, OpenAPI, `llms.txt`, 8 current-v2 + 39 V3 tool final-origin smoke PASS; V3 deployment calls draft nedeniyle fail closed |
 | x402 quote | Ücretsiz quote hazır | Production HMAC key ID `sepbase-quote-2026-07-13-v1` ile short-lived quote PASS; paid execution unavailable |
 | x402 paid execution | Source-ready / activation-gated | Runtime wiring ve local failure/replay tests mevcut; live V3, external services, funded E2E ve audit yok |
@@ -57,8 +57,8 @@ Değer taşıyan V3 production/mainnet release'i hazır değildir. V3 suite depl
 ## Production öncesi zorunlu
 
 1. **V3 deployment:** Yedi no-proxy adres Base Sepolia'ya deploy/source-verify edilmeli; dört registry binding'i, Universal Resolver ve MarketLens binding'leri manifest/ABI/runtime hash/receipt ile kanıtlanmalıdır.
-2. **Authenticated RPC:** Hosted ortamda rate-limit ve availability hedefi olan server-only `RPC_URL` tanımlanmalıdır. Secret provider URL'si hiçbir `NEXT_PUBLIC_*`, manifest, hata veya log alanına yazılmamalıdır.
-3. **WalletConnect:** Production mobile/QR coverage için project ID eklenmeli ve gerçek iOS/Android wallet smoke'u çalışmalıdır.
+2. **Authenticated RPC:** Server-only `RPC_URL` hosted ortamda tanımlanmıştır; sohbette açığa çıkan credential rotate edilmeli, ardından rate-limit/availability monitoring eklenmelidir. Provider URL'si hiçbir `NEXT_PUBLIC_*`, manifest, hata veya log alanına yazılmamalıdır.
+3. **WalletConnect:** Project ID production deployment'tadır; gerçek iOS/Android connect, chain-switch, disconnect-all ve funded transaction smoke'u çalışmalıdır.
 4. **Funded V3 hosted E2E:** External normalization attestation, commit/reveal, resolver/primary, fixed/offer/auction ve bütün claim/refund yolları desktop/mobile wallet'larla final origin üzerinde receipt/post-state ile doğrulanmalıdır.
 5. **MCP edge güvenliği:** Streamable HTTP Origin doğrulaması, bounded body/timeouts, rate limiting ve abuse monitoring production trafiğine açılmadan tamamlanmalıdır.
 6. **Trusted publishing:** Üç npm package için `publish-packages.yml` + `npm-production` GitHub OIDC trusted publisher tanımlanmalı; doğrulandıktan sonra bootstrap granular token revoke edilmelidir.
@@ -66,7 +66,7 @@ Değer taşıyan V3 production/mainnet release'i hazır değildir. V3 suite depl
 8. **Bağımsız audit:** Mainnet veya ekonomik değer öncesi kontrat, deployment/admin runbook'u ve agent/payment trust boundary bağımsız güvenlik incelemesinden geçmelidir.
 9. **Hosted write smoke:** V3 cutover sonrasında final domain üzerinde wallet connect, register, referral deep link, resolver, primary, list/offer/auction/buy/claim/refund ve cross-origin SDK akışı çalıştırılmalıdır.
 
-Server-only `RPC_URL`, WalletConnect project ID ve deployed/live V3 manifest tamamlanana kadar `pnpm release:check` bilerek başarısız olur. Paid x402 yalnız environment değişkeniyle açılamaz; durable store, managed signer, facilitator, reconciliation, monitoring ve funded E2E birlikte kanıtlanmalıdır.
+Deployed/live V3 manifest ve diğer release kanıtları tamamlanana kadar `pnpm release:check` bilerek başarısız olabilir. Paid x402 yalnız environment değişkeniyle açılamaz; provisioned durable store, managed signer, facilitator, reconciliation, monitoring ve funded E2E birlikte kanıtlanmalıdır.
 
 ## Mevcut otomasyon ve sonraki kalite adımları
 

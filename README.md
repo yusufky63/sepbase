@@ -18,7 +18,7 @@ SEPBASE is an independent, single-chain onchain name registry for Base Sepolia. 
 | Marketplace fee | `0%` for the current deployment |
 | Design direction | Modular Typography, black/white, Base Blue `#0000ff` |
 
-> Repository/live status: current source is `Ready` on protected Preview deployment `dpl_2pEWFeWsqSestVf7n4xkZwLicAci` at `https://sepbase-fd1ancpvz-yusufky63s-projects.vercel.app`. Vercel-authenticated checks verify schema-4 discovery, OpenAPI `1.7.0`, `llms.txt`, `/me`, the current migration-aware 39-tool V3 MCP inventory and fail-closed V3/x402 routes. The Preview still builds with a localhost canonical origin because Preview environment variables are not provisioned, and the public `sepbase.vercel.app` alias remains the previous v2 web release; neither is production-promotable until the documented release gates pass.
+> Repository/live status: current source is `Ready` on production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` at [sepbase.vercel.app](https://sepbase.vercel.app). Final-origin checks pass schema-4 discovery, OpenAPI `1.7.0`, `llms.txt`, four public pages, all eight ABIs and the exact 8+39 MCP inventories. Authenticated Base Sepolia RPC and WalletConnect configuration are present. Managed PostgreSQL, encrypted-CAS secrets and schema were provisioned after that deployment and require a fresh release/smoke before runtime availability is claimed; V3 addresses remain null and paid execution remains unavailable.
 
 ## V3 production target
 
@@ -164,6 +164,8 @@ Copy `.env.example` to `.env` for local configuration. Never commit `.env` or ex
 | `X402_PAY_TO_ADDRESS` / `X402_PAYMENT_ASSET_ADDRESS` | Server only | Exact receiver/asset bindings; the asset must equal immutable ERC-20 protocol settlement |
 | `X402_KEEPER_ADDRESS` / `X402_KEEPER_SIGNER_PROVIDER` | Server only | Limited keeper identity and external managed signer reference; raw keys are forbidden |
 | `X402_IDEMPOTENCY_STORE_URL` | Server only | Authenticated encrypted CAS for durable payment-ID/order and secret-plan state |
+| `DATABASE_URL` | Server only | Managed Postgres used only by the approved paid-x402 execution boundary |
+| `X402_STORE_ENCRYPTION_KEY_ID` / `X402_STORE_ENCRYPTION_KEY` | Server only | Versioned AES-256-GCM application-encryption key for paid-x402 CAS payloads |
 | `SOURCE_COMMIT` | Build only | Optional explicit 40-character source SHA for generated provenance |
 | `PRIVATE_KEY` | Deployment only | Foundry deployment/operations; never required by the web app |
 | `OWNER_ADDRESS` / `TREASURY_ADDRESS` | Deployment only | Deployment role checks |
@@ -241,18 +243,22 @@ MCP has no transaction authority: current-v2 `/api/mcp` may return guarded `prep
 
 ## Deployment status
 
-The Base Sepolia **v2** contract is deployed, source-verified, and has passed a real multi-account registration/referral/marketplace smoke. V3 currently has local source, draft artifacts and tests only: it has no deployment addresses, verified source receipts or funded V3 transaction smoke. The hosted dApp can be deployed independently and never receives the deployment private key. The new agent/MCP/x402 quote and V3 API surfaces still require an independent web rollout and live endpoint smoke before they can be described as hosted.
+The Base Sepolia **v2** contract is deployed, source-verified, and has passed a real multi-account registration/referral/marketplace smoke. V3 currently has local source, draft artifacts and tests only: it has no deployment addresses, verified source receipts or funded V3 transaction smoke. The current agent/MCP/x402 quote, V3 API and fail-closed encrypted-CAS surfaces are hosted, but no deployment private key is present and this does not make paid execution or V3 live.
 
 The Vercel project uses `apps/web` as its Root Directory, includes workspace source files outside that directory, and installs dependencies from the repository-level pnpm workspace.
 
-Before treating the project as a value-bearing mainnet release:
+The current product/release target is Base Sepolia only. “Mainnet discipline” means that testnet deployment still requires production-grade controls; it does not announce a Base mainnet launch or promise that testnet names will transfer to mainnet.
 
-1. Configure a final HTTPS origin, authenticated server RPC, and WalletConnect project ID.
-2. Update the onchain metadata base URI to the final hosted API and regenerate the manifest.
-3. Move owner and treasury operations to a reviewed multisig.
-4. Add hosted rate limiting, monitoring, and browser E2E gates.
+Before treating the Base Sepolia V3 release as operational:
+
+1. Deploy and source-verify the seven-address V3 suite, then regenerate a non-null manifest and final metadata bindings.
+2. Redeploy the provisioned managed PostgreSQL CAS and prove authenticated runtime, distributed concurrency, backup and restore.
+3. Provision separate managed keeper and normalization-issuer keys; keep owner/treasury on the reviewed 2-of-2 Safe and fund only bounded Base Sepolia test balances.
+4. Add hosted rate limiting, monitoring and funded desktop/mobile browser E2E gates.
 5. Complete an independent contract and operations audit.
-6. Deploy and independently review the external facilitator/CAS/signer/attestor/workflow stack, fund and bound the keeper, pass section J funded failure/replay E2E, then promote a paid-enabled live manifest; environment values alone never satisfy activation readiness.
+6. Independently review the facilitator/CAS/signer/attestor/workflow stack, pass section J funded failure/replay E2E, then promote a paid-enabled live manifest; environment values alone never satisfy activation readiness.
+
+A future Base mainnet release would use chain `8453`, a separate seven-address deployment and manifest, Base mainnet USDC/facilitator/RPC configuration and real-value limits/audit evidence. Base Sepolia names would remain testnet state unless a separately designed cross-chain claim policy were approved.
 
 Run `pnpm release:check` to enforce the hosted release inputs. See [Agent Integration](docs/AGENT_INTEGRATION.md), [Production Readiness](docs/PRODUCTION_READINESS.md), [Deployment Operations](docs/DEPLOYMENT.md), [Integration Guide](INTEGRATION_GUIDE.md), [Security Policy](SECURITY.md), and [Project Specification](PROJECT_SPEC.md) for the canonical details.
 
