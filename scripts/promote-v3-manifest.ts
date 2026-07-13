@@ -45,6 +45,8 @@ type VerifiedChainEvidence = {
   deployedAt: string;
 };
 
+const ZERO_HASH = `0x${"0".repeat(64)}`;
+
 function fail(message: string): never {
   throw new Error(`V3 manifest promotion failed: ${message}`);
 }
@@ -71,23 +73,45 @@ function sha256(bytes: Uint8Array) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function assertLocalSourceCommit(root: string, expectedCommit: string) {
-  const head = spawnSync("git", ["rev-parse", "HEAD"], {
-    cwd: root,
-    encoding: "utf8",
-    shell: false,
-  });
+const DEPLOYMENT_BOUND_PATHS = [
+  "contracts/src/v3",
+  "contracts/script/DeployV3.s.sol",
+  "contracts/foundry.toml",
+  "contracts/remappings.txt",
+  "apps/web/public/abi/v3",
+  "apps/web/public/deployment-manifest.v3.json",
+  "fixtures/name-normalization.json",
+  "package.json",
+  "pnpm-lock.yaml",
+  "scripts/deploy-v3.ts",
+] as const;
+
+function assertLocalDeploymentSource(root: string, expectedCommit: string) {
   const status = spawnSync("git", ["status", "--porcelain", "--untracked-files=normal"], {
     cwd: root,
     encoding: "utf8",
     shell: false,
   });
+  const commit = spawnSync("git", ["cat-file", "-e", `${expectedCommit}^{commit}`], {
+    cwd: root,
+    encoding: "utf8",
+    shell: false,
+  });
+  const deploymentDiff = spawnSync(
+    "git",
+    ["diff", "--quiet", expectedCommit, "--", ...DEPLOYMENT_BOUND_PATHS],
+    { cwd: root, encoding: "utf8", shell: false },
+  );
   if (
-    head.status !== 0
-    || status.status !== 0
-    || head.stdout.trim() !== expectedCommit
+    status.status !== 0
     || status.stdout.trim() !== ""
-  ) fail("promotion requires SOURCE_COMMIT to equal a clean git HEAD.");
+    || commit.status !== 0
+    || deploymentDiff.status !== 0
+  ) {
+    fail(
+      "promotion requires a clean tree whose deployment-bound sources exactly match SOURCE_COMMIT.",
+    );
+  }
 }
 
 async function readAbi(root: string, key: V3SuiteModuleKey): Promise<Abi> {
@@ -127,7 +151,9 @@ async function verifyChainEvidence(
       receipt.status !== "success"
       || receipt.transactionHash.toLowerCase() !== module.hash
       || receipt.blockNumber !== module.recordedBlockNumber
-      || receipt.blockHash.toLowerCase() !== module.recordedBlockHash
+      || receipt.blockHash.toLowerCase() === ZERO_HASH
+      || (module.recordedBlockHash !== null
+        && receipt.blockHash.toLowerCase() !== module.recordedBlockHash)
       || !sameAddress(receipt.contractAddress, module.address)
       || receipt.to !== null
       || transaction.to !== null
@@ -145,7 +171,9 @@ async function verifyChainEvidence(
     configureReceipt.status !== "success"
     || configureReceipt.transactionHash.toLowerCase() !== evidence.configure.hash
     || configureReceipt.blockNumber !== evidence.configure.recordedBlockNumber
-    || configureReceipt.blockHash.toLowerCase() !== evidence.configure.recordedBlockHash
+    || configureReceipt.blockHash.toLowerCase() === ZERO_HASH
+    || (evidence.configure.recordedBlockHash !== null
+      && configureReceipt.blockHash.toLowerCase() !== evidence.configure.recordedBlockHash)
     || !sameAddress(configureReceipt.to, evidence.configure.to)
     || !sameAddress(configureTransaction.to, evidence.configure.to)
     || getAddress(configureTransaction.from) !== evidence.configure.from
@@ -284,7 +312,7 @@ export async function promoteV3Manifest(options: PromoteV3ManifestOptions) {
   if (evidence.commit !== expectedCommit) {
     fail("run-latest source commit differs from SOURCE_COMMIT.");
   }
-  assertLocalSourceCommit(root, expectedCommit);
+  assertLocalDeploymentSource(root, expectedCommit);
   assertV3DeploymentArguments(evidence, draft);
   const verified = await verifyChainEvidence(root, rpcUrl, draft, evidence);
   const candidate = await buildCandidate(draft, evidence, verified);

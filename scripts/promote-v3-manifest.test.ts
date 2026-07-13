@@ -211,9 +211,14 @@ assert.throws(
 
 const fakeBlockHash = structuredClone(positive);
 fakeBlockHash.receipts[0]!.blockHash = `0x${"0".repeat(64)}`;
+const parsedWithOpStackPlaceholder = parseV3BroadcastRun(fakeBlockHash, draft.chainId);
+assert.equal(parsedWithOpStackPlaceholder.modules.registry.recordedBlockHash, null);
+
+const malformedBlockHash = structuredClone(positive);
+malformedBlockHash.receipts[0]!.blockHash = "0x1234";
 assert.throws(
-  () => parseV3BroadcastRun(fakeBlockHash, draft.chainId),
-  /non-zero bytes32/i,
+  () => parseV3BroadcastRun(malformedBlockHash, draft.chainId),
+  /bytes32 hash/i,
 );
 
 const duplicateCreate = structuredClone(positive);
@@ -255,4 +260,4 @@ assert.throws(
   /4 confirmations; 5 are required/i,
 );
 
-console.log("V3 promotion parser tests passed (1 positive, 8 fail-closed cases).");
+console.log("V3 promotion parser tests passed (positive + OP Stack placeholder, 8 fail-closed cases).");

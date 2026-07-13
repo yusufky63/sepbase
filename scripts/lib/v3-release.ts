@@ -34,7 +34,7 @@ export type V3RunModuleEvidence = {
   from: Address;
   arguments: string[];
   recordedBlockNumber: bigint;
-  recordedBlockHash: Hash;
+  recordedBlockHash: Hash | null;
 };
 
 export type V3ConfigureEvidence = {
@@ -43,7 +43,7 @@ export type V3ConfigureEvidence = {
   to: Address;
   arguments: [Address, Address, Address, Address];
   recordedBlockNumber: bigint;
-  recordedBlockHash: Hash;
+  recordedBlockHash: Hash | null;
 };
 
 export type ParsedV3BroadcastRun = {
@@ -112,6 +112,14 @@ function hashValue(value: unknown, label: string): Hash {
   return input.toLowerCase() as Hash;
 }
 
+function recordedBlockHashValue(value: unknown, label: string): Hash | null {
+  const input = stringValue(value, label);
+  if (!/^0x[0-9a-fA-F]{64}$/.test(input)) {
+    fail(`${label} must be a bytes32 hash.`);
+  }
+  return input.toLowerCase() === ZERO_HASH ? null : input.toLowerCase() as Hash;
+}
+
 function quantity(value: unknown, label: string) {
   const input = stringValue(value, label);
   if (!/^0x[0-9a-fA-F]+$/.test(input)) fail(`${label} must be a hex quantity.`);
@@ -142,7 +150,7 @@ function receiptByHash(rawReceipts: unknown[]) {
     const hash = hashValue(receipt.transactionHash, `receipts[${index}].transactionHash`);
     if (result.has(hash)) fail(`receipt hash ${hash} is duplicated.`);
     if (receipt.status !== "0x1") fail(`receipt ${hash} is not successful.`);
-    hashValue(receipt.blockHash, `receipt ${hash} blockHash`);
+    recordedBlockHashValue(receipt.blockHash, `receipt ${hash} blockHash`);
     quantity(receipt.blockNumber, `receipt ${hash} blockNumber`);
     result.set(hash, receipt);
   }
@@ -177,7 +185,7 @@ export function parseV3BroadcastRun(
     const receipt = receiptsByHash.get(hash);
     if (!receipt) fail(`transaction ${hash} has no matching receipt.`);
     const recordedBlockNumber = quantity(receipt.blockNumber, `receipt ${hash} blockNumber`);
-    const recordedBlockHash = hashValue(receipt.blockHash, `receipt ${hash} blockHash`);
+    const recordedBlockHash = recordedBlockHashValue(receipt.blockHash, `receipt ${hash} blockHash`);
     const transaction = objectValue(entry.transaction, `transactions[${index}].transaction`);
     const from = addressValue(transaction.from, `transactions[${index}].transaction.from`);
     const to = nullableAddress(transaction.to, `transactions[${index}].transaction.to`);
