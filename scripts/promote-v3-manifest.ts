@@ -289,6 +289,10 @@ async function verifyCandidateWithSdk(
   rpcUrl: string,
   candidate: V3SuiteManifest,
 ) {
+  // The preceding receipt and bytecode verification consumes the provider's
+  // current compute-unit window. Start the independent SDK binding audit in a
+  // fresh window so a valid deployment is not rejected by a transient 429.
+  await new Promise<void>((resolveWait) => setTimeout(resolveWait, 1_100));
   const adapterOrigin = "https://v3-promotion.invalid";
   const context = await createV3SuiteContext({
     manifestUrl: `${adapterOrigin}/deployment-manifest.v3.json`,
