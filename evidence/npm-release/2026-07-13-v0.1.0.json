@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "repository": "https://github.com/yusufky63/sepbase",
+  "repositoryVisibility": "public",
+  "sourceCommit": "5ff4613124bc571e21fcddf0d0b1d4231f1b9fd4",
+  "workflowRunId": 29246721839,
+  "workflowUrl": "https://github.com/yusufky63/sepbase/actions/runs/29246721839",
+  "workflowConclusion": "success",
+  "packages": [
+    {
+      "name": "@sepbase/sdk",
+      "integrity": "sha512-zkuheybrKbzu03fBYFGqvOu28jyxx73jTk8kY5tXDViv7Vir6+kzLifpnR6+5oJBvfm4aAzawdG9/Cwe4i8FdQ==",
+      "shasum": "44d94befcf32575a5aa663bad24760a0e6447bb1",
+      "tarball": "https://registry.npmjs.org/@sepbase/sdk/-/sdk-0.1.0.tgz",
+      "attestations": "https://registry.npmjs.org/-/npm/v1/attestations/@sepbase%2fsdk@0.1.0",
+      "provenancePredicateType": "https://slsa.dev/provenance/v1",
+      "transparencyLogIndex": 2163020891
+    },
+    {
+      "name": "@sepbase/react",
+      "integrity": "sha512-q2GCLzOZgeivyDwPeHgt86GoQHYBWqL07S4SkDP4zmJ8tNkjse6F3D05LKQrGFqBCuOgYHi+7bobRj9SnmTdHg==",
+      "shasum": "3a0e1cd4daef0d3591382ea4ea8d3ad13972e119",
+      "tarball": "https://registry.npmjs.org/@sepbase/react/-/react-0.1.0.tgz",
+      "attestations": "https://registry.npmjs.org/-/npm/v1/attestations/@sepbase%2freact@0.1.0",
+      "provenancePredicateType": "https://slsa.dev/provenance/v1",
+      "transparencyLogIndex": 2163021111
+    },
+    {
+      "name": "@sepbase/mcp",
+      "integrity": "sha512-nIYyoWQvPaL9zesZB4fKrDAMh4yjA9O1IIV5kCb02y4LEmLXM0vVvwokDZJELP3TvMJWj4jBycpAGcCwbXXYaQ==",
+      "shasum": "05e40b6f7a9fbd130044bdb321a3b739ff86e722",
+      "tarball": "https://registry.npmjs.org/@sepbase/mcp/-/mcp-0.1.0.tgz",
+      "attestations": "https://registry.npmjs.org/-/npm/v1/attestations/@sepbase%2fmcp@0.1.0",
+      "provenancePredicateType": "https://slsa.dev/provenance/v1",
+      "transparencyLogIndex": 2163021442
+    }
+  ],
+  "verification": {
+    "anonymousRegistrySmoke": {
+      "status": "passed",
+      "command": "pnpm exec tsx scripts/package-release-smoke.ts --registry 0.1.0",
+      "authorizationHeader": false,
+      "strictTypecheck": true,
+      "runtimeImports": true,
+      "normalizationRuntime": true
+    }
+  },
+  "remainingOperations": [
+    "Configure the GitHub Actions trusted publisher for each package on npm before the next release.",
+    "Revoke the bootstrap granular access token only after the trusted publisher configuration is confirmed."
+  ]
+}

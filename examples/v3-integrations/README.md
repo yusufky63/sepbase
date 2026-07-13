@@ -10,5 +10,12 @@ Run from the repository root:
 pnpm examples:v3:typecheck
 ```
 
-The public `@sepbase/*` packages are not yet published, so this fixture
-intentionally does not present an `npm install` command as currently runnable.
+The exact public packages are available with npm provenance:
+
+```bash
+pnpm add @sepbase/sdk@0.1.0 @sepbase/react@0.1.0 @sepbase/mcp@0.1.0
+```
+
+This fixture intentionally keeps `workspace:*` dependencies so CI validates
+the next source revision before publication. The independent registry smoke is
+`pnpm exec tsx scripts/package-release-smoke.ts --registry 0.1.0`.

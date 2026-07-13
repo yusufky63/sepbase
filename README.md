@@ -35,7 +35,7 @@ V3 supersedes the former future-version exclusions and targets:
 - official paid x402 V2 execution using a facilitator, durable idempotency/workflow and a limited managed keeper;
 - explicit v2 migration, final HTTPS metadata cutover, multisig, independent audit and production observability.
 
-Local source evidence and live release evidence are different. `pnpm contracts:test` currently passes 62 V3 tests within a 91/91 combined contract run, and the seven-module artifact validator is green; neither result supplies Base Sepolia V3 addresses, hosted parity, public npm provenance, audit, soak or paid execution. Current truth:
+Local source evidence and live release evidence are different. `pnpm contracts:test` currently passes 62 V3 tests within a 91/91 combined contract run, and the seven-module artifact validator is green; neither result supplies Base Sepolia V3 addresses, audit, soak or paid execution. Public npm publication and hosted-draft parity have separate evidence below and do not make V3 live. Current truth:
 
 | Capability | Live v2 | V3 source / release target |
 |---|---|---|
@@ -44,7 +44,7 @@ Local source evidence and live release evidence are different. `pnpm contracts:t
 | Resolver | Protocol-specific address/profile | Separate ENSIP-10 public resolver + bounded ENSIP-23 simple resolve/reverse helper; no CCIP-Read/smart multicall claim |
 | Marketplace | Fixed listing only | Fixed + offers + English auctions |
 | x402 | Free quote in configured v2 deployments; paid POST fail-closed | Activation-gated durable official V2 paid execution after all gates |
-| Packages | Workspace sources, unpublished | V3 SDK/React/MCP source and workspace consumer examples locally typechecked; public semver/provenance release pending |
+| Packages | `@sepbase/sdk`, `@sepbase/react`, `@sepbase/mcp` `0.1.0` public with SLSA provenance | Exact public versions pass an anonymous clean-consumer TypeScript/runtime smoke; this is distribution evidence, not a deployed-V3 receipt |
 | Deployment | v2 Base Sepolia | Seven-address source + address-free draft manifest; Base Sepolia deployment pending |
 
 The attestor does not replace the normalizer or own names. Web/SDK/API/MCP use the exact pinned normalization profile and fixture corpus; the controller verifies a short-lived EIP-712 statement binding profile hash, chain, controller, normalized label hash, recipient and expiry. The commitment binds that exact attestation hash. The attestor address cannot be rotated by the owner; loss or compromise requires a reviewed controller/suite release and manifest cutover.
@@ -227,14 +227,13 @@ Start with the deployment manifest and validate its ABI checksum and contract ve
 /llms.txt
 ```
 
-Workspace packages:
+Public packages:
 
 ```bash
-# Public registry installation is pending a verified package release.
-# Inside this monorepo, use workspace:* dependencies instead.
+pnpm add @sepbase/sdk@0.1.0 @sepbase/react@0.1.0 @sepbase/mcp@0.1.0
 ```
 
-The package sources build in the workspace but are not yet published to the public npm registry. Until package metadata and a release are completed, consumers can use the ABI/OpenAPI surfaces or workspace packages in this monorepo.
+The three packages were published from GitHub Actions run `29246721839` with npm provenance and then installed anonymously at exact version `0.1.0` into an isolated strict-NodeNext consumer. Registry integrity, provenance URLs, runtime imports and the exact release source are recorded in [`evidence/npm-release/2026-07-13-v0.1.0.json`](evidence/npm-release/2026-07-13-v0.1.0.json). This package release exposes the V3 source API, but deployment-dependent calls still reject the address-free draft manifest.
 
 For current user flows and the exact differences between live v2 and v3 targets, read [Marketplace, Referrals and Proceeds](docs/USER_MARKETPLACE_GUIDE.md). Write examples are preparation/simulation fragments until an authorized wallet broadcasts; evidence of a real transaction must follow [Transaction and Release Evidence](docs/TRANSACTION_EVIDENCE.md).
 

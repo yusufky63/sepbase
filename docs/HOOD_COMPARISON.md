@@ -19,7 +19,7 @@ Primary hood.ag references:
 - **Observed HTTP (2026-07-12)** means a non-mutating public HTTP/MCP request returned the described response at check time. Hosted responses can change after this date.
 - **Explorer source/ABI observation** means verified proxy/implementation source or ABI exposed the described selector/state path. It supports source-level inference, not a claim that every live configuration or transaction outcome was exercised.
 - **Source inference** is an explicit conclusion from that verified code shape. It is not a successful registration, purchase, payment settlement or keeper-broadcast receipt.
-- **SEPBASE local evidence** means a named Foundry/package/artifact command passed in this repository. It proves only the cited source scenario, not Base Sepolia deployment, hosted parity, npm provenance, audit, soak or paid execution.
+- **SEPBASE local evidence** means a named Foundry/package/artifact command passed in this repository. It proves only the cited source scenario, not Base Sepolia V3 deployment, live-V3 hosted parity, audit, soak or paid execution. Public npm and hosted-draft evidence are cited separately.
 
 No Hood wallet signature, payment, market purchase, keeper registration or state-changing transaction was executed for this comparison.
 
@@ -35,7 +35,7 @@ No Hood wallet signature, payment, market purchase, keeper registration or state
 | Marketplace | Explorer source/ABI behind `0xd37C…`: fixed list/buy paths for ETH or USDG; no offer/auction selector observed; no purchase executed | Fixed-price deployment-settlement listings | Fixed listing, escrowed offers, English auctions and separately bounded indexer-free MarketLens reads |
 | Seller/referral payout | Source inference: push-first/fallback market payout and product-specific registration/market referral terms | Pull-payment liabilities and explicit solvency guard | Unified pull balances for referrals, proceeds and refunds with exact liability accounting |
 | Upgrade trust | Published docs + explorer source: registry described immutable; registrar, resolver, controller and market use owner-gated UUPS proxies | Immutable, no proxy | Seven immutable/no-proxy contracts; four-argument one-time registry wiring, with MarketLens as non-authority view helper |
-| Developer discovery | Observed HTTP/package surfaces: public SDK/MCP paths, hosted MCP, `llms.txt` and published addresses | Manifest, ABI, REST/OpenAPI and local SDK sources; npm release not yet evidenced | Local schema-4 draft manifest, seven ABIs, V3 read API, SDK, separate `/api/v3/mcp` and fail-closed external-attestation proxy; public npm/hosted release pending |
+| Developer discovery | Observed HTTP/package surfaces: public SDK/MCP paths, hosted MCP, `llms.txt` and published addresses | Final HTTPS manifest/ABI/REST/OpenAPI/`llms.txt`, hosted current-v2 MCP and public `@sepbase/*` `0.1.0` with provenance | Hosted schema-4 draft manifest, seven ABIs, V3 read API, 39-tool `/api/v3/mcp`, fail-closed external-attestation proxy and the same public packages; V3 addresses remain null |
 | Agent payment | Observed HTTP returned payment negotiation options for the registration resource; no payment, settle or keeper write was executed | Activation-gated official x402 V2 + encrypted plan/order + managed commit/reveal workflow | Source route supports gated `402/202/200` and status reconciliation, but current draft remains `503`; facilitator, durable services, funded E2E and activation pending |
 
 ## What hood.ag currently does better
@@ -47,7 +47,7 @@ No Hood wallet signature, payment, market purchase, keeper registration or state
 - The public agent-registration endpoint returned payment negotiation options. Docs/source describe a keeper-mediated path, but this comparison did not prove payment settlement or keeper execution.
 - The user documentation explains registration, renewal, primary names, records and wallet import in a compact product-oriented flow.
 
-These are real deployment and distribution advantages over both historical SEPBASE v2 and the local-only V3 source. Local tests do not close a public deployment or package-distribution gap.
+These remain real deployed ENS/resolver and agent-product advantages over historical SEPBASE v2 and the address-free V3 draft. SEPBASE has closed the basic public package-distribution gap, but package publication does not close deployment or funded-runtime gaps.
 
 ## Where SEPBASE is stronger or deliberately stricter
 
@@ -64,7 +64,7 @@ These are real deployment and distribution advantages over both historical SEPBA
 - V3 x402 targets the current CAIP-2 network form and official V2 packages, with durable authorization-level replay deduplication and a managed signer boundary.
 - V3 commitments bind chain, controller, canonical name, payer/recipient, duration, resolver initialization, immutable-attestor hash, referrer and expected economic guards. **Source inference:** the verified Hood controller commitment binds label, owner and secret; duration and live price are checked later but are not part of that commitment.
 
-Foundry, artifact, SDK, V3 API and MCP source evidence is now attached for selected acceptance rows: `pnpm contracts:test` passes 62 V3 tests within 91/91 total, and the seven-module validator plus local SDK/MCP/React package tests are green. The advantages remain release claims—not public product advantages—until Base Sepolia transactions, final-origin parity, npm provenance, audit and soak are attached. Paid x402 remains absent.
+Foundry, artifact, SDK, V3 API and MCP source evidence is attached for selected acceptance rows: `pnpm contracts:test` passes 62 V3 tests within 91/91 total, and the seven-module validator plus SDK/MCP/React package tests are green. Public workflow `29246721839` published the three `0.1.0` packages with provenance, and anonymous exact-version consumer smoke passed. The on-chain V3 advantages remain release claims—not deployed product advantages—until Base Sepolia transactions, live-V3 final-origin parity, audit and soak are attached. Paid x402 remains absent.
 
 ## Observed hood.ag documentation/runtime drift
 
@@ -98,4 +98,4 @@ The authoritative status is the acceptance matrix, not this comparison.
 
 ## Bottom line
 
-Based on published addresses/packages and the time-bounded HTTP/explorer observations above, hood.ag remains ahead in publicly distributed ENS-style, contenthash and agent surfaces. This is not a claim that a Hood payment or keeper registration succeeded in this review. Historical SEPBASE v2 is simpler and has stronger explicit liability/expected-value protections, but lacks ENSIP-15, text-record standards, commit-reveal, offers, auctions and paid agent execution. SEPBASE V3 now has materially broader locally tested marketplace/accounting source and stricter release truthfulness, while deliberately narrower than Hood in resolver features such as contenthash; it becomes the stronger deployed product only after deployment, audit, soak, package and hosted evidence gates pass.
+Based on published addresses/packages and the time-bounded HTTP/explorer observations above, hood.ag remains ahead in deployed ENS-style, contenthash and agent execution surfaces. This is not a claim that a Hood payment or keeper registration succeeded in this review. Historical SEPBASE v2 is simpler and has stronger explicit liability/expected-value protections, but lacks ENSIP-15, text-record standards, commit-reveal, offers, auctions and paid agent execution. SEPBASE V3 now has materially broader locally tested marketplace/accounting source, public provenanced packages and stricter release truthfulness, while deliberately narrower than Hood in resolver features such as contenthash; it becomes the stronger deployed product only after V3 deployment, funded E2E, audit, soak and live-V3 hosted gates pass.

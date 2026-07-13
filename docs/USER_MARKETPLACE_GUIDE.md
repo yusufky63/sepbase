@@ -125,7 +125,7 @@ const settlement = await client.getSettlementAsset();
 console.log({ market, settlement });
 ```
 
-The SDK package is currently a workspace package, not a verified public npm install. Run this TypeScript example inside this monorepo until a public package release exists.
+The SDK is public at exact version `0.1.0` with npm provenance. The release was installed anonymously into an isolated strict-NodeNext consumer; deployment-dependent V3 calls still fail closed until a live manifest replaces the address-free draft.
 
 ## Safe write preparation examples
 

@@ -193,11 +193,11 @@ curl --get "${projectConfig.siteUrl.replace(/\/$/, "")}${projectConfig.integrati
             <div className={styles.copy}>
               <p>Start with the deployment manifest. It publishes the current network, contract, pricing rules, asset details, and integration URLs in one place.</p>
               <p>The SDK validates the manifest and ABI before returning reads. The HTTP API exposes the same public name data without requiring a wallet connection.</p>
-              <p>The SDK, React, and MCP packages build in this workspace but are not yet published to the public npm registry. Use <code>workspace:*</code> inside this monorepo; the install command applies only after a package release.</p>
+              <p>The SDK, React, and MCP packages are public at exact version <code>0.1.0</code> with npm provenance. V3 deployment-dependent calls still fail closed while the published V3 manifest is an address-free draft.</p>
               <p>Server consumers should set <code>allowedManifestOrigins</code> and <code>allowedRpcOrigins</code>. Never accept either URL directly from untrusted request input.</p>
             </div>
             <div className={styles.codeStack}>
-              <CodeBlock code={"# After the public package release\npnpm add @sepbase/sdk @sepbase/react @sepbase/mcp"} language="Shell" />
+              <CodeBlock code={"pnpm add @sepbase/sdk@0.1.0 @sepbase/react@0.1.0 @sepbase/mcp@0.1.0"} language="Shell" />
               <CodeBlock code={sdkExample} language="TypeScript" />
               <CodeBlock code={v3SdkExample} language="TypeScript" />
             </div>

@@ -9,7 +9,7 @@ Bu belge insan-okunabilir entegrasyon rehberidir. Makine sözleşmesinin doğrul
 
 > Hosted durum: agent manifest, MCP, x402 quote boundary ve bu rehberdeki yeni alanlar bu branch'te source-ready durumdadır; `https://sepbase.vercel.app` alias'ına henüz deploy edilmemiştir. Canlı entegrasyon, ayrı web deployment ve endpoint smoke tamamlanmadan varsayılmamalıdır.
 
-> V3 durum: Yedi kontrat, per-module ABI'ler, schema-4 address-free draft manifest, V3 SDK/read-API ve ayrı opt-in MCP kaynağı yerelde mevcuttur. Bunlar canlı v2 ABI'sine eklenmemiştir ve V3 deployment kanıtı değildir. Consumer gerçek V3 adresleri, runtime hash'leri ve binding kanıtı yayımlanana kadar V3 write/read sonucunu live saymamalı; current-v2 için aşağıdaki schema-3 deployment yüzeylerini kullanmalıdır. Public npm release ve paid x402 execution da hâlâ yoktur.
+> V3 durum: Yedi kontrat, per-module ABI'ler, schema-4 address-free draft manifest, V3 SDK/read-API ve ayrı opt-in MCP kaynağı mevcuttur. Bunlar canlı v2 ABI'sine eklenmemiştir ve V3 deployment kanıtı değildir. Consumer gerçek V3 adresleri, runtime hash'leri ve binding kanıtı yayımlanana kadar V3 write/read sonucunu live saymamalı; current-v2 için aşağıdaki deployment yüzeylerini kullanmalıdır. `@sepbase/*` `0.1.0` public/provenanced olarak yayınlanmıştır; paid x402 execution hâlâ unavailable'dır.
 
 ## Sürüm seçimi
 
@@ -19,7 +19,7 @@ Bu belge insan-okunabilir entegrasyon rehberidir. Makine sözleşmesinin doğrul
 | Registration | V2 direct guarded `register` | Normalize + commit + reveal |
 | Marketplace | V2 fixed listing/buy | Fixed + offer + English auction |
 | Referral/proceeds | V2 pull claims | Unified referral/seller/refund claims |
-| MCP | Current-v2 `/api/mcp`; workspace source, hosted rollout pending | Opt-in `/api/v3/mcp` source with 38 bounded read/unsigned-plan tools; deployment-dependent calls fail closed while draft, npm/hosted release pending |
+| MCP | Current-v2 `/api/mcp`; 8 tools hosted on the canonical origin | Opt-in `/api/v3/mcp` with 39 bounded read/unsigned-plan tools; hosted draft and public npm package are available, deployment-dependent calls fail closed |
 | x402 | Free quote; paid POST always `503` | Official V2 paid durable workflow after activation gates |
 
 Do not point a v3-shaped client at the v2 contract. V3 discovery must advertise a new schema/contract-suite version and explicit compatibility matrix.
@@ -169,13 +169,12 @@ Template URL placeholder'ları yalnızca canonical değerin `encodeURIComponent`
 
 ## TypeScript SDK
 
-Monorepo içindeki SDK package adı `@sepbase/sdk`'dir. Package build edilmeye hazırdır ancak henüz public npm registry'ye yayınlanmamıştır. Monorepo consumer'ı `workspace:*` dependency kullanır; aşağıdaki registry komutu ilk public SDK release'inden sonra geçerli olacaktır.
+SDK, React ve MCP package'ları public npm registry'de exact `0.1.0` sürümüyle ve SLSA provenance ile yayınlanmıştır. Monorepo içi geliştirme bir sonraki source revision'ı doğrulamak için `workspace:*` dependency kullanmaya devam eder.
 
 Kurulum:
 
 ```bash
-# Public package release'inden sonra
-pnpm add @sepbase/sdk @sepbase/react
+pnpm add @sepbase/sdk@0.1.0 @sepbase/react@0.1.0 @sepbase/mcp@0.1.0
 ```
 
 Başlatma ve temel kullanım:
@@ -689,7 +688,7 @@ Marketplace/referral/proceeds kullanıcı adımları, boş/hata state'leri ve me
 
 ### Runnable example policy
 
-- Public package release'inden önce registry install komutu çalışır diye sunulmaz; monorepo `workspace:*` kullanır.
+- Public install snippet'leri exact yayınlanmış sürümü pinler; monorepo bir sonraki source revision için `workspace:*` kullanır.
 - Her copy/paste verified TypeScript/Viem/Wagmi/Cast/curl örneği CI fixture'ından üretilir veya test komutuyla birlikte yayımlanır.
 - `publicClient`, `walletClient`, `manifest`, `account`, `tokenId` gibi dış bağlama ihtiyaç duyan parçalar “plan fragment/pseudocode” olarak etiketlenir.
 - Simulation transaction değildir; tx hash receipt+confirmation+post-state olmadan success evidence sayılmaz.
@@ -706,7 +705,7 @@ Build ve release kontrolleri şunları doğrular:
 - Base-unit amount örnekleri 6 ve 18 decimals ile test ediliyor.
 - 1/2/3/4-karakter quote sonuçları manifestteki premium schedule ile aynı.
 - Multicall3 adresinde configured creation block sonrasında runtime bytecode bulunuyor.
-- SDK, MCP ve React package testleri yerelde sırasıyla 52/31/4 geçiyor; web toplamı devam eden V3 UI entegrasyonunun final required-gate rerun'ından sonra kaydedilecek ve burada eski bir sayı korunmayacaktır. `pnpm examples:v3:typecheck` workspace SDK/Viem/Wagmi/React/MCP consumer fixture'ını derliyor ve V3 artifact validator yedi modülü doğruluyor. Bu local source kanıtı Cast/runtime davranışı, public npm provenance veya temiz dış-consumer smoke değildir. Placeholder snippet'ler compile fixture sayılmaz ve V3 release kapısını tek başına karşılamaz.
+- SDK, MCP, React ve web testleri sırasıyla 55/34/4/229 geçer. `pnpm examples:v3:typecheck` workspace SDK/Viem/Wagmi/React/MCP consumer fixture'ını derler ve V3 artifact validator yedi modülü doğrular. Workflow `29246721839` üç package'ı provenance ile yayınlamış; exact `0.1.0` sürümleri authorization header olmadan isolated strict-NodeNext consumer'da type/runtime smoke geçmiştir. Bu kanıt Cast veya deployed-V3 runtime davranışı değildir; placeholder snippet'ler compile fixture sayılmaz.
 - Hosted deployment sonrası forward/reverse ve agent endpoint smoke ayrıca çalıştırılır; source artifact validation bunun yerine geçmez.
 
 ## Referanslar
