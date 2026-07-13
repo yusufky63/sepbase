@@ -31,4 +31,15 @@ describe("deploymentManifestSchema", () => {
       treasury: null,
     })).toThrow(/pre-deployment/i);
   });
+
+  it("rejects manifest resource paths that can escape the current origin", () => {
+    expect(() => deploymentManifestSchema.parse({
+      ...manifest,
+      abiUrl: "//internal.example/abi.json",
+    })).toThrow(/same-origin/i);
+    expect(() => deploymentManifestSchema.parse({
+      ...manifest,
+      docsUrl: "/%2e%2e/private",
+    })).toThrow(/traversal/i);
+  });
 });

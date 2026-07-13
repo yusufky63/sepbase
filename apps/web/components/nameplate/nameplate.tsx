@@ -18,7 +18,7 @@ export function Nameplate({
     <div className={`${styles.plate} ${inverted ? styles.inverted : ""}`}>
       <div className={styles.topline}>
         <span>{projectConfig.brand.shortName}</span>
-        <span>{projectConfig.chain.id}</span>
+        <span>{projectConfig.chain.name}</span>
       </div>
       <div className={styles.name}>
         <span>{label}</span>

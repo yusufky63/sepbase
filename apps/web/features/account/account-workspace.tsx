@@ -2,18 +2,20 @@
 
 import { CalendarClock, Check, Copy, ExternalLink, Link2, ReceiptText, Tags, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { type Address, getAddress, isAddress, zeroAddress } from "viem";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { SettlementAmount } from "@/components/price/settlement-amount";
 import { WalletButton } from "@/components/wallet/wallet-button";
 import { projectConfig } from "@/config/project.config";
 import { TransactionStatus } from "@/features/transactions/transaction-status";
-import { deploymentManifest, protocolDeployed } from "@/lib/deployment-manifest";
+import { configuredChain } from "@/lib/chain";
+import { deploymentManifest, protocolAddress, protocolDeployed } from "@/lib/deployment-manifest";
 import { formatDate, shortenAddress } from "@/lib/formatting";
 import { renewalTiming } from "@/lib/renewal-reminders";
 import { useAccountBalances, useOwnedNames, useProtocolTransaction } from "@/lib/contract/hooks";
-import { NAME_STATUS } from "@/lib/contract/types";
+import { NAME_STATUS, type OwnedName } from "@/lib/contract/types";
 import { formatBps } from "@/lib/settlement";
 import styles from "./account-workspace.module.css";
 
@@ -32,15 +34,69 @@ function lifecycle(status: number) {
   return "UNREGISTERED";
 }
 
-function labelFromFullName(fullName: string) {
+export function ownedNameLabel(fullName: unknown): string | null {
+  if (typeof fullName !== "string" || fullName.length === 0) return null;
   const suffix = `.${projectConfig.brand.suffix}`;
-  return fullName.endsWith(suffix) ? fullName.slice(0, -suffix.length) : fullName;
+  if (!fullName.endsWith(suffix)) return null;
+  const label = fullName.slice(0, -suffix.length);
+  return label.length > 0 ? label : null;
+}
+
+export function isRenderableOwnedName(value: unknown): value is OwnedName {
+  if (value === null || typeof value !== "object") return false;
+  const name = value as Partial<OwnedName>;
+  const listingValid = name.listing === null || (
+    name.listing !== undefined
+    && typeof name.listing === "object"
+    && typeof name.listing.price === "bigint"
+    && typeof name.listing.feeBps === "number"
+  );
+  return typeof name.tokenId === "bigint"
+    && name.tokenId >= 0n
+    && ownedNameLabel(name.fullName) !== null
+    && typeof name.expiresAt === "bigint"
+    && name.expiresAt >= 0n
+    && (
+      name.status === NAME_STATUS.UNREGISTERED
+      || name.status === NAME_STATUS.ACTIVE
+      || name.status === NAME_STATUS.GRACE
+      || name.status === NAME_STATUS.RELEASED
+    )
+    && listingValid;
+}
+
+export function validateClaimRecipient(value: string): { address: Address | null; error: string | null } {
+  const trimmed = value.trim();
+  if (!isAddress(trimmed)) return { address: null, error: "Enter a valid EVM address." };
+  const recipient = getAddress(trimmed);
+  if (recipient.toLowerCase() === zeroAddress) return { address: null, error: "The zero address cannot receive a claim." };
+  if (protocolAddress && recipient.toLowerCase() === protocolAddress.toLowerCase()) {
+    return { address: null, error: "The protocol contract cannot receive a claim." };
+  }
+  return { address: recipient, error: null };
+}
+
+export function accountTabIndexForKey(key: string, index: number, count: number): number | null {
+  if (count <= 0) return null;
+  if (key === "ArrowRight") return (index + 1) % count;
+  if (key === "ArrowLeft") return (index - 1 + count) % count;
+  if (key === "Home") return 0;
+  if (key === "End") return count - 1;
+  return null;
 }
 
 export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab }) {
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
+  const wrongNetwork = Boolean(address && chainId !== configuredChain.id);
+  const contractReadAccount = wrongNetwork ? undefined : address;
   const [tab, setTab] = useState<Tab>(initialTab);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [pagination, setPagination] = useState<{ account: string | undefined; offset: number }>({ account: address, offset: 0 });
+  const [claimRecipients, setClaimRecipients] = useState<{
+    account: Address | undefined;
+    referral: string;
+    sale: string;
+  }>({ account: address, referral: address ?? "", sale: address ?? "" });
   const [copied, setCopied] = useState(false);
   const [nowSeconds, setNowSeconds] = useState<number | null>(null);
   const [origin] = useState(() => typeof window === "undefined"
@@ -48,16 +104,28 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
     : window.location.origin);
   const pageSize = projectConfig.marketplace.listingsPerPage;
   const ownedOffset = pagination.account === address ? pagination.offset : 0;
-  const owned = useOwnedNames(address, ownedOffset, pageSize);
-  const balances = useAccountBalances(address);
+  const owned = useOwnedNames(contractReadAccount, ownedOffset, pageSize);
+  const balances = useAccountBalances(contractReadAccount);
   const transaction = useProtocolTransaction();
+  const referralRecipientInput = claimRecipients.account === address ? claimRecipients.referral : (address ?? "");
+  const saleRecipientInput = claimRecipients.account === address ? claimRecipients.sale : (address ?? "");
+  const referralRecipient = validateClaimRecipient(referralRecipientInput);
+  const saleRecipient = validateClaimRecipient(saleRecipientInput);
 
   const referralUrl = address ? `${origin}/r/${address}` : "";
-  const marketNames = owned.names;
+  const decodedOwnedNames = owned.names.flatMap((name) => {
+    if (!isRenderableOwnedName(name)) return [];
+    const label = ownedNameLabel(name.fullName);
+    return label === null ? [] : [{ name, label }];
+  });
+  const ownedDataInvalid = decodedOwnedNames.length !== owned.names.length;
+  const ownedReadUnavailable = Boolean(owned.error) || ownedDataInvalid;
+  const displayOwnedNames = ownedReadUnavailable ? [] : decodedOwnedNames;
+  const marketNames = displayOwnedNames;
   const expiringNames = nowSeconds === null
     ? []
-    : owned.names
-        .map((name) => ({ name, timing: renewalTiming(name.expiresAt, nowSeconds) }))
+    : displayOwnedNames
+        .map((item) => ({ ...item, timing: renewalTiming(item.name.expiresAt, nowSeconds) }))
         .filter(({ name, timing }) => (
           name.expiresAt > 0n
           && timing.due
@@ -82,9 +150,12 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  async function claim(functionName: "claimReferralRewards" | "claimSaleProceeds") {
-    if (!address) return;
-    await transaction.send({ functionName, args: [address] });
+  async function claim(
+    functionName: "claimReferralRewards" | "claimSaleProceeds",
+    recipient: Address | null,
+  ) {
+    if (!address || !recipient) return;
+    await transaction.send({ functionName, args: [recipient] });
   }
 
   function selectTab(nextTab: Tab) {
@@ -96,6 +167,23 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
 
   function setOwnedOffset(offset: number) {
     setPagination({ account: address, offset });
+  }
+
+  function updateClaimRecipient(kind: "referral" | "sale", value: string) {
+    setClaimRecipients((current) => ({
+      account: address,
+      referral: kind === "referral" ? value : current.account === address ? current.referral : (address ?? ""),
+      sale: kind === "sale" ? value : current.account === address ? current.sale : (address ?? ""),
+    }));
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const nextIndex = accountTabIndexForKey(event.key, index, tabs.length);
+    if (nextIndex === null) return;
+    event.preventDefault();
+    const nextTab = tabs[nextIndex]!;
+    selectTab(nextTab.id);
+    tabRefs.current[nextIndex]?.focus();
   }
 
   return (
@@ -111,17 +199,17 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
             </div>
           </div>
           <div className={styles.metrics}>
-            <div><span>OWNED NAMES</span><strong>{address ? owned.total : "-"}</strong></div>
-            <div><span>PRIMARY</span><strong>{balances.primaryName || "Not set"}</strong></div>
-            <div><span>REFERRAL BALANCE</span><strong><SettlementAmount amountBaseUnits={balances.referralBalance} /></strong></div>
-            <div><span>SALE PROCEEDS</span><strong><SettlementAmount amountBaseUnits={balances.sellerBalance} /></strong></div>
+            <div><span>OWNED NAMES</span><strong>{!address || wrongNetwork || !protocolDeployed ? "-" : owned.isLoading ? "Checking" : ownedReadUnavailable ? "Unavailable" : owned.total ?? "Unavailable"}</strong></div>
+            <div><span>PRIMARY</span><strong>{!address || wrongNetwork || !protocolDeployed ? "-" : balances.isLoading ? "Checking" : balances.primaryName === null ? "Unavailable" : balances.primaryName || "Not set"}</strong></div>
+            <div><span>REFERRAL BALANCE</span><strong>{!address || wrongNetwork || !protocolDeployed ? "-" : balances.referralBalance === null ? "Unavailable" : <SettlementAmount amountBaseUnits={balances.referralBalance} />}</strong></div>
+            <div><span>SALE PROCEEDS</span><strong>{!address || wrongNetwork || !protocolDeployed ? "-" : balances.sellerBalance === null ? "Unavailable" : <SettlementAmount amountBaseUnits={balances.sellerBalance} />}</strong></div>
           </div>
         </div>
       </section>
 
       <section className={styles.workspace}>
         <div className={styles.inner}>
-          <div className={styles.tabs} role="tablist" aria-label="Account sections">
+          <div className={styles.tabs} role="tablist" aria-label="Account sections" aria-orientation="horizontal">
             {tabs.map((item, index) => {
               const Icon = item.icon;
               return (
@@ -132,6 +220,9 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
                   role="tab"
                   aria-selected={tab === item.id}
                   aria-controls={`panel-${item.id}`}
+                  tabIndex={tab === item.id ? 0 : -1}
+                  ref={(node) => { tabRefs.current[index] = node; }}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
                   onClick={() => selectTab(item.id)}
                 >
                   <span>{String(index + 1).padStart(2, "0")}</span>
@@ -149,6 +240,13 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
               <p>Your names, rewards, listings, and proceeds will appear here.</p>
               <WalletButton />
             </div>
+          ) : wrongNetwork ? (
+            <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className={styles.emptyState}>
+              <span>NETWORK REQUIRED</span>
+              <h2>Switch to {configuredChain.name} to view this account.</h2>
+              <p>Your wallet remains connected. Switch networks to load names and balances, or disconnect safely.</p>
+              <WalletButton />
+            </div>
           ) : !protocolDeployed ? (
             <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className={styles.emptyState}>
               <span>PRE-DEPLOYMENT</span>
@@ -157,7 +255,7 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
             </div>
           ) : null}
 
-          {address && protocolDeployed && tab === "names" ? (
+          {address && !wrongNetwork && protocolDeployed && tab === "names" ? (
             <div id="panel-names" role="tabpanel" aria-labelledby="tab-names" className={styles.panel}>
               <div className={styles.panelHeading}>
                 <span>01 / NAMES</span>
@@ -175,19 +273,18 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
                     <span>RENEWAL WINDOW / CURRENT PAGE</span>
                     <strong>{expiringNames.length} {expiringNames.length === 1 ? "name needs" : "names need"} attention</strong>
                   </div>
-                  <Link href={`/name/${encodeURIComponent(labelFromFullName(expiringNames[0]!.name.fullName))}`}>
+                  <Link href={`/name/${encodeURIComponent(expiringNames[0]!.label)}`}>
                     Review nearest
                   </Link>
                 </div>
               ) : null}
               {owned.isLoading ? <p className={styles.loading}>Loading your names...</p> : null}
-              {owned.error ? <p className={styles.error}>Your names could not be loaded. Try again.</p> : null}
-              {!owned.isLoading && owned.total === 0 ? (
+              {ownedReadUnavailable ? <p className={styles.error} role="alert">Your names could not be verified. No partial account data is shown; retry when the read is available.</p> : null}
+              {!owned.isLoading && !ownedReadUnavailable && owned.total === 0 ? (
                 <div className={styles.inlineEmpty}><p>No names are owned by this address.</p><Link href="/">Search names</Link></div>
               ) : (
                 <div className={styles.rows}>
-                  {owned.names.map((name) => {
-                    const label = labelFromFullName(name.fullName);
+                  {displayOwnedNames.map(({ name, label }) => {
                     const timing = nowSeconds === null ? null : renewalTiming(name.expiresAt, nowSeconds);
                     return (
                       <Link href={`/name/${encodeURIComponent(label)}`} className={styles.nameRow} key={name.tokenId.toString()}>
@@ -204,7 +301,7 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
                   })}
                 </div>
               )}
-              {owned.total > pageSize ? (
+              {owned.total !== null && owned.total > pageSize ? (
                 <div className={styles.pagination}>
                   <Button variant="quiet" disabled={ownedOffset === 0} onClick={() => setOwnedOffset(Math.max(0, ownedOffset - pageSize))}>Previous</Button>
                   <span>{ownedOffset + 1}-{Math.min(ownedOffset + pageSize, owned.total)} / {owned.total}</span>
@@ -215,7 +312,7 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
             </div>
           ) : null}
 
-          {address && protocolDeployed && tab === "referrals" ? (
+          {address && !wrongNetwork && protocolDeployed && tab === "referrals" ? (
             <div id="panel-referrals" role="tabpanel" aria-labelledby="tab-referrals" className={styles.panel}>
               <div className={styles.panelHeading}>
                 <span>02 / REFERRALS</span>
@@ -231,13 +328,32 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
                 </div>
                 <div className={styles.claimBlock}>
                   <span>CLAIMABLE REWARDS</span>
-                  <strong><SettlementAmount amountBaseUnits={balances.referralBalance} /></strong>
+                  <strong>{balances.referralBalance === null ? "Unavailable" : <SettlementAmount amountBaseUnits={balances.referralBalance} />}</strong>
+                  <div className={styles.claimRecipient}>
+                    <label htmlFor="referral-claim-recipient">Recipient</label>
+                    <input
+                      id="referral-claim-recipient"
+                      value={referralRecipientInput}
+                      onChange={(event) => updateClaimRecipient("referral", event.target.value)}
+                      aria-invalid={referralRecipient.error !== null}
+                      aria-describedby="referral-claim-recipient-status"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <small
+                      id="referral-claim-recipient-status"
+                      className={referralRecipient.error ? styles.fieldError : styles.fieldHint}
+                    >
+                      {referralRecipient.error ?? `Verified recipient: ${referralRecipient.address}`}
+                    </small>
+                  </div>
+                  {balances.error ? <p className={styles.error} role="alert">The claimable reward balance could not be verified.</p> : null}
                   <Button
                     icon={<ReceiptText size={17} />}
-                    disabled={balances.referralBalance === 0n || transaction.isPending || transaction.isConfirming}
-                    onClick={() => void claim("claimReferralRewards")}
+                    disabled={balances.referralBalance === null || balances.referralBalance === 0n || referralRecipient.address === null || transaction.isPending || transaction.isConfirming}
+                    onClick={() => void claim("claimReferralRewards", referralRecipient.address)}
                   >
-                    Claim to this wallet
+                    Claim rewards
                   </Button>
                 </div>
               </div>
@@ -250,28 +366,47 @@ export function AccountWorkspace({ initialTab = "names" }: { initialTab?: Tab })
             </div>
           ) : null}
 
-          {address && protocolDeployed && tab === "listings" ? (
+          {address && !wrongNetwork && protocolDeployed && tab === "listings" ? (
             <div id="panel-listings" role="tabpanel" aria-labelledby="tab-listings" className={styles.panel}>
               <div className={styles.panelHeading}>
                 <span>03 / MARKET</span>
                 <h2>Listings and proceeds</h2>
               </div>
               <div className={styles.proceeds}>
-                <div><span>CLAIMABLE PROCEEDS</span><strong><SettlementAmount amountBaseUnits={balances.sellerBalance} /></strong></div>
+                <div><span>CLAIMABLE PROCEEDS</span><strong>{balances.sellerBalance === null ? "Unavailable" : <SettlementAmount amountBaseUnits={balances.sellerBalance} />}</strong></div>
+                <div className={styles.claimRecipient}>
+                  <label htmlFor="sale-claim-recipient">Recipient</label>
+                  <input
+                    id="sale-claim-recipient"
+                    value={saleRecipientInput}
+                    onChange={(event) => updateClaimRecipient("sale", event.target.value)}
+                    aria-invalid={saleRecipient.error !== null}
+                    aria-describedby="sale-claim-recipient-status"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <small
+                    id="sale-claim-recipient-status"
+                    className={saleRecipient.error ? styles.fieldError : styles.fieldHint}
+                  >
+                    {saleRecipient.error ?? `Verified recipient: ${saleRecipient.address}`}
+                  </small>
+                </div>
                 <Button
                   icon={<ReceiptText size={17} />}
-                  disabled={balances.sellerBalance === 0n || transaction.isPending || transaction.isConfirming}
-                  onClick={() => void claim("claimSaleProceeds")}
+                  disabled={balances.sellerBalance === null || balances.sellerBalance === 0n || saleRecipient.address === null || transaction.isPending || transaction.isConfirming}
+                  onClick={() => void claim("claimSaleProceeds", saleRecipient.address)}
                 >
-                  Claim to this wallet
+                  Claim proceeds
                 </Button>
               </div>
-              {owned.total === 0 ? (
+              {balances.error ? <p className={styles.error} role="alert">The claimable proceeds balance could not be verified.</p> : null}
+              {ownedReadUnavailable ? <p className={styles.error} role="alert">Your listings could not be verified. No partial listing data is shown; try again.</p> : null}
+              {!ownedReadUnavailable && owned.total === 0 ? (
                 <div className={styles.inlineEmpty}><p>You do not own a name to list.</p><Link href="/">Search names</Link></div>
               ) : (
                 <div className={styles.rows}>
-                  {marketNames.map((name) => {
-                    const label = labelFromFullName(name.fullName);
+                  {marketNames.map(({ name, label }) => {
                     return (
                       <Link href={`/name/${encodeURIComponent(label)}`} className={styles.listingRow} key={name.tokenId.toString()}>
                         <strong>{name.fullName}</strong>

@@ -1,13 +1,38 @@
 import { getAddress } from "viem";
 import { z } from "zod";
-import { ManifestMismatchError, SepbaseError, UnsupportedSchemaError } from "./errors";
-import type { ChainNameManifest } from "./types";
+import { ManifestMismatchError, SepbaseError, UnsupportedSchemaError } from "./errors.js";
+import type { ChainNameManifest } from "./types.js";
 
 const address = z.string().regex(/^0x[a-fA-F0-9]{40}$/).transform((value) => getAddress(value));
 const decimalUint = z.string().regex(/^\d{1,78}$/);
-const routePath = z.string()
-  .startsWith("/")
-  .refine((value) => !value.includes("..") && !/[?#]/.test(value));
+
+function isSafeOriginRelativePath(value: string) {
+  let decoded = value;
+  for (let pass = 0; pass < 4; pass += 1) {
+    if (
+      !decoded.startsWith("/")
+      || decoded.startsWith("//")
+      || decoded.includes("\\")
+      || decoded.includes("..")
+      || /[?#\u0000-\u001f\u007f]/.test(decoded)
+    ) return false;
+
+    let next: string;
+    try {
+      next = decodeURIComponent(decoded);
+    } catch {
+      return false;
+    }
+    if (next === decoded) return true;
+    decoded = next;
+  }
+  return false;
+}
+
+const routePath = z.string().refine(
+  isSafeOriginRelativePath,
+  "Must be a safe origin-relative route without authority, traversal, query, or fragment components.",
+);
 const manifestSchema = z.object({
   schemaVersion: z.literal(3),
   contractVersion: z.literal("2.0.0"),
@@ -135,10 +160,11 @@ export async function loadManifest(
   const url = new URL(manifestUrl);
   let response: Response;
   try {
-    response = await fetcher(url);
+    response = await fetcher(url, { redirect: "manual" });
   } catch {
     throw new SepbaseError("Manifest request failed.", "MANIFEST_UNAVAILABLE", 503);
   }
+  assertSafeFetchResponse(response, url, "Manifest");
   if (!response.ok) {
     throw new SepbaseError(
       `Manifest request failed with HTTP ${response.status}.`,
@@ -150,5 +176,38 @@ export async function loadManifest(
 }
 
 export function resolveManifestUrl(path: string, manifestUrl: URL): URL {
-  return new URL(path, manifestUrl);
+  const parsed = routePath.safeParse(path);
+  if (!parsed.success) {
+    throw new ManifestMismatchError("Manifest resource path is not a safe origin-relative route.");
+  }
+  const resolved = new URL(parsed.data, manifestUrl);
+  if (resolved.origin !== manifestUrl.origin) {
+    throw new ManifestMismatchError("Manifest resource URL escaped the manifest origin.");
+  }
+  return resolved;
+}
+
+export function assertSafeFetchResponse(
+  response: Response,
+  requestedUrl: URL,
+  resourceName: string,
+): void {
+  if (
+    response.redirected
+    || response.type === "opaqueredirect"
+    || (response.status >= 300 && response.status < 400)
+  ) {
+    throw new ManifestMismatchError(`${resourceName} redirects are not allowed.`);
+  }
+  if (!response.url) return;
+
+  let responseUrl: URL;
+  try {
+    responseUrl = new URL(response.url);
+  } catch {
+    throw new ManifestMismatchError(`${resourceName} response URL is invalid.`);
+  }
+  if (responseUrl.origin !== requestedUrl.origin) {
+    throw new ManifestMismatchError(`${resourceName} response escaped the allowed origin.`);
+  }
 }

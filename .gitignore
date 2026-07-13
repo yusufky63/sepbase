@@ -45,3 +45,5 @@ packages/react/vitest.setup.js*
 packages/react/vitest.setup.d.ts*
 
 .vercel
+.env.local
+.env.*.local

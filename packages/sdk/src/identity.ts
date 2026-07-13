@@ -4,7 +4,7 @@ import type {
   NameLifecycle,
   VerifiedAddressIdentity,
   VerifiedNameResolution,
-} from "./types";
+} from "./types.js";
 
 type AddressIdentitySnapshot = {
   account: Address;

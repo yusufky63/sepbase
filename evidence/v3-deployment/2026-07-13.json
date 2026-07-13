@@ -1,0 +1,102 @@
+{
+  "schema": "sepbase.v3.deployment-evidence.v1",
+  "environment": "base-sepolia",
+  "chainId": 84532,
+  "suiteVersion": "3.0.0",
+  "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
+  "sourceCommit": "a2d3ac739a3ae5ccaf63fd4bc20c97b124de7c72",
+  "releaseStatus": "candidate",
+  "deployerAndConfigurator": "0x78de409a6306550882328E2a67160471368387FF",
+  "ownerAndTreasurySafe": "0x4f1D07EB3BbB6c8c24f96CD5E5A14e4d53Afa630",
+  "normalizationAttestor": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
+  "settlement": {
+    "kind": "erc20",
+    "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "symbol": "USDC",
+    "decimals": 6,
+    "network": "eip155:84532"
+  },
+  "contracts": {
+    "registry": "0xE992C59bd54DF6EEDa146dd7Ce4D676182AA4245",
+    "controller": "0xFD9FFC18d4528b4C5e36911673FF57b1395Fee21",
+    "resolver": "0xd0B3aA5E5Be6c783eFf4c2C0dC2d74ca2d13D25b",
+    "universalResolver": "0xFBAA8396d1A170a6cb0f9187B14E73758B104c5E",
+    "marketplace": "0xC67Bc2B9d0F58dD41A36AEf970c7f110f642D521",
+    "marketLens": "0x17A045F4D3F76de65A34991afB5738F45e28d908",
+    "migration": "0x707Ab7806eDA18fFC52343a65D15500deE7781C8"
+  },
+  "receipts": [
+    {
+      "operation": "deploy-registry",
+      "hash": "0xf6b8dddc1a47d15b0673d48475a41b0426f33f60ab304ec39ed4728054e68441",
+      "blockNumber": "44094615",
+      "blockHash": "0xe514113c5848ef2079621a6e630dd64231ca12b73e23fc19ca0901dc0990f46b",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-resolver",
+      "hash": "0xb7af48d7e9a41daaca34baadf6cd750ae2aa9b16451543a28dcec4a194657c99",
+      "blockNumber": "44094616",
+      "blockHash": "0x1abd4483a6ee14d09bf13d814eb57c2413fdbb332b65f3fc58d48ee230a03c3a",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-controller",
+      "hash": "0x1d954f7e236623dbd6b23f9e2f8417c83c603f56d5a1dd3783af25745d464dd9",
+      "blockNumber": "44094617",
+      "blockHash": "0xf599c179834cf3526c8c9e81682eb2e1bb70dc3cc5f206ff6c280b41c2362d02",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-migration",
+      "hash": "0x3ede8ca214cca4d666122cd1dc1b13d8ff3f18a4355e7e4a467b3b8967a1e0ed",
+      "blockNumber": "44094618",
+      "blockHash": "0xcd51a82f5fd0d77e79a35e5001943a52db4146c0f93bf403e5c1b77e67438ed6",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-marketplace",
+      "hash": "0x63ce09b41f1d32148b6772869f955ceb62ca46de3210dfc5f3387bc184819751",
+      "blockNumber": "44094620",
+      "blockHash": "0x6aba221d8a4cf7a4e481400e0c7157ee7ebd4e4edb00696d75f64738045e709b",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-universal-resolver",
+      "hash": "0xb1939a016944a2d3f5d6da29d25a76f0fbc073087c6319216acdfcc857a04e2b",
+      "blockNumber": "44094621",
+      "blockHash": "0xdbda97d42ccb924e0d94442ffaac6005ab1d3812cda6dfb8282a04ff16786b40",
+      "status": "success"
+    },
+    {
+      "operation": "deploy-market-lens",
+      "hash": "0xcf3398911d1fbc61321ec534bd8998c6d1c53ac8fb970e302345ce2e499453df",
+      "blockNumber": "44094622",
+      "blockHash": "0x4559b25d949cfd16e4f36109c2f3386f9bfe27173a088a33b8c5071ccf391cb2",
+      "status": "success"
+    },
+    {
+      "operation": "configure-suite",
+      "hash": "0xf9b02c9db702455b296443f35e0d13ec70b699e267e89a108da5d6d8614e5f7d",
+      "blockNumber": "44094623",
+      "blockHash": "0x1e5ad79941de5ed1f032b1e5daf7e9b86a230af716538637431f4c8d06b01144",
+      "status": "success"
+    }
+  ],
+  "verification": {
+    "allSevenSourcesVerified": true,
+    "compiler": "v0.8.36+commit.8a079791",
+    "candidatePromotionCommand": "pnpm manifest:v3:promote",
+    "candidatePromotionResult": "pass",
+    "requiredConfirmations": 5,
+    "artifactValidation": "pnpm artifacts:v3:check: pass",
+    "integrationValidation": "pnpm exec tsx scripts/validate-integration-artifacts.ts: pass"
+  },
+  "limits": {
+    "liveCutoverComplete": false,
+    "paidX402ExecutionAvailable": false,
+    "fundedWalletE2EComplete": false,
+    "independentAuditComplete": false,
+    "soakComplete": false
+  }
+}

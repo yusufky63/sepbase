@@ -4,22 +4,32 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter @sepbase/sdk build && pnpm --filter @sepbase/mcp build",
     "dev": "next dev",
+    "prebuild": "pnpm --filter @sepbase/sdk build && pnpm --filter @sepbase/mcp build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "x402:store:migrate": "tsx scripts/x402-store-migrate.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "1.1.0",
+    "@sepbase/mcp": "workspace:*",
     "@sepbase/sdk": "workspace:*",
     "@tanstack/react-query": "5.101.2",
+    "@x402/core": "2.18.0",
+    "@x402/evm": "2.18.0",
+    "@x402/extensions": "2.18.0",
     "lucide-react": "1.24.0",
     "next": "16.2.10",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "viem": "2.55.0",
     "wagmi": "3.7.1",
+    "workflow": "4.6.0",
+    "ws": "8.18.3",
     "zod": "4.4.3"
   },
   "devDependencies": {
@@ -30,6 +40,7 @@
     "@types/node": "22.20.1",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
+    "@types/ws": "8.18.1",
     "@vitejs/plugin-react-swc": "4.3.1",
     "eslint": "9.39.1",
     "eslint-config-next": "16.2.10",

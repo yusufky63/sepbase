@@ -2,6 +2,42 @@
 
 > This is the reusable blank checklist for new clones. The live SEPBASE implementation state and verification evidence are maintained in `docs/IMPLEMENTATION_STATUS.md`.
 
+## V3 production target override
+
+The checklist below this section remains the historical v2 clone baseline. V3 completion additionally requires every item below and the evidence in `docs/V3_ACCEPTANCE_MATRIX.md`.
+
+### V3 contracts and canonical names
+
+- [ ] immutable/no-proxy versioned contract suite; every runtime below EIP-170 with documented margin
+- [ ] exact-pinned ENSIP-15 normalizer and shared conformance corpus
+- [ ] normalized label/full-name, labelhash, namehash and token identity parity across contract/SDK/API/UI
+- [ ] ENS registry/resolver interface discovery, forward address, forward-confirmed reverse and bounded text records
+- [ ] commit/reveal binding chain, controller, owner, duration, resolver init, referrer, settlement, guards and secret
+- [ ] early/expired/copied/cross-chain/cross-controller reveal rejection
+- [ ] native and 6-decimal ERC-20 registration/referral/renewal accounting
+- [ ] explicit v2→v3 migration eligibility, replay protection and evidence
+
+### V3 marketplace
+
+- [ ] guarded fixed listing/update/cancel/buy with expiry and ownership nonce
+- [ ] exact-funded offer escrow, accept, cancel, expire, invalidate and pull refund
+- [ ] English auction reserve/start/end/min-increment/bounded anti-sniping
+- [ ] outbid pull refund, permissionless single finalize and failed-auction NFT return
+- [ ] transfer/expiry/migration cleanup and mutually exclusive terminal states
+- [ ] unified referral/seller/offer/bid/x402 liability and solvency invariants
+- [ ] native + ERC-20 + fee-on-transfer + payout rollback + reentrancy/fuzz/invariant matrix
+
+### V3 agent, packages and operations
+
+- [ ] SDK/React/MCP v3 typed APIs and compiled consumer examples
+- [ ] npm public package license, semver, provenance, changelog and clean-install smoke
+- [ ] MCP single-message/Origin/body/rate-limit/timeout compliance
+- [ ] paid x402 V2 matching ERC-20 asset, CAIP-2 and PAYMENT-* headers
+- [ ] authenticated quotes, durable idempotency/lease fencing and status reconciliation
+- [ ] managed keeper signer, target/spend limits, facilitator verify/settle and refund workflow
+- [ ] final HTTPS metadata, manifests, ABI checksums, OpenAPI, llms and agent discovery parity
+- [ ] multisig/admin runbooks, observability/alerts, independent audit and Base Sepolia soak
+
 ## Faz 0 - Scaffold
 - [ ] pnpm workspace
 - [ ] Next.js App Router
@@ -9,7 +45,7 @@
 - [ ] strict TypeScript
 - [ ] ESLint
 - [ ] `.env.example`
-- [ ] config schema: separate native/settlement metadata and optional dated fiat reference
+- [ ] config schema: separate native/settlement metadata, fee-estimation model, optional dated fiat reference, optional UI market reference, and integration paths
 - [ ] `AGENTS.md`
 - [ ] `docs/IMPLEMENTATION_STATUS.md`
 
@@ -76,6 +112,8 @@
 - [ ] native gas currency and settlement metadata kept separate
 - [ ] ABI export
 - [ ] deterministic ABI SHA-256 and contract version validation
+- [ ] generated agent discovery bound to the same chain, contract, suffix, and manifest
+- [ ] offline integration-artifact validation for manifest, ABI, agent discovery, MCP tool inventory, and `llms.txt`
 - [ ] configurable explorer source verification
 
 ## Faz 4 - Static UI
@@ -149,6 +187,13 @@
 - [ ] bounded market scanning and stable API error envelope
 - [ ] OpenAPI document
 - [ ] `llms.txt`
+- [ ] `/.well-known/chain-name-agent.json` with explicit implementation status
+- [ ] stateless MCP Streamable HTTP plus local stdio transport
+- [ ] MCP public read tools and unsigned guarded `prepare_registration`; no signer, payment, or broadcast path
+- [ ] MCP HTTP Origin validation, bounded request behavior, and hosted abuse/rate-limit policy
+- [ ] free, pinned-block x402 registration quote/readiness endpoint
+- [ ] x402 paid registration endpoint hard-fails closed as `quote-only`; environment configuration cannot enable execution
+- [ ] no core database/indexer/queue; no paid x402 runtime or durable store without a separately approved architecture phase
 - [ ] integration examples
 - [ ] native/ERC-20 settlement examples
 
@@ -159,6 +204,10 @@
 - [ ] local E2E smoke
 - [ ] accessibility
 - [ ] developer docs smoke test
+- [ ] agent manifest schema/parity tests
+- [ ] MCP initialize/tool-list/error/Origin tests
+- [ ] x402 quote validation, expiry, scope, and fail-closed paid-route tests
+- [ ] OpenAPI and `llms.txt` parity with all shipped agent routes
 - [ ] referral E2E flow
 - [ ] marketplace E2E flow
 - [ ] native/ERC-20 settlement E2E flows
@@ -171,11 +220,15 @@
 - [ ] README
 - [ ] DEPLOYMENT.md
 - [ ] CLONE_CHECKLIST.md
+- [ ] clone reset regenerates deployment and agent artifacts with a null/new deployment scope
+- [ ] previous `SEPBASE_*` and `X402_*` operator environment values are cleared manually
 
 ## Faz 10 - Testnet
 - [ ] chain check
 - [ ] deployment
 - [ ] verification
 - [ ] site release
+- [ ] SHA-pinned CI workflow is committed, active, and required on the release branch
 - [ ] wallet smoke test
 - [ ] configured settlement smoke test
+- [ ] final-origin smoke for agent discovery, MCP initialize, free x402 quote, and fail-closed paid POST

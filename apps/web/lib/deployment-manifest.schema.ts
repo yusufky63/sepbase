@@ -1,10 +1,10 @@
 import { z } from "zod";
+import { isSafeOriginRelativePath } from "./safe-route-path";
 
 const nullableAddress = z.string().regex(/^0x[a-fA-F0-9]{40}$/).nullable();
 const decimalUint = z.string().regex(/^\d{1,78}$/);
 const routePath = z.string()
-  .startsWith("/")
-  .refine((value) => !value.includes("..") && !/[?#]/.test(value));
+  .refine(isSafeOriginRelativePath, "Must be a safe same-origin path without traversal.");
 const fiatReference = z.object({
   currency: z.string().regex(/^[A-Z]{3}$/),
   amount: z.string().min(1).max(100).regex(/^\d+(?:\.\d+)?$/).refine((value) => Number(value) > 0),

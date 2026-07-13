@@ -37,3 +37,6 @@ wrap_comments = true
 fuzz.runs = 1_000
 invariant.runs = 256
 invariant.depth = 128
+
+[rpc_endpoints]
+base_sepolia = "${ETH_RPC_URL}"

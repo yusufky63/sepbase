@@ -22,6 +22,8 @@ export const metadata: Metadata = {
     title: projectConfig.brand.name,
     description: projectConfig.brand.description,
     type: "website",
+    url: "/",
+    siteName: projectConfig.brand.name,
   },
 };
 
@@ -38,12 +40,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-scroll-behavior="smooth" style={themeStyle} className={`${displayFont.variable} ${uiFont.variable} ${monoFont.variable}`}>
       <body>
+        <a className="skipLink" href="#main-content">Skip to main content</a>
         <Providers>
           <SiteHeader />
           <ProtocolBanner />
           <TransactionToast />
           <RenewalReminderCenter />
-          <main>{children}</main>
+          <main id="main-content" tabIndex={-1}>{children}</main>
           <SiteFooter />
         </Providers>
       </body>

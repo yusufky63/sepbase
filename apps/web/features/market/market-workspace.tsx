@@ -3,7 +3,7 @@
 import { ArrowUpDown, ExternalLink, Search, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -14,7 +14,7 @@ import { useSettlementApproval } from "@/features/transactions/settlement-approv
 import { TransactionComplete } from "@/features/transactions/transaction-complete";
 import { TransactionStatus } from "@/features/transactions/transaction-status";
 import txStyles from "@/features/transactions/transactions.module.css";
-import { useMarketListings, useProtocolHealth, useProtocolTransaction } from "@/lib/contract/hooks";
+import { useMarketListings, useProtocolHealth, useProtocolTransaction, useVerifiedListing } from "@/lib/contract/hooks";
 import type { MarketNameListing } from "@/lib/contract/types";
 import { deploymentManifest, protocolDeployed } from "@/lib/deployment-manifest";
 import { protocolErrorMessage } from "@/lib/errors";
@@ -34,16 +34,26 @@ function BuyDialog({ listing, open, onClose }: { listing: MarketNameListing | nu
   const router = useRouter();
   const { address } = useAccount();
   const transaction = useProtocolTransaction();
-  const approval = useSettlementApproval(listing?.price ?? 0n);
+  const verified = useVerifiedListing(listing?.tokenId, open);
+  const currentListing = verified.listing;
+  const approval = useSettlementApproval(currentListing?.price ?? 0n, "buy");
   const health = useProtocolHealth();
-  const isSeller = Boolean(listing && address?.toLowerCase() === listing.seller.toLowerCase());
+  const isSeller = Boolean(currentListing && address?.toLowerCase() === currentListing.seller.toLowerCase());
+  const priceChanged = Boolean(listing && currentListing && listing.price !== currentListing.price);
+  const marketWritable = health.solvent === true && health.marketplacePaused === false && !health.isError;
+  const refetchVerifiedListing = verified.refetch;
+
+  useEffect(() => {
+    if (!open || !listing) return;
+    void refetchVerifiedListing();
+  }, [listing, open, refetchVerifiedListing]);
 
   async function buy() {
-    if (!listing) return;
+    if (!currentListing || verified.isFetching || !marketWritable) return;
     await transaction.send({
       functionName: "buyListedName",
-      args: [listing.tokenId, listing.price],
-      value: deploymentManifest.settlement.kind === "native" ? listing.price : undefined,
+      args: [currentListing.tokenId, currentListing.price],
+      value: deploymentManifest.settlement.kind === "native" ? currentListing.price : undefined,
     });
   }
 
@@ -71,13 +81,26 @@ function BuyDialog({ listing, open, onClose }: { listing: MarketNameListing | nu
         />
       ) : listing ? (
         <div className={txStyles.form}>
-          <div className={txStyles.summary}>
-            <div><span>Name</span><strong>{listing.fullName}</strong></div>
-            <div><span>Price</span><strong><SettlementAmount amountBaseUnits={listing.price} /></strong></div>
-            <div><span>Network fee</span><strong>{projectConfig.chain.nativeCurrency.symbol} / wallet estimate</strong></div>
-          </div>
+          {verified.isLoading || verified.isFetching ? (
+            <div className={txStyles.notice} role="status">Re-checking the listing, seller, lifecycle, and exact price onchain...</div>
+          ) : verified.error ? (
+            <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The current listing could not be verified. No purchase can be submitted.</div>
+          ) : verified.isStale || !currentListing ? (
+            <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">This listing is no longer active or its seller no longer owns the name.</div>
+          ) : (
+            <div className={txStyles.summary}>
+              <div><span>Name</span><strong>{currentListing.fullName}</strong></div>
+              <div><span>Seller</span><strong>{shortenAddress(currentListing.seller, 6)}</strong></div>
+              <div><span>Status</span><strong>ACTIVE / VERIFIED</strong></div>
+              <div><span>Price</span><strong><SettlementAmount amountBaseUnits={currentListing.price} /></strong></div>
+              <div><span>Network fee</span><strong>{projectConfig.chain.nativeCurrency.symbol} / wallet estimate</strong></div>
+            </div>
+          )}
+          {priceChanged ? <p className={txStyles.warning} role="status">The listing price changed after the market row loaded. Review the new verified price before confirming.</p> : null}
           <p className={txStyles.warning}>The NFT transfers to the buyer and the seller&apos;s profile, resolution, and primary mapping are reset.</p>
           <TransactionStatus transaction={transaction} />
+          {health.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">Marketplace health could not be verified. Purchases are disabled.</div> : null}
+          {approval.sufficientBalance === false ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The connected wallet does not have enough settlement-token balance.</div> : null}
           {approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
           <div className={txStyles.actions}>
             <Button variant="quiet" onClick={onClose}>Cancel</Button>
@@ -86,11 +109,11 @@ function BuyDialog({ listing, open, onClose }: { listing: MarketNameListing | nu
             ) : !approval.ready ? (
               <Button disabled>{approval.error ? "Payment unavailable" : "Checking allowance..."}</Button>
             ) : approval.required ? (
-              <Button onClick={() => void approval.approve()} disabled={approval.isPending || approval.isConfirming || health.marketplacePaused || !health.solvent || isSeller}>
+              <Button onClick={() => void approval.approve()} disabled={approval.isPending || approval.isConfirming || approval.sufficientBalance !== true || !currentListing || verified.isFetching || !marketWritable || isSeller}>
                 {approval.isPending || approval.isConfirming ? "Approving..." : "Approve payment"}
               </Button>
             ) : (
-              <Button icon={<ShoppingBag size={17} />} onClick={() => void buy()} disabled={transaction.isPending || transaction.isConfirming || health.marketplacePaused || !health.solvent || isSeller}>
+              <Button icon={<ShoppingBag size={17} />} onClick={() => void buy()} disabled={transaction.isPending || transaction.isConfirming || !currentListing || verified.isFetching || !marketWritable || approval.sufficientBalance !== true || isSeller}>
                 Confirm purchase
               </Button>
             )}
@@ -110,6 +133,7 @@ export function MarketWorkspace() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
   const [selected, setSelected] = useState<MarketNameListing | null>(null);
+  const marketWritable = health.solvent === true && health.marketplacePaused === false && !health.isError;
 
   const listings = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -134,10 +158,10 @@ export function MarketWorkspace() {
             <p>Current .{projectConfig.brand.suffix} names offered at fixed prices.</p>
           </div>
           <div className={styles.metrics}>
-            <div><span>LISTINGS</span><strong>{protocolDeployed ? market.listings.length : "-"}</strong></div>
-            <div><span>TOTAL LISTINGS</span><strong>{protocolDeployed ? market.total.toString() : "-"}</strong></div>
+            <div><span>LISTINGS</span><strong>{protocolDeployed && !market.error ? market.listings.length : "-"}</strong></div>
+            <div><span>TOTAL LISTINGS</span><strong>{protocolDeployed ? market.total?.toString() ?? "Unavailable" : "-"}</strong></div>
             <div><span>SETTLEMENT</span><strong>{deploymentManifest.settlement.symbol}</strong></div>
-            <div><span>MARKET FEE</span><strong>{formatBps(health.marketplaceFeeBps)}</strong></div>
+            <div><span>MARKET FEE</span><strong>{health.marketplaceFeeBps === null ? "Unavailable" : formatBps(health.marketplaceFeeBps)}</strong></div>
           </div>
         </div>
       </section>
@@ -166,14 +190,30 @@ export function MarketWorkspace() {
 
           {!protocolDeployed ? (
             <div className={styles.emptyState}><span>COMING SOON</span><h2>The market is not available on {projectConfig.chain.name} yet.</h2><p>Listings will appear here after launch.</p></div>
-          ) : !health.isLoading && health.marketplacePaused ? (
+          ) : health.isError ? (
+            <div className={styles.error} role="alert">Marketplace health could not be verified. Listings remain read-only and purchases are disabled.</div>
+          ) : !health.isLoading && health.marketplacePaused === true ? (
             <div className={styles.notice}>Marketplace purchases and new listings are currently paused. Owners can still cancel existing listings.</div>
           ) : null}
 
           {protocolDeployed && market.isLoading ? <p className={styles.loading}>Loading listings...</p> : null}
           {protocolDeployed && market.error ? <p className={styles.error}>Listings could not be loaded. Try again.</p> : null}
           {protocolDeployed && !market.isLoading && !market.error && listings.length === 0 ? (
-            <div className={styles.emptyState}><span>NO MATCHES</span><h2>No active listings match this view.</h2><p>Only current listings appear in the market.</p></div>
+            market.listings.length === 0 && query.trim().length === 0 ? (
+              <div className={styles.emptyState}>
+                <span>MARKET EMPTY</span>
+                <h2>No verified active listings yet.</h2>
+                <p>
+                  Own a name? <Link href="/me?tab=listings">List it from your account.</Link>
+                </p>
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <span>NO MATCHES</span>
+                <h2>No active listings match this view.</h2>
+                <p>Clear or change the filter to see other verified listings.</p>
+              </div>
+            )
           ) : null}
 
           {listings.length > 0 ? (
@@ -196,7 +236,7 @@ export function MarketWorkspace() {
                     ) : (
                       <Button
                         icon={<ShoppingBag size={16} />}
-                        disabled={health.marketplacePaused || !health.solvent}
+                        disabled={!marketWritable}
                         onClick={() => setSelected(listing)}
                       >
                         Buy
@@ -207,7 +247,7 @@ export function MarketWorkspace() {
               })}
             </div>
           ) : null}
-          {protocolDeployed && market.total > BigInt(pageSize) ? (
+          {protocolDeployed && market.total !== null && market.total > BigInt(pageSize) ? (
             <div className={styles.pagination}>
               <Button variant="quiet" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - pageSize))}>Previous</Button>
               <span>{offset + 1}-{Math.min(offset + pageSize, Number(market.total))} / {market.total.toString()}</span>
@@ -217,7 +257,12 @@ export function MarketWorkspace() {
         </div>
       </section>
 
-      <BuyDialog listing={selected} open={selected !== null} onClose={() => setSelected(null)} />
+      <BuyDialog
+        key={selected?.tokenId.toString() ?? "closed"}
+        listing={selected}
+        open={selected !== null}
+        onClose={() => setSelected(null)}
+      />
     </>
   );
 }

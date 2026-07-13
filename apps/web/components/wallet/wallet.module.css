@@ -12,6 +12,51 @@
   cursor: pointer;
 }
 
+.wrongNetworkActions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.networkError {
+  flex-basis: 100%;
+  max-width: 420px;
+  color: var(--danger);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+}
+
+.disconnectButton {
+  min-height: 44px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.disconnectButton:hover {
+  background: var(--surface-muted);
+}
+
+.disconnectButton:disabled,
+.accountButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.disconnectButton:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .accountDot {
   width: 8px;
   height: 8px;
@@ -45,4 +90,32 @@
   color: var(--accent);
   font-family: var(--font-mono), monospace;
   font-size: var(--text-xs);
+}
+
+@media (max-width: 560px) {
+  .wrongNetworkActions {
+    gap: 4px;
+  }
+
+  .wrongNetworkActions > button:first-child {
+    max-width: 104px;
+    padding-inline: 8px;
+    overflow: hidden;
+  }
+
+  .wrongNetworkActions > button:first-child > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .disconnectButton {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .disconnectButton span {
+    display: none;
+  }
 }

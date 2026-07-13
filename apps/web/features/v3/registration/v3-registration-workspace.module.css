@@ -1,0 +1,149 @@
+.hero {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.inner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+}
+
+.breadcrumb,
+.recordGrid dt,
+.textRecords dt,
+.textRecords > strong {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.nameTitle {
+  min-width: 0;
+  margin: var(--space-8) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-6);
+}
+
+.nameTitle h1 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: .95;
+}
+
+.nameTitle h1 span {
+  color: var(--accent);
+}
+
+.nameStatus {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.nameStatus[data-kind="available"] {
+  color: var(--accent);
+}
+
+.nameStatus[data-kind="unavailable"] {
+  color: var(--danger);
+}
+
+.message {
+  max-width: 68ch;
+  margin: 0;
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--foreground);
+  color: var(--muted);
+}
+
+.recordGrid,
+.textRecords dl {
+  width: 100%;
+  margin: var(--space-8) 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+}
+
+.recordGrid > div,
+.textRecords dl > div {
+  min-width: 0;
+  min-height: 88px;
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.recordGrid > div:last-child,
+.textRecords dl > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.recordGrid dd,
+.textRecords dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.recordGrid code {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.textRecords {
+  width: 100%;
+  margin-top: var(--space-8);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.textRecords dl {
+  margin-top: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.textRecords p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.inner > a {
+  width: fit-content;
+  margin-top: var(--space-6);
+  display: inline-flex;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+@media (max-width: 720px) {
+  .nameTitle {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .recordGrid,
+  .textRecords dl {
+    grid-template-columns: 1fr;
+  }
+
+  .recordGrid > div,
+  .textRecords dl > div {
+    padding-inline: 0;
+    border-right: 0;
+  }
+}

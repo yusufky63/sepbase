@@ -10,6 +10,6 @@ describe("Nameplate", () => {
     expect(screen.getByText("alice")).toBeInTheDocument();
     expect(screen.getByText(`.${projectConfig.brand.suffix}`)).toBeInTheDocument();
     expect(screen.getByText(projectConfig.brand.shortName)).toBeInTheDocument();
-    expect(screen.getByText(String(projectConfig.chain.id))).toBeInTheDocument();
+    expect(screen.getByText(projectConfig.chain.name)).toBeInTheDocument();
   });
 });

@@ -1,0 +1,562 @@
+.hero {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.inner {
+  width: min(100%, var(--content-max));
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.hero .inner {
+  padding-top: var(--space-12);
+}
+
+.kicker,
+.viewHeading span,
+.tableHeader,
+.empty > span,
+.state > span,
+.manageHeading span,
+.composerHeading span,
+.formGrid label > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.titleRow {
+  padding-block: var(--space-8) var(--space-12);
+  display: grid;
+  grid-template-columns: 8fr 4fr;
+  align-items: end;
+  gap: var(--grid-gutter);
+}
+
+.titleRow h1 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: .78;
+}
+
+.titleRow h1 span {
+  color: var(--accent);
+}
+
+.titleRow > div {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--foreground);
+}
+
+.titleRow p,
+.titleRow small {
+  margin: 0;
+}
+
+.titleRow p {
+  font-size: var(--text-lg);
+}
+
+.titleRow small {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  line-height: 1.5;
+}
+
+.market {
+  min-height: 640px;
+  padding-block: var(--space-10) var(--space-18);
+}
+
+.toolbar {
+  min-height: 64px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.viewTabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-6);
+}
+
+.viewTabs button {
+  min-width: 112px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: 700 var(--text-sm) var(--font-sans), sans-serif;
+}
+
+.viewTabs button[aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  color: var(--foreground);
+}
+
+.viewTabs button span {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.toolbarActions > span {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.toolbarActions button,
+.state button,
+.composerHeading button {
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--foreground);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-xs) var(--font-mono), monospace;
+}
+
+.toolbarActions button:hover:not(:disabled),
+.state button:hover:not(:disabled),
+.composerHeading button:hover:not(:disabled) {
+  background: var(--foreground);
+  color: var(--foreground-inverse);
+}
+
+.toolbarActions button:disabled,
+.state button:disabled,
+.composerHeading button:disabled,
+.rowAction:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.state {
+  min-height: 260px;
+  padding-block: var(--space-12);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.state h2,
+.empty h3 {
+  max-width: 760px;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.state p,
+.empty p,
+.viewHeading p,
+.composerHeading p,
+.formSummary p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.state[data-error="true"] {
+  color: var(--danger);
+}
+
+.section {
+  padding-top: var(--space-10);
+}
+
+.viewHeading,
+.manageHeading,
+.composerHeading {
+  margin-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  align-items: end;
+  gap: var(--grid-gutter);
+}
+
+.viewHeading > div,
+.manageHeading > div,
+.composerHeading > div {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.viewHeading h2,
+.manageHeading h2,
+.composerHeading h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.viewHeading p,
+.manageHeading > a,
+.composerHeading > button {
+  justify-self: end;
+}
+
+.empty {
+  min-height: 300px;
+  padding-top: var(--space-12);
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  border-top: 1px solid var(--foreground);
+}
+
+.empty a,
+.manageHeading > a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.table {
+  border-top: 1px solid var(--foreground);
+}
+
+.tableHeader,
+.listingRow {
+  display: grid;
+  grid-template-columns: 48px minmax(180px, 2fr) minmax(100px, 1fr) minmax(130px, 1.2fr) minmax(110px, 1fr) minmax(150px, auto);
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.tableHeader {
+  min-height: 40px;
+  border-bottom: 1px solid var(--line);
+}
+
+.listingRow {
+  min-height: 84px;
+  border-bottom: 1px solid var(--line);
+}
+
+.listingRow > span,
+.listingRow > time,
+.listingRow > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.index {
+  color: var(--accent);
+}
+
+.nameLink {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nameLink:hover {
+  color: var(--accent);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.rowAction {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-xs) var(--font-mono), monospace;
+}
+
+.rowAction:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.pagination {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.pagination span,
+.pagination strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.pagination strong {
+  grid-column: 1 / -1;
+  padding-bottom: var(--space-3);
+  color: var(--danger);
+}
+
+.pagination button {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.pagination button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.managePanel,
+.composer {
+  margin-top: var(--space-12);
+  padding-block: var(--space-8);
+  scroll-margin-top: 90px;
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.ownedNames {
+  border-top: 1px solid var(--foreground);
+}
+
+.ownedNames article {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.ownedNames article > strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+}
+
+.formGrid {
+  padding-block: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  border-top: 1px solid var(--line);
+}
+
+.formGrid:empty {
+  display: none;
+}
+
+.formGrid label {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.formGrid input,
+.formGrid select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--foreground);
+  font: var(--text-sm) var(--font-mono), monospace;
+}
+
+.inputWithSuffix {
+  position: relative;
+}
+
+.inputWithSuffix small {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  pointer-events: none;
+}
+
+.inputWithSuffix:has(small) input {
+  padding-right: 7rem;
+}
+
+.formSummary {
+  min-height: 72px;
+  padding-top: var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.formSummary strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.toolbar button:focus-visible,
+.viewTabs button:focus-visible,
+.rowAction:focus-visible,
+.pagination button:focus-visible,
+.composer button:focus-visible,
+.formGrid input:focus-visible,
+.formGrid select:focus-visible,
+.manageHeading a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 960px) {
+  .tableHeader {
+    display: none;
+  }
+
+  .listingRow {
+    padding-block: var(--space-4);
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+  }
+
+  .listingRow > span:nth-child(3),
+  .listingRow > :nth-child(4) {
+    display: none;
+  }
+
+  .listingRow > strong:nth-child(5) {
+    grid-column: 2;
+  }
+
+  .listingRow .rowActions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .titleRow,
+  .viewHeading,
+  .manageHeading,
+  .composerHeading {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .viewTabs {
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .viewTabs button {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .toolbarActions {
+    min-height: 64px;
+    justify-content: space-between;
+  }
+
+  .viewHeading p,
+  .manageHeading > a,
+  .composerHeading > button {
+    justify-self: start;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .titleRow h1 {
+    font-size: clamp(3.5rem, 19vw, 5.5rem);
+  }
+
+  .viewTabs button {
+    font-size: var(--text-xs);
+  }
+
+  .toolbarActions {
+    align-items: stretch;
+    flex-direction: column;
+    padding-block: var(--space-3);
+  }
+
+  .toolbarActions button {
+    width: 100%;
+  }
+
+  .listingRow {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .listingRow .rowActions {
+    grid-column: 2;
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+
+  .ownedNames article,
+  .formSummary {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .ownedNames article {
+    padding-block: var(--space-4);
+  }
+
+  .ownedNames .rowActions,
+  .formSummary {
+    justify-content: flex-start;
+  }
+
+  .formSummary {
+    flex-direction: column;
+  }
+}

@@ -32,10 +32,11 @@ export function Dialog({ open, onClose, title, description, children, critical =
       className={styles.dialog}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      aria-modal="true"
       onClose={onClose}
       onCancel={(event) => {
-        if (critical) event.preventDefault();
-        else onClose();
+        event.preventDefault();
+        onClose();
       }}
       onClick={(event) => {
         if (!critical && event.target === ref.current) onClose();

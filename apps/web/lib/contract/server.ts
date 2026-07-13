@@ -9,10 +9,9 @@ import {
 } from "viem";
 import { configuredChain } from "@/lib/chain";
 import { deploymentManifest, protocolAddress } from "@/lib/deployment-manifest";
-import { annualPriceForLength } from "@/lib/pricing";
 import { chainNameServiceAbi } from "./abi.generated";
 import { normalizeListing } from "./normalization";
-import { emptyProfile, NAME_STATUS, type NameListing, type NameProfile } from "./types";
+import { NAME_STATUS, type NameListing, type NameProfile } from "./types";
 
 function serverRpcUrl() {
   const value = process.env.RPC_URL?.trim() || deploymentManifest.rpcUrl;
@@ -43,6 +42,19 @@ function value<T>(result: ReadResult): T | undefined {
   return result?.status === "success" ? result.result as T : undefined;
 }
 
+export class PartialContractReadError extends Error {
+  constructor(read: string) {
+    super(`Required contract read failed: ${read}.`);
+    this.name = "PartialContractReadError";
+  }
+}
+
+function requiredValue<T>(result: ReadResult, read: string): T {
+  const resultValue = value<T>(result);
+  if (resultValue === undefined) throw new PartialContractReadError(read);
+  return resultValue;
+}
+
 export function tokenIdForLabel(label: string) {
   return BigInt(keccak256(toBytes(label)));
 }
@@ -67,27 +79,38 @@ export async function readName(label: string, durationYears = 1, blockNumber?: b
     ],
     blockNumber,
   });
+  const available = requiredValue<boolean>(results[0], "isAvailable");
+  const reserved = requiredValue<boolean>(results[1], "reservedLabels");
+  const status = requiredValue<number>(results[2], "statusOf");
   const owner = value<Address>(results[3]);
-  const resolution = value<Address>(results[4]);
+  const resolution = requiredValue<Address>(results[4], "resolvedAddress");
+  const expiration = requiredValue<bigint>(results[5], "expiresAt");
+  const profile = value<NameProfile>(results[6]);
+  const listing = requiredValue<NameListing | readonly unknown[]>(results[7], "listings");
+  const quote = requiredValue<bigint>(results[8], "quote");
+  const registrationsPaused = requiredValue<boolean>(results[9], "registrationsPaused");
+  const solvent = requiredValue<boolean>(results[10], "isSolvent");
+  const tokenExists = status !== NAME_STATUS.UNREGISTERED;
+  if (tokenExists && owner === undefined) throw new PartialContractReadError("ownerOf");
+  if (tokenExists && profile === undefined) throw new PartialContractReadError("profileOf");
+  if (!tokenExists && owner !== undefined) {
+    throw new PartialContractReadError("statusOf/ownerOf consistency");
+  }
   return {
     label,
     fullName: `${label}.${deploymentManifest.suffix}`,
     tokenId,
-    available: value<boolean>(results[0]) ?? false,
-    reserved: value<boolean>(results[1]) ?? false,
-    status: value<number>(results[2]) ?? NAME_STATUS.UNREGISTERED,
+    available,
+    reserved,
+    status,
     owner: owner ?? null,
     resolvedAddress: resolution && resolution !== zeroAddress ? resolution : null,
-    expiresAt: value<bigint>(results[5]) ?? null,
-    profile: value<NameProfile>(results[6]) ?? emptyProfile,
-    listing: normalizeListing(value<NameListing | readonly unknown[]>(results[7])),
-    oneYearQuote: value<bigint>(results[8]) ?? annualPriceForLength(
-      BigInt(deploymentManifest.annualPriceBaseUnits),
-      label.length,
-      deploymentManifest.shortNamePriceMultipliers,
-    ) * BigInt(durationYears),
-    registrationsPaused: value<boolean>(results[9]) ?? false,
-    solvent: value<boolean>(results[10]) ?? false,
+    expiresAt: tokenExists ? expiration : null,
+    profile: profile ?? null,
+    listing: normalizeListing(listing),
+    oneYearQuote: quote,
+    registrationsPaused,
+    solvent,
   };
 }
 
@@ -128,8 +151,12 @@ export async function readMarket(offset: bigint, limit: bigint, blockNumber?: bi
     const status = value<number>(details[detailOffset + 1]);
     const owner = value<Address>(details[detailOffset + 2]);
     const expiresAt = value<bigint>(details[detailOffset + 3]);
+    if (fullName === undefined) throw new PartialContractReadError("fullName");
+    if (status === undefined) throw new PartialContractReadError("statusOf");
+    if (owner === undefined) throw new PartialContractReadError("ownerOf");
+    if (expiresAt === undefined) throw new PartialContractReadError("expiresAt");
     if (!fullName || status !== NAME_STATUS.ACTIVE || owner?.toLowerCase() !== listing.seller.toLowerCase()) return [];
-    return [{ ...listing, fullName, status, expiresAt: expiresAt ?? 0n }];
+    return [{ ...listing, fullName, status, expiresAt }];
   });
   return { listings, total, marketplacePaused, solvent, rawCount: stored.length };
 }
@@ -148,16 +175,28 @@ export async function readTokenMetadata(tokenId: bigint, blockNumber?: bigint) {
     ],
     blockNumber,
   });
+  const status = requiredValue<number>(results[2], "statusOf");
+  const expiresAt = requiredValue<bigint>(results[3], "expiresAt");
+  const resolvedAddress = requiredValue<Address>(results[5], "resolvedAddress");
   const fullName = value<string>(results[0]);
   const owner = value<Address>(results[1]);
-  if (!fullName || !owner) return undefined;
+  const profile = value<NameProfile>(results[4]);
+  if (status === NAME_STATUS.UNREGISTERED) {
+    if (fullName !== undefined || owner !== undefined || profile !== undefined) {
+      throw new PartialContractReadError("statusOf/token metadata consistency");
+    }
+    return undefined;
+  }
+  if (!fullName) throw new PartialContractReadError("fullName");
+  if (!owner) throw new PartialContractReadError("ownerOf");
+  if (profile === undefined) throw new PartialContractReadError("profileOf");
   return {
     tokenId,
     fullName,
     owner,
-    status: value<number>(results[2]) ?? NAME_STATUS.UNREGISTERED,
-    expiresAt: value<bigint>(results[3]) ?? 0n,
-    profile: value<NameProfile>(results[4]) ?? emptyProfile,
-    resolvedAddress: value<Address>(results[5]) ?? zeroAddress,
+    status,
+    expiresAt,
+    profile,
+    resolvedAddress,
   };
 }

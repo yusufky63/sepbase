@@ -28,6 +28,23 @@ body > main {
   flex: 1 0 auto;
 }
 
+.skipLink {
+  position: fixed;
+  z-index: 1000;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  transform: translateY(calc(-100% - var(--space-4)));
+  border: 2px solid var(--foreground);
+  background: var(--surface);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
 .status-page {
   width: min(100%, 760px);
   min-height: min(680px, calc(100svh - 72px));

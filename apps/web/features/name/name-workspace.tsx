@@ -3,6 +3,7 @@
 import { CircleCheck, CircleDashed, CircleSlash2, Clock3, ExternalLink } from "lucide-react";
 import { Nameplate } from "@/components/nameplate/nameplate";
 import { SettlementAmount } from "@/components/price/settlement-amount";
+import { Button } from "@/components/ui/button";
 import { projectConfig } from "@/config/project.config";
 import { RenewalReminderPanel } from "@/features/renewal/renewal-reminder-panel";
 import { deploymentManifest } from "@/lib/deployment-manifest";
@@ -32,6 +33,28 @@ function explorerAddressHref(address: string) {
 
 export function NameWorkspace({ label }: { label: string }) {
   const { record, isLoading, isError, isPreview, refetch } = useNameRecord(label);
+  if (!record) {
+    return (
+      <section className={styles.hero} aria-busy={isLoading}>
+        <div className={styles.inner}>
+          <div className={styles.breadcrumb}>NAME / {label.toUpperCase()} / {projectConfig.chain.name.toUpperCase()}</div>
+          <div className={styles.nameTitle}>
+            <h1>{label}<span>.{projectConfig.brand.suffix}</span></h1>
+            <div className={styles.status}>
+              <CircleDashed size={18} aria-hidden="true" />
+              <span>{isLoading ? "VERIFYING" : "READ ERROR"}</span>
+            </div>
+          </div>
+          <p className={styles.rpcError} role={isError ? "alert" : "status"}>
+            {isLoading
+              ? "Current availability, ownership, price, and lifecycle are being verified onchain."
+              : "Current name data could not be verified. No availability, price, or ownership assumption has been made."}
+          </p>
+          {isError ? <Button variant="secondary" onClick={() => void refetch()}>Try again</Button> : null}
+        </div>
+      </section>
+    );
+  }
   const status = statusLabel(record.status, record.reserved);
   const statusIcon = record.reserved
     ? <CircleSlash2 size={18} />

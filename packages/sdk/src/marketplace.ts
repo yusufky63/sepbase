@@ -1,6 +1,6 @@
-import { SepbaseError } from "./errors";
+import { SepbaseError } from "./errors.js";
 import { z } from "zod";
-import type { ApiErrorEnvelope, MarketResponse } from "./types";
+import type { ApiErrorEnvelope, MarketResponse } from "./types.js";
 
 const address = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 const decimalUint = z.string().regex(/^\d{1,78}$/);

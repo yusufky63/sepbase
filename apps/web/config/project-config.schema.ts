@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeOriginRelativePath } from "../lib/safe-route-path";
 
 const utf8Text = (maxBytes: number) => z.string()
   .min(1)
@@ -32,8 +33,7 @@ const settlementSchema = z.discriminatedUnion("kind", [
 
 const routePath = z
   .string()
-  .startsWith("/")
-  .refine((value) => !value.includes("..") && !/[?#]/.test(value));
+  .refine(isSafeOriginRelativePath, "Must be a safe same-origin path without traversal.");
 
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
@@ -159,6 +159,10 @@ export const projectConfigSchema = z
         wellKnownPath: routePath,
         marketApiPath: routePath,
         openApiPath: routePath,
+        agentManifestPath: routePath,
+        mcpPath: routePath,
+        x402QuotePath: routePath,
+        x402RegisterPath: routePath,
       })
       .strict(),
     siteUrl: z

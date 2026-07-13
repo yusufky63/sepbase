@@ -1,10 +1,29 @@
 {
   "name": "@sepbase/sdk",
   "version": "0.1.0",
+  "description": "Manifest-validated TypeScript reads and verified identity helpers for SEPBASE deployments.",
+  "license": "MIT",
   "private": false,
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yusufky63/sepbase.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://sepbase.vercel.app/developers",
+  "bugs": {
+    "url": "https://github.com/yusufky63/sepbase/security/advisories/new"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,6 +39,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@adraffy/ens-normalize": "1.11.1",
     "viem": "2.55.0",
     "zod": "4.4.3"
   },

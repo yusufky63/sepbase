@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 4,
+  "kind": "sepbase-agent-integration",
+  "name": "SEPBASE agent integration",
+  "description": "Machine-readable discovery for read-only MCP tools, guarded transaction preparation, and an activation-gated paid x402 runtime that remains fail-closed until the live V3 release and external capabilities are verified.",
+  "protocol": {
+    "chainId": 84532,
+    "chainName": "Base Sepolia",
+    "testnet": true,
+    "suffix": "sepbase",
+    "contract": "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945"
+  },
+  "discovery": {
+    "deploymentManifest": "/.well-known/chain-name-service.json",
+    "v3TargetManifest": "/deployment-manifest.v3.json",
+    "v3Status": "/api/v3/status",
+    "v3Name": "/api/v3/name/{label}",
+    "v3Market": "/api/v3/market",
+    "v3Health": "/api/v3/health",
+    "v3Mcp": "/api/v3/mcp",
+    "v3NormalizationAttestation": "/api/v3/normalization-attestation",
+    "v3Account": "/api/v3/account/{address}",
+    "openApi": "/api/openapi.json",
+    "documentation": "/developers",
+    "llms": "/llms.txt"
+  },
+  "mcp": {
+    "endpoint": "/api/mcp",
+    "protocolVersion": "2025-11-25",
+    "transport": "streamable-http",
+    "sessionMode": "stateless",
+    "authentication": "none",
+    "requestOriginPolicy": "configured-origin-or-no-origin",
+    "transactionAuthority": "none",
+    "tools": [
+      "resolve_name",
+      "reverse_resolve",
+      "check_availability",
+      "name_info",
+      "quote_registration",
+      "market_listings",
+      "protocol_health",
+      "prepare_registration"
+    ]
+  },
+  "x402": {
+    "specVersion": 2,
+    "availability": "fail-closed",
+    "implementationStatus": "activation-gated",
+    "paidExecutionAvailable": false,
+    "pinnedPackages": {
+      "@x402/core": "2.18.0",
+      "@x402/evm": "2.18.0",
+      "@x402/extensions": "2.18.0",
+      "workflow": "4.6.0"
+    },
+    "settlementTarget": {
+      "status": "v3-target",
+      "network": "eip155:84532",
+      "kind": "erc20",
+      "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "symbol": "USDC",
+      "decimals": 6,
+      "gasCurrency": "ETH",
+      "testnetValueDisclaimer": true
+    },
+    "quoteEndpoint": "/api/x402/registration/quote",
+    "resourceEndpoint": "/api/x402/registration",
+    "statusEndpoint": "/api/x402/registration/status",
+    "defaultEnabled": false,
+    "registrationMode": "optional-keeper-mediated",
+    "paymentRequiredHeader": "PAYMENT-REQUIRED",
+    "paymentSignatureHeader": "PAYMENT-SIGNATURE",
+    "paymentResponseHeader": "PAYMENT-RESPONSE",
+    "registrationScope": [
+      "chainId",
+      "network",
+      "contract",
+      "resource",
+      "quoteId",
+      "label",
+      "recipient",
+      "durationYears",
+      "referrer",
+      "expectedAmountBaseUnits",
+      "expectedReferralRewardBps",
+      "expiresAt"
+    ],
+    "paymentAcceptanceScope": [
+      "x402Version",
+      "scheme",
+      "network",
+      "asset",
+      "amountBaseUnits",
+      "payTo"
+    ],
+    "idempotencyScope": [
+      "paymentIdentifier",
+      "requestFingerprint",
+      "quoteId"
+    ],
+    "activationRequirements": [
+      "v3-commit-reveal-deployment",
+      "matching-six-decimal-erc20",
+      "official-x402-v2-runtime",
+      "reviewed-facilitator",
+      "authenticated-quote-and-attestation",
+      "durable-payment-idempotency",
+      "managed-limited-keeper",
+      "durable-commit-reveal-workflow",
+      "runtime-quote-revalidation",
+      "monitoring-reconciliation-refund-e2e"
+    ]
+  }
+}

@@ -1,10 +1,32 @@
 # Chain Name DApp - Entegrasyon Rehberi
 
-Bu belge gelecekte sitedeki `/developers` sayfasının ve yayınlanacak SDK dokümantasyonunun kaynak sözleşmesidir.
+Bu belge insan-okunabilir entegrasyon rehberidir. Makine sözleşmesinin doğruluk kaynakları generated deployment/agent manifestleri ile `/api/openapi.json`; bu belge onların yerine geçmez ve release doğrulamasında birlikte kontrol edilir.
 
-**Guide version:** 3.0
-**Manifest schema:** 3
-**Contract version:** 2.0.0
+**Guide version:** 4.0 target / v2 runtime reference
+**Current-v2 deployment manifest schema:** 3
+**V3 draft manifest / agent discovery schema:** 4
+**Current live contract version:** 2.0.0
+
+> Hosted durum: agent manifest, MCP, x402 quote boundary ve bu rehberdeki yeni alanlar bu branch'te source-ready durumdadır; `https://sepbase.vercel.app` alias'ına henüz deploy edilmemiştir. Canlı entegrasyon, ayrı web deployment ve endpoint smoke tamamlanmadan varsayılmamalıdır.
+
+> V3 durum: Yedi kontrat, per-module ABI'ler, schema-4 address-free draft manifest, V3 SDK/read-API ve ayrı opt-in MCP kaynağı mevcuttur. Bunlar canlı v2 ABI'sine eklenmemiştir ve V3 deployment kanıtı değildir. Consumer gerçek V3 adresleri, runtime hash'leri ve binding kanıtı yayımlanana kadar V3 write/read sonucunu live saymamalı; current-v2 için aşağıdaki deployment yüzeylerini kullanmalıdır. `@sepbase/*` `0.1.0` public/provenanced olarak yayınlanmıştır; paid x402 execution hâlâ unavailable'dır.
+
+## Sürüm seçimi
+
+| İhtiyaç | Bugün kullanılabilir yol | V3 source / release target |
+|---|---|---|
+| ASCII resolve/profile | V2 SDK/HTTP/direct contract | ENSIP-10 public resolver + separate bounded ENSIP-23 simple resolve/reverse helper |
+| Registration | V2 direct guarded `register` | Normalize + commit + reveal |
+| Marketplace | V2 fixed listing/buy | Fixed + offer + English auction |
+| Referral/proceeds | V2 pull claims | Unified referral/seller/refund claims |
+| MCP | Current-v2 `/api/mcp`; 8 tools hosted on the canonical origin | Opt-in `/api/v3/mcp` with 39 bounded read/unsigned-plan tools; hosted draft and public npm package are available, deployment-dependent calls fail closed |
+| x402 | Free quote; paid POST always `503` | Official V2 paid durable workflow after activation gates |
+
+Do not point a v3-shaped client at the v2 contract. V3 discovery must advertise a new schema/contract-suite version and explicit compatibility matrix.
+
+V3 has seven on-chain addresses: six authority/state contracts for registry, controller, public resolver, Universal Resolver helper, marketplace and migration, plus bounded read-only MarketLens. Universal Resolver is not the public resolver and is not a full official ENS Universal Resolver equivalent; MarketLens is not authority or an indexer. Capability discovery must publish both helper bindings and exactly which resolver/lens reads and cursor bounds are supported.
+
+Full ENSIP-15 transformation remains in the exact-pinned client/attestation service. The controller enforces bounded label checks plus an immutable EIP-712 attestor statement over profile hash, chain, controller, normalized label hash, recipient and expiry. Direct contract callers cannot self-assert canonicality, and the registration commitment binds the exact attestation hash.
 
 ## Mevcut durum
 
@@ -30,11 +52,14 @@ Public RPC rate-limited olabilir. Production entegrasyonları kendi authenticate
 
 ## Entegrasyon yöntemleri
 
-Başka bir dApp üç seviyeden birini seçebilir:
+Başka bir dApp ihtiyacına göre şu yüzeylerden birini seçebilir:
 
 1. TypeScript SDK: React, Next.js ve Node.js projeleri için önerilen yol.
 2. Direct contract read: Viem, Ethers veya Foundry kullanan Web3 uygulamaları için.
 3. Read-only HTTP API: Wallet veya RPC client kurmak istemeyen uygulamalar için.
+4. MCP: AI agent'ların public read ve unsigned guarded transaction preparation yapması için.
+
+x402 registration quote endpoint'i ücretsiz bir makine sınırıdır. Bu release'teki paid POST uygulanmamıştır ve her zaman fail closed olur; environment configuration bunu aktif hale getiremez.
 
 İsim sahipliği ve çözümleme için doğruluk kaynağı her zaman Base Sepolia üzerindeki doğrulanmış kontrattır. HTTP API ve SDK aynı kontratı okuyan kolaylık katmanlarıdır.
 
@@ -59,7 +84,7 @@ Her deployment şu endpoint'i yayınlar:
 GET /.well-known/chain-name-service.json
 ```
 
-Beklenen yanıt:
+Aşağıdaki JSON, nullable deployment alanlarını da gösteren pre-deployment şekil örneğidir; mevcut Base Sepolia deployment değerleri için generated well-known artifact kullanılmalıdır:
 
 ```json
 {
@@ -130,6 +155,8 @@ Hash `0x` prefix'i olmayan tam 64 lowercase hex karakterdir. Unsupported contrac
 
 Manifest generator bütün non-null EVM adreslerini EIP-55 checksum biçiminde yazar. Consumer karşılaştırmadan önce adresleri normalize eder; casing'i kimlik farkı saymaz.
 
+`gitCommit` yalnız release sistemi `SOURCE_COMMIT`, `VERCEL_GIT_COMMIT_SHA` veya `GITHUB_SHA` ile açık bir 40 karakterlik SHA sağlarsa yayınlanır; local/dirty worktree'den otomatik tahmin edilmez ve aksi halde `null` kalır. Bu alan tek başına artifact güven kanıtı değildir.
+
 Slash ile başlayan `abiUrl`, `docsUrl`, `nameApiUrl`, `resolveApiUrl`, `reverseApiUrl`, `marketApiUrl` ve `openApiUrl` değerleri manifestin origin'ine göre resolve edilir; consumer kendi uygulama origin'ine göre birleştirmez. Bilinmeyen `schemaVersion` destekleniyor varsayılmaz ve güvenli hata ile reddedilir.
 
 Well-known manifest, static deployment manifest, ABI, `llms.txt`, OpenAPI ve read-only API yüzeyleri public cross-origin GET kullanımını destekler. Browser consumer'ı ABI'yi kendi bundle'ına kopyalamak zorunda değildir; yine de fetched exact byte hash'ini manifestteki `abiSha256` ile doğrular.
@@ -142,13 +169,12 @@ Template URL placeholder'ları yalnızca canonical değerin `encodeURIComponent`
 
 ## TypeScript SDK
 
-Monorepo içindeki SDK package adı `@sepbase/sdk`'dir. Package build edilmeye hazırdır ancak henüz public npm registry'ye yayınlanmamıştır. Monorepo consumer'ı `workspace:*` dependency kullanır; aşağıdaki registry komutu ilk public SDK release'inden sonra geçerli olacaktır.
+SDK, React ve MCP package'ları public npm registry'de exact `0.1.0` sürümüyle ve SLSA provenance ile yayınlanmıştır. Monorepo içi geliştirme bir sonraki source revision'ı doğrulamak için `workspace:*` dependency kullanmaya devam eder.
 
 Kurulum:
 
 ```bash
-# Public package release'inden sonra
-pnpm add @sepbase/sdk @sepbase/react
+pnpm add @sepbase/sdk@0.1.0 @sepbase/react@0.1.0 @sepbase/mcp@0.1.0
 ```
 
 Başlatma ve temel kullanım:
@@ -174,9 +200,11 @@ Minimum public API:
 export type NameLifecycle = 'unregistered' | 'active' | 'grace' | 'released';
 
 export type CreateSepbaseClientOptions = {
-  manifestUrl: string;
+  manifestUrl: string | URL;
   rpcUrl?: string;
+  fetcher?: typeof fetch;
   allowedManifestOrigins?: readonly string[];
+  allowedRpcOrigins?: readonly string[];
 };
 
 export declare function createSepbaseClient(
@@ -186,18 +214,18 @@ export declare function createSepbaseClient(
 export interface SepbaseClient {
   resolveName(label: string): Promise<`0x${string}` | null>;
   reverseLookup(account: `0x${string}`): Promise<string | null>;
-  getNameProfile(label: string): Promise<NameProfile | null>;
-  getNameState(label: string): Promise<NameState>;
+  getNameProfile(label: string, options?: { blockNumber?: bigint }): Promise<NameProfile | null>;
+  getNameState(label: string, options?: { blockNumber?: bigint }): Promise<NameState>;
   isNameAvailable(label: string): Promise<boolean>;
   quoteName(label: string, years: 1 | 2 | 3 | 4 | 5): Promise<bigint>;
   createReferralUrl(referrer: `0x${string}`): string;
   getActiveListings(cursor?: bigint, limit?: number): Promise<ActiveMarketPage>;
-  getListing(tokenId: bigint): Promise<ActiveMarketListing | null>;
+  getListing(tokenId: bigint, options?: { blockNumber?: bigint }): Promise<ActiveMarketListing | null>;
   getSettlementAsset(): Promise<SettlementMetadata>;
   getNativeCurrency(): { name: string; symbol: string; decimals: number };
-  getProtocolHealth(): Promise<ProtocolHealth>;
+  getProtocolHealth(options?: { blockNumber?: bigint }): Promise<ProtocolHealth>;
   verifyAddress(account: `0x${string}`): Promise<VerifiedAddressIdentity>;
-  verifyName(label: string, expectedAccount?: `0x${string}`): Promise<VerifiedNameResolution>;
+  verifyName(label: string, expectedAccount?: `0x${string}`, options?: { blockNumber?: bigint }): Promise<VerifiedNameResolution>;
 }
 ```
 
@@ -410,7 +438,6 @@ Yanıt `{ data, context }` envelope'u içinde checksum `address`, nullable `prim
 |---:|---|
 | `400` | Geçersiz label veya adres |
 | `404` | Effective resolve sonucu veya metadata tokenı yok; name-state ve reverse endpoint'leri valid input için `200` kullanır |
-| `429` | Rate limit aşıldı |
 | `503` | Chain RPC okunamadı veya contract henüz deploy edilmedi |
 
 API `Access-Control-Allow-Origin: *` ile public GET kullanımına açılabilir. Kısa cache süresi kullanılmalı; expiration ve ownership verisi uzun süre cache edilmemelidir.
@@ -427,9 +454,9 @@ Contract henüz deploy edilmemişse contract-dependent endpoint'ler `503` ve `NO
 }
 ```
 
-Ham provider/RPC nesnesi veya secret içeren detail döndürülmez. `400`, `404`, `429` ve `503` hata yanıtları shared cache'e alınmaz ve `private, no-store` döner. `429` yanıtı mümkünse `Retry-After` header'ı taşır.
+Ham provider/RPC nesnesi veya secret içeren detail döndürülmez. `400`, `404` ve `503` hata yanıtları shared cache'e alınmaz ve `private, no-store` döner. Hosted edge rate limiting release öncesi ayrıca eklenmelidir; bu source release henüz stabil bir `429`/`Retry-After` uygulama sözleşmesi yayınlamaz.
 
-Minimum stabil error code seti: `INVALID_INPUT`, `NOT_FOUND`, `RATE_LIMITED`, `RPC_UNAVAILABLE`, `NOT_DEPLOYED`.
+Mevcut stabil HTTP error code seti: `INVALID_INPUT`, `NOT_FOUND`, `RPC_UNAVAILABLE`, `NOT_DEPLOYED`.
 
 Token ID, block/count, timestamp ve base-unit tutarlar HTTP JSON'da decimal string olarak taşınır. Consumer bunları JavaScript number'a çevirmemeli; SDK `bigint` döndürür.
 
@@ -443,7 +470,7 @@ GET /api/openapi.json
 
 ## Marketplace entegrasyonu
 
-Marketplace deployment'ın tek settlement asset'iyle sabit fiyatlı satış kullanır. İlk Base Sepolia profili native ETH, başka bir deployment standart ERC-20/stablecoin olabilir. Başlangıç marketplace ücreti `%0`'dır; auction, bid veya off-chain order bulunmaz.
+Canlı v2 marketplace deployment'ın tek settlement asset'iyle sabit fiyatlı satış kullanır. İlk Base Sepolia profili native ETH, başka bir deployment standart ERC-20/stablecoin olabilir. Başlangıç marketplace ücreti `%0`'dır; v2'de auction, bid veya off-chain order bulunmaz. Offer ve English-auction lifecycle'ları yalnız pending v3 hedefidir; v3 acceptance kanıtı olmadan bu v2 endpoint'lerinden türetilemez.
 
 ```text
 GET /api/market?cursor=0&limit=24
@@ -451,7 +478,7 @@ GET /api/market?cursor=0&limit=24
 
 Her listing en az `tokenId`, `label`, `fullName`, `seller`, `priceBaseUnits`, `feeBps`, `listedAt`, `expiresAt` ve `purchasable` alanlarını içerir. Token ID, price, cursor, block ve timestamp alanları decimal string'dir. Endpoint her request'te en fazla 200 raw listing veya dört contract page'i tarar; aynı-block validation ile response-level `marketplacePaused`, `solvent`, `blockNumber`, `nextCursor`, `hasMore` ve `scanned` alanları döndürür. Pause/insolvency sırasında ACTIVE listing kaybolmaz; `purchasable=false` olur. Endpoint stale kayıtlar yüzünden bütün marketi taradığı iddiasında bulunmaz. Entegrasyon yapan istemci satın alma öncesinde listing'i ve token owner'ını yeniden okumalıdır. Fee listing oluşturulduğu veya güncellendiği anda snapshot edilir.
 
-Contract swap-and-pop enumeration kullandığı için cursor snapshot değildir; eşzamanlı list/cancel/buy işlemleri sayfalar arasında tekrar veya atlama oluşturabilir. Consumer token ID ile dedupe eder. Eksiksiz tarihsel/global feed isteyen entegrasyon kendi event indexer'ını kullanmalıdır; V1 API böyle bir garanti vermez.
+Contract swap-and-pop enumeration kullandığı için cursor snapshot değildir; eşzamanlı list/cancel/buy işlemleri sayfalar arasında tekrar veya atlama oluşturabilir. Consumer token ID ile dedupe eder. Eksiksiz tarihsel/global feed isteyen entegrasyon kendi event indexer'ını kullanmalıdır; v2 API böyle bir garanti vermez.
 
 Write fonksiyonları:
 
@@ -521,43 +548,172 @@ Kurallar:
 - Treasury referral yükümlülüğüne ayrılmış bakiyeyi çekemez.
 - İkinci cüzdanla yapılan dolaylı self-referral permissionless V1'de tamamen önlenemez.
 
+## MCP ve x402 agent sınırı
+
+Agent discovery şu generated artifact üzerinden başlar:
+
+```text
+GET /.well-known/chain-name-agent.json
+```
+
+Agent discovery schema v4'tür. Current-v2 MCP için `mcp.endpoint=/api/mcp`, ayrı V3 source yüzeyi için `discovery.v3Mcp=/api/v3/mcp` yayınlanır; iki endpoint birbirinin yerine kullanılmaz. Her ikisi MCP `2025-11-25` stateless Streamable HTTP kurallarını uygular. POST client hem `application/json` hem `text/event-stream` kabul ettiğini bildirmeli; browser `Origin` header'ı varsa configured canonical site origin ile tam eşleşmelidir. Origin göndermeyen server/CLI client'ları kabul edilir. Body limiti 64 KiB'dir. Hiçbir MCP yüzeyi key tutmaz, sign veya broadcast yapmaz.
+
+Current-v2 MCP sonuçlarında identity, name info, registration quote ve protocol solvency ile ilişkili read'ler raporlanan tek block'a pinlenir. `/api/mcp` üzerindeki `prepare_registration` yalnız guarded args, calldata ve gerektiğinde native `value` üretir. `/api/v3/mcp` ise opt-in 38 araçlık V3 read/unsigned-plan envanteridir; `owned_names` bounded owner enumeration, `account_balances` referral/marketplace balances ile forward-confirmed primary identity, `prepare_listing_invalidate` stale listing için guarded cleanup planı ve `prepare_marketplace_approval` yalnız bir token ID için marketplace `approve` planı sağlar. Bu approval ayrı bir cüzdan transaction'ıdır; agent imzalamaz/broadcast etmez ve blanket `setApprovalForAll` üretmez. SDK/MCP list, offer-accept ve auction-start planları token-bazlı approval aynı pinned block'ta aktif değilse fail eder; update/buy planları da stale listing state'ini kullanmaz. Registration için yalnız `registration_requirements` sunulur ve commitment secret, attestation signature, wallet credential veya payment payload kabul edilmez. Draft manifestte adresler null iken deployment-dependent çağrılar fail closed olur. Caller her iki sürümde de chain/contract/recipient/amount/referral BPS/settlement değerlerini yeniden doğrular, simulate eder ve açık authority olmadan ekonomik işlem göndermez.
+
+x402 tarafında:
+
+- `GET /api/x402/registration/quote` ücretsiz ve kısa ömürlü canonical quote üretir.
+- `POST /api/x402/registration` paid-route availability olarak `fail-closed`'dur ve canlı v2 release'te her zaman `503` döner; implementation milestone `v3-contract-pending`'dir.
+- `X402_REGISTRATION_ENABLED=true` dahil hiçbir environment değeri canlı v2'de paid execution'ı etkinleştiremez; v3 paid execution yalnız durable workflow, facilitator, limited keeper ve acceptance kanıtıyla ayrı sürüm olarak açılabilir.
+- Official `@x402/core`, `@x402/evm`, `@x402/extensions` `2.18.0` ve `workflow` `4.6.0` exact-pinned source dependency olarak kuruludur; bu, facilitator/store/signer/V3 plan binding veya settlement runtime'ının operational olduğu anlamına gelmez.
+
+Registration scope; chain, network, contract, resource, quote ID, canonical request, expected amount/referral BPS ve expiry'yi bağlar. Payment acceptance scope ayrıca x402 version, scheme, network, asset, amount ve `payTo` eşleşmesini gerektirir. Durable idempotency scope payment identifier, request fingerprint ve quote ID'yi ayrı bağlar. Standard payment payload ile application request fingerprint aynı kavram değildir.
+
+Gas currency, x402 payment ve protocol settlement ayrı muhasebe kavramlarıdır. V3 Base Sepolia target profile `eip155:84532` üzerinde Circle'ın resmi 6-decimal test USDC'sini (`0x036CbD53842c5426634e7929541eC2318f3dCF7e`) hem immutable protocol settlement tokenı hem x402 asset olarak kullanır; `payTo` limited keeper olmalıdır. Bu değer deployment manifest/config'inden okunur ve on-chain metadata ile doğrulanır. Gas test ETH ile ayrı ödenir; test USDC/test ETH'ye fiat değeri atanmaz. Canlı v2 native settlement profili değişmez, native conversion veya oracle kuru türetilmez.
+
+Detaylı threat model ve activation checklist için `docs/AGENT_INTEGRATION.md` kullanılır. Bu repository dokümanı hosted public sayfa değildir; public consumer `/developers`, agent manifest ve OpenAPI üzerinden aynı mevcut-release sınırını görür.
+
 ## AI ve otomasyon keşfi
 
 Site kökünde `/llms.txt` yayınlanır. Dosya kısa tutulur ve şunlara link verir:
 
 - `/developers`
-- `/api/name/{label}` ve `/api/resolve/{label}`
-- `/market` ve `/api/market`
 - well-known manifest
+- agent discovery manifest
+- MCP endpoint
+- x402 quote endpoint
 - OpenAPI
 - ABI
-- explorer contract page
-- GitHub repository
+- Blockscout handoff
 
 `llms.txt` talimat kaynağı değil, doküman indeksidir. Secret, private RPC veya deployment key içermez.
 
 ## Sürüm ve tutarlılık
 
+### V3 source contract and draft discovery
+
+Canonical source discovery is `GET /deployment-manifest.v3.json`; OpenAPI `1.6.0` documents the fail-closed `/api/v3/*` routes, including the candidate/live-only normalization-attestation proxy and the account snapshot endpoint. The current artifact is deliberately address-free and has this abbreviated shape:
+
+```json
+{
+  "schemaVersion": 4,
+  "suiteVersion": "3.0.0",
+  "releaseStatus": "draft",
+  "contracts": {
+    "registry": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameRegistryV3.json" },
+    "controller": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameControllerV3.json" },
+    "resolver": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameResolverV3.json" },
+    "universalResolver": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameUniversalResolverV3.json" },
+    "marketplace": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameMarketplaceV3.json" },
+    "marketLens": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameMarketLensV3.json" },
+    "migration": { "address": null, "version": "3.0.0", "abiUrl": "/abi/v3/ChainNameMigrationV3.json" }
+  },
+  "wiring": {
+    "suiteConfigured": false,
+    "configureSuiteSelector": "0x3d229c48"
+  },
+  "normalization": {
+    "profileId": "ensip15:@adraffy/ens-normalize@1.11.1:unicode-17.0.0:cldr-47",
+    "profileHash": "0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638",
+    "fixtureSha256": "d912fe8e376a22b9e67483afc2fa8fac2cc42244ca4993046843d6693d8c7e49",
+    "attestor": null,
+    "maxAttestationValiditySeconds": "900"
+  },
+  "marketplace": {
+    "maxPageSize": 50,
+    "maxPageScan": 100
+  },
+  "capabilities": {
+    "ensip10": true,
+    "ensip15": true,
+    "ensip23SimpleResolve": true,
+    "fixedListings": true,
+    "offers": true,
+    "englishAuctions": true,
+    "contenthash": false,
+    "ccipRead": false,
+    "smartMulticall": false,
+    "paidX402": false
+  },
+  "x402": {
+    "protocolVersion": 2,
+    "network": "eip155:84532",
+    "paymentAsset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "assetDecimals": 6,
+    "paidExecutionAvailable": false
+  },
+  "endpoints": {
+    "mcp": "/api/v3/mcp",
+    "normalizationAttestation": "/api/v3/normalization-attestation",
+    "accountApi": "/api/v3/account/{address}",
+    "marketApi": "/api/v3/market"
+  }
+}
+```
+
+Every module also carries an exact ABI SHA-256 field in the real artifact. Null addresses, null attestor, `suiteConfigured: false` and `releaseStatus: "draft"` prove that this is source/config discovery only. Consumer yedi adresin `VERSION`/ABI/runtime hash parity'sini; registry'nin controller/resolver/migration/marketplace binding'lerini; Universal Resolver→registry ve MarketLens→marketplace→registry binding'lerini ayrı doğrular. `suiteConfigured !== true` veya `releaseStatus !== "live"` iken V3 write başlatılmaz; `paidExecutionAvailable !== true` iken paid execution başlatılmaz. Lens yokluğu yalnız lens-backed discovery'yi kapatır, marketplace state'ini yok saydırmaz.
+
+### V3 normalization attestation flow
+
+1. Consumer raw input'u manifestteki exact profile ve corpus sürümüyle normalize eder; değişen canonical output kullanıcıya gösterilir.
+2. Recipient seçildikten sonra attestation service'e yalnız gerekli canonical scope gönderilir.
+3. Dönen EIP-712 imzası manifest attestor adresine, current chain/controller'a, registry profile hash'ine, `keccak256(normalizedLabelBytes)` değerine, recipient'a ve bounded `validUntil` değerine karşı local doğrulanır.
+4. `validUntil` ile signature hash'inden üretilen exact attestation hash, resolver initialization ve bütün ekonomik guard'larla birlikte commitment'a bağlanır.
+5. Reveal sırasında attestation geçerliliği tekrar kontrol edilir. Attestation süresi dolmuş veya değişmişse yeni commitment gerekir; consumer eski commitment'ı sessizce yeniden kullanmaz.
+
+Attestation kullanıcı transaction imzası değildir, name ownership vermez ve tek başına single-use ödeme yetkisi sayılmaz. Attestor private key'i MCP, web, manifest veya consumer'a verilmez. Attestor owner-setter ile rotate edilemez; replacement yeni reviewed controller/suite release'i ve manifest cutover gerektirir.
+
+### V3 resolver address separation
+
+- `suite.resolver`, supported address/multicoin/text/name records ve ENSIP-10 `resolve(bytes,bytes)` için public resolver'dır.
+- `suite.universalResolver`, registry discovery ve forward-confirmed EVM reverse içeren bounded ENSIP-23 simple resolve/reverse helper'ıdır.
+- Consumer bu iki adresi birbiri yerine kullanmaz. İlk profile contenthash dahil değildir; CCIP-Read veya smart multicall sonucu da beklenmez. Unsupported profile typed integration error'dır.
+
+### V3 MarketLens address and cursor semantics
+
+- `suite.marketLens` bounded read-only helper'dır; marketplace authority, custody, indexer veya historical completeness servisi değildir.
+- Listing, per-token offer ve auction sayfaları pinned block'ta aktif kalan kayıtları filtreler. Global/buyer/owner offer sayfaları `includeTerminal` ile `REFUNDED`/`ACCEPTED` state'lerini taşıyabilir; lifecycle/owner/transfer nonce artık eşleşmeyen `ACTIVE` offer `stale=true` döner.
+- `limit` 1-50, raw scan üst sınırı 100'dür. `nextCursor` filtrelenen kayıtlar olsa bile ilerleyen raw index'tir. Swap-pop nedeniyle consumer tek block pinler, object ID ile dedupe eder ve write öncesi authoritative state'i yeniden okur.
+- Lens adresi, `VERSION`, ABI checksum, immutable marketplace binding ve derived registry binding manifestle eşleşmezse lens read'i fail closed olur; consumer bunu “empty market” diye yorumlamaz.
+
+### V3 account snapshot
+
+`GET /api/v3/account/{address}`; en fazla 78 haneli decimal `nameCursor`/`offerCursor`/opsiyonel `blockNumber`, `limit` (1-50) ve yalnız absent/`true`/`false` biçimindeki `includeTerminal` değerini kabul eder; başka boolean metni `400 INVALID_BOOLEAN` üretir. Yanıt, aynı pinned block üzerinde bounded owned-name sayfasını, referral rewards ile marketplace proceeds/refunds bakiyelerini, forward-confirmed primary identity'yi ve buyer/owner offer sayfalarını birleştirir. RPC/deployment hatası gerçek sıfır bakiye veya boş isim listesi gibi gösterilmez; draft manifestte route `503 V3_NOT_DEPLOYED` ile fail closed kalır. SDK karşılıkları `getOwnedNames` ve `getAccountBalances`, MCP karşılıkları `owned_names` ve `account_balances` araçlarıdır.
+
+V3 SDK source'u normalized name/namehash, manifest/attestation helper'ları, attestation-hash-bound commit/reveal planı, public/Universal resolver ayrımı, resolver text, fixed/offer/auction reads ve write preparation, unified balances/refunds, migration ve receipt reconciliation API'lerini içerir. Adressiz draft manifestten operational client kurulması bilinçli olarak reddedilir. `/api/v3/mcp` aynı V3 read/unsigned-plan katmanını opt-in olarak sunar fakat registration'da secret/signature almaz; hiçbir MCP yüzeyi attestor/private transaction signer veya broadcast yetkisi almaz.
+
+Paid x402 V2; quote/request fingerprint/payment identifier scope'larını ayırır, durable unique constraint ile replay'i durdurur ve commit→wait→reveal akışını crash-safe order state'inde sürdürür. Facilitator verification, keeper submission, receipt confirmation, payment settlement ve refund her biri ayrı kanıt/state'tir. Config varlığı activation değildir.
+
+Marketplace/referral/proceeds kullanıcı adımları, boş/hata state'leri ve mevcut v2 safe-write örneği `docs/USER_MARKETPLACE_GUIDE.md` içindedir. V3 migration `docs/MIGRATION_V2_TO_V3.md`, acceptance rows `docs/V3_ACCEPTANCE_MATRIX.md`, authorized broadcast kanıtı `docs/TRANSACTION_EVIDENCE.md` ile yönetilir.
+
+### Runnable example policy
+
+- Public install snippet'leri exact yayınlanmış sürümü pinler; monorepo bir sonraki source revision için `workspace:*` kullanır.
+- Her copy/paste verified TypeScript/Viem/Wagmi/Cast/curl örneği CI fixture'ından üretilir veya test komutuyla birlikte yayımlanır.
+- `publicClient`, `walletClient`, `manifest`, `account`, `tokenId` gibi dış bağlama ihtiyaç duyan parçalar “plan fragment/pseudocode” olarak etiketlenir.
+- Simulation transaction değildir; tx hash receipt+confirmation+post-state olmadan success evidence sayılmaz.
+- Yetkili test transaction'ları `docs/TRANSACTION_EVIDENCE.md` formatında kaydedilir.
+
 Build ve release kontrolleri şunları doğrular:
 
 - SDK/exported ABI SHA-256 hash'i manifest ile aynı; contract `VERSION` manifest version ile aynı.
 - `/developers` contract adresi manifest ile aynı.
-- OpenAPI endpoint'leri gerçek route'larla aynı.
-- `llms.txt` kırık link içermiyor.
+- OpenAPI'de canonical configured route'lar ve agent-facing paths yayınlanıyor; route-parity için bu listedeki her snippet'in otomatik generated client testi olduğu iddia edilmez.
+- `llms.txt` required canonical artifact linklerini içeriyor.
 - Well-known chain ID, suffix ve deployment block doğru.
 - Chain ID, chain name, testnet flag, required confirmations ve native currency metadata'sı config/manifest/SDK arasında aynı; owner/treasury, collection/suffix/metadata URI ve settlement kind/token/name/symbol/decimals contract veya token read'leri, manifest ve SDK arasında aynı.
 - Base-unit amount örnekleri 6 ve 18 decimals ile test ediliyor.
 - 1/2/3/4-karakter quote sonuçları manifestteki premium schedule ile aynı.
 - Multicall3 adresinde configured creation block sonrasında runtime bytecode bulunuyor.
-- Örnek TypeScript kodu typecheck oluyor.
-- Bağımsız fixture uygulaması en az bir forward ve reverse lookup yapabiliyor.
+- SDK, MCP, React ve web testleri sırasıyla 55/34/4/229 geçer. `pnpm examples:v3:typecheck` workspace SDK/Viem/Wagmi/React/MCP consumer fixture'ını derler ve V3 artifact validator yedi modülü doğrular. Workflow `29246721839` üç package'ı provenance ile yayınlamış; exact `0.1.0` sürümleri authorization header olmadan isolated strict-NodeNext consumer'da type/runtime smoke geçmiştir. Bu kanıt Cast veya deployed-V3 runtime davranışı değildir; placeholder snippet'ler compile fixture sayılmaz.
+- Hosted deployment sonrası forward/reverse ve agent endpoint smoke ayrıca çalıştırılır; source artifact validation bunun yerine geçmez.
 
 ## Referanslar
 
 - Base network bilgileri: https://docs.base.org/base-chain/quickstart/connecting-to-base
 - Base renk sistemi: https://brand.base.org/color
 - Ürün ve developer-docs referansı: https://tempoid.xyz/
-- Chain-specific domain ürünü referansı: https://www.hood.domains/
+- Chain-specific domain ve docs ürün referansı: https://www.hood.ag/docs
 - OpenZeppelin ERC-20 ve SafeERC20: https://docs.openzeppelin.com/contracts/5.x/api/token/erc20
 - OpenZeppelin ERC-721: https://docs.openzeppelin.com/contracts/5.x/api/token/erc721
 - OpenZeppelin access control: https://docs.openzeppelin.com/contracts/5.x/access-control

@@ -1,13 +1,29 @@
 # SEPBASE
 
-> Independent .sepbase names on Base Sepolia with manifest-first SDK, HTTP API, and verified identity reads.
+> Independent .sepbase names on Base Sepolia with manifest-first SDK, HTTP API, verified identity reads, MCP tools, and an activation-gated paid x402 runtime.
 
 ## Integration
 
-- [Developer documentation](/developers): SDK, React, API, and guarded write examples.
+- [Developer documentation](/developers): SDK, React, API, MCP, x402, and guarded write examples.
 - [Deployment manifest](/.well-known/chain-name-service.json): Canonical chain, contract, asset, and endpoint discovery.
+- [V3 target manifest](/deployment-manifest.v3.json): Draft seven-address target including MarketLens and ERC-20/x402 metadata; not deployment or live evidence.
+- [V3 release status](/api/v3/status): Draft/candidate/live suite state, seven-contract inventory, wiring and capabilities.
+- [V3 read API](/api/v3/name/{label}): ENSIP-15 name state; resolve, reverse, MarketLens and health routes are in OpenAPI and fail closed while the suite is draft.
+- [V3 account API](/api/v3/account/{address}): Bounded owner enumeration, balances, primary identity and buyer/owner offer pages pinned to one block.
+- [V3 normalization attestation](/api/v3/normalization-attestation): Same-origin, candidate/live-only proxy to a reviewed external issuer; draft state returns 503 before issuer configuration or I/O.
+- [V3 MCP](/api/v3/mcp): Opt-in read and unsigned-plan tools; registration remains requirements-only and accepts no secret, signature, wallet credential or payment payload.
+- [Agent discovery](/.well-known/chain-name-agent.json): MCP endpoint, tool inventory, x402 endpoints, implementation status, and trust boundaries.
+- [MCP Streamable HTTP endpoint](/api/mcp): Stateless public reads and unsigned transaction preparation.
+- [V3 MarketLens API](/api/v3/market): Block-pinned fixed listing, offer, and auction pages with bounded raw cursor semantics.
+- [x402 registration quote](/api/x402/registration/quote): Free, short-lived canonical registration scope and current protocol quote.
+- [x402 paid registration resource](/api/x402/registration): Official x402 V2 negotiation and durable V3 commit/reveal execution when discovery reports availability.
+- [x402 paid order status](/api/x402/registration/status): Reconcile a non-secret paymentIdentifier + planId after client timeout without paying again.
 - [Contract ABI](/abi/ChainNameService.json): ABI bytes verified by the manifest SHA-256 checksum.
-- [OpenAPI](/api/openapi.json): Read-only HTTP API contract.
+- [OpenAPI](/api/openapi.json): HTTP API contract, including agent-facing routes.
+- [Security](/security): Responsible disclosure and execution trust boundaries.
+- [Privacy](/privacy): Public-chain, browser-local, RPC, and agent data handling.
 - [Blockscout handoff](/integrations/blockscout-bens.md): External BENS integration prerequisites and semantics.
 
-Load and validate the deployment manifest before use. Never hardcode chain IDs, suffixes, contract or token addresses, native currency, settlement symbol, base-unit precision, or token decimals.
+Load and validate the deployment manifest before use. Never hardcode chain IDs, suffixes, contract or token addresses, native currency, settlement symbol, base-unit precision, or token decimals. MCP never signs or broadcasts. Paid x402 source is activation-gated: official x402 2.18.0, encrypted CAS idempotency, managed signing, on-chain calldata/receipt reconciliation, and Workflow 4.6.0 continuation are wired, but the route still fails closed until a live paid-enabled V3 manifest and every server-only external capability are verified. The V3 Base Sepolia target uses manifest-verified USDC 0x036CbD53842c5426634e7929541eC2318f3dCF7e (6 decimals, eip155:84532); gas remains separate ETH, test assets have no guaranteed fiat value, and live V2 remains native.
+
+The pending V3 release has seven addresses: six authority/state contracts plus bounded read-only ChainNameMarketLensV3. The lens is not authority or an indexer. Pin pages to one block, respect 50-result/100-scan bounds, follow raw cursors, deduplicate object IDs, treat stale flags as projections, and revalidate marketplace/registry state before writes. This target is not deployed or live without manifest, ABI, acceptance and final-origin evidence.

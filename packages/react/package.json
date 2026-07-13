@@ -1,10 +1,23 @@
 {
   "name": "@sepbase/react",
   "version": "0.1.0",
+  "description": "Forward-confirmed SEPBASE identity components and hooks for React.",
+  "license": "MIT",
   "private": false,
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": ["dist", "README.md", "CHANGELOG.md"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yusufky63/sepbase.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://sepbase.vercel.app/developers",
+  "bugs": { "url": "https://github.com/yusufky63/sepbase/security/advisories/new" },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

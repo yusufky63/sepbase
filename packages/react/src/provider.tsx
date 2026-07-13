@@ -54,6 +54,8 @@ export function SepbaseProvider(props: SepbaseProviderProps) {
   const fetcher = "fetcher" in props ? props.fetcher : undefined;
   const allowedManifestOrigins = "allowedManifestOrigins" in props ? props.allowedManifestOrigins : undefined;
   const allowedRpcOrigins = "allowedRpcOrigins" in props ? props.allowedRpcOrigins : undefined;
+  const allowedManifestOriginsKey = allowedManifestOrigins?.join("\u0000") ?? "";
+  const allowedRpcOriginsKey = allowedRpcOrigins?.join("\u0000") ?? "";
   const [state, setState] = useState<ProviderState>(() => ({
     client: directClient ?? null,
     error: null,
@@ -72,8 +74,12 @@ export function SepbaseProvider(props: SepbaseProviderProps) {
       manifestUrl,
       ...(rpcUrl ? { rpcUrl } : {}),
       ...(fetcher ? { fetcher } : {}),
-      ...(allowedManifestOrigins ? { allowedManifestOrigins } : {}),
-      ...(allowedRpcOrigins ? { allowedRpcOrigins } : {}),
+      ...(allowedManifestOriginsKey
+        ? { allowedManifestOrigins: allowedManifestOriginsKey.split("\u0000") }
+        : {}),
+      ...(allowedRpcOriginsKey
+        ? { allowedRpcOrigins: allowedRpcOriginsKey.split("\u0000") }
+        : {}),
     };
     void createSepbaseClient(options).then(
       (client) => {
@@ -92,7 +98,7 @@ export function SepbaseProvider(props: SepbaseProviderProps) {
     return () => {
       active = false;
     };
-  }, [allowedManifestOrigins, allowedRpcOrigins, directClient, fetcher, manifestUrl, rpcUrl]);
+  }, [allowedManifestOriginsKey, allowedRpcOriginsKey, directClient, fetcher, manifestUrl, rpcUrl]);
 
   return <SepbaseContext.Provider value={state}>{props.children}</SepbaseContext.Provider>;
 }

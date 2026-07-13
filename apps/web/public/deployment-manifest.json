@@ -54,7 +54,7 @@
   "referralRewardBps": 1000,
   "referralAttributionSeconds": "2592000",
   "marketplaceFeeBps": 0,
-  "metadataBaseURI": "http://localhost:3000/api/metadata/",
+  "metadataBaseURI": "https://sepbase.vercel.app/api/metadata/",
   "rpcUrl": "https://sepolia.base.org",
   "explorerUrl": "https://sepolia-explorer.base.org",
   "abiUrl": "/abi/ChainNameService.json",
@@ -66,5 +66,5 @@
   "openApiUrl": "/api/openapi.json",
   "solidityVersion": "0.8.36",
   "openzeppelinVersion": "5.4.0",
-  "gitCommit": "b11d543f84cd546d5ae3e391cf1c0638304d68c7"
+  "gitCommit": null
 }

@@ -5,5 +5,10 @@ import nextTypescript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTypescript,
-  globalIgnores([".next/**", "public/abi/**", "lib/contract/abi.generated.ts"]),
+  globalIgnores([
+    ".next/**",
+    "app/.well-known/workflow/**",
+    "public/abi/**",
+    "lib/contract/abi.generated.ts",
+  ]),
 ]);

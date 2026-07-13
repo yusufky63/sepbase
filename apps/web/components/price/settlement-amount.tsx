@@ -7,17 +7,23 @@ type SettlementAmountProps = {
   amountBaseUnits: bigint;
   className?: string | undefined;
   showFiat?: boolean | undefined;
+  settlement?: {
+    decimals: number;
+    symbol: string;
+  } | undefined;
 };
 
 export function SettlementAmount({
   amountBaseUnits,
   className,
   showFiat = true,
+  settlement,
 }: SettlementAmountProps) {
+  const asset = settlement ?? deploymentManifest.settlement;
   return (
     <span className={`${styles.amount}${className ? ` ${className}` : ""}`}>
-      <span>{formatSettlementAmount(amountBaseUnits, deploymentManifest.settlement.decimals)} {deploymentManifest.settlement.symbol}</span>
-      {showFiat ? <FiatReferenceAmount amountBaseUnits={amountBaseUnits} /> : null}
+      <span>{formatSettlementAmount(amountBaseUnits, asset.decimals)} {asset.symbol}</span>
+      {showFiat && settlement === undefined ? <FiatReferenceAmount amountBaseUnits={amountBaseUnits} /> : null}
     </span>
   );
 }

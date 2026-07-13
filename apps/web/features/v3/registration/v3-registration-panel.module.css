@@ -1,0 +1,378 @@
+.panel {
+  display: block;
+}
+
+.registrationModule {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.registrationHeading {
+  padding-block: var(--space-6);
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--grid-gutter);
+  align-items: start;
+}
+
+.registrationHeading > span,
+.registrationFacts > div > span,
+.registrationNotice > span,
+.registrationFooter > div > span,
+.recovery span,
+.fieldLabel,
+.evidence dt,
+.timeline dt,
+.advancedFooter strong {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.registrationHeading h2 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+
+.registrationLayout {
+  display: grid;
+  grid-template-columns: 4fr 6fr;
+  border-top: 1px solid var(--foreground);
+}
+
+.registrationTerm {
+  min-width: 0;
+  padding: var(--space-6) var(--space-8) var(--space-6) 0;
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-6);
+  border-right: 1px solid var(--line);
+}
+
+.fieldLabel,
+.registrationTerm p {
+  margin: 0;
+}
+
+.registrationTerm > p {
+  max-width: 42ch;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.segments {
+  margin-top: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid var(--foreground);
+}
+
+.segments button {
+  min-height: 48px;
+  padding: var(--space-2);
+  border: 0;
+  border-right: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-sm) var(--font-mono), monospace;
+}
+
+.segments button:last-child {
+  border-right: 0;
+}
+
+.segments button[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--foreground-inverse);
+}
+
+.segments button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.registrationFacts {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registrationFacts > div {
+  min-width: 0;
+  min-height: 128px;
+  padding: var(--space-5) var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-2);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.registrationFacts > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.registrationFacts > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.registrationFacts strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+}
+
+.registrationFacts small {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.registrationNotice,
+.registrationError,
+.recovery {
+  min-height: 56px;
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.registrationNotice {
+  display: grid;
+  grid-template-columns: minmax(150px, 3fr) minmax(0, 7fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.registrationNotice strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.registrationNotice button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.registrationError {
+  display: flex;
+  align-items: center;
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+.registrationFooter {
+  min-height: 96px;
+  padding-block: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-top: 1px solid var(--foreground);
+}
+
+.registrationFooter > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.registrationFooter strong {
+  max-width: 60ch;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.registrationFooter > button,
+.recovery > button {
+  min-height: 48px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  cursor: pointer;
+  font: 700 var(--text-sm) var(--font-mono), monospace;
+}
+
+.registrationFooter > button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.recovery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.recovery > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.recovery > button {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.srStatus {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.advanced {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.advanced > summary {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.advancedContent {
+  border-top: 1px solid var(--line);
+}
+
+.evidence,
+.timeline {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.evidence > div,
+.timeline > div {
+  min-width: 0;
+  min-height: 104px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.evidence > div:nth-child(2n),
+.timeline > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.evidence dd,
+.timeline dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.evidence code,
+.timeline code,
+.timeline time {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.advancedFooter {
+  min-height: 88px;
+  padding: var(--space-4);
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+}
+
+.advancedFooter p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.segments button:focus-visible,
+.registrationFooter button:focus-visible,
+.registrationNotice button:focus-visible,
+.recovery button:focus-visible,
+.advanced > summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .registrationHeading,
+  .registrationLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .registrationTerm {
+    padding: var(--space-6) 0 var(--space-8);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .registrationFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .registrationFacts > div,
+  .registrationFacts > div:nth-child(2n),
+  .registrationFacts > div:nth-last-child(-n + 2) {
+    min-height: 96px;
+    padding-inline: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .registrationFacts > div:last-child {
+    border-bottom: 0;
+  }
+
+  .registrationNotice {
+    grid-template-columns: 1fr auto;
+  }
+
+  .registrationNotice > span {
+    grid-column: 1 / -1;
+  }
+
+  .registrationFooter,
+  .recovery {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registrationFooter button,
+  .recovery button {
+    width: 100%;
+  }
+
+  .evidence,
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence > div,
+  .timeline > div {
+    border-right: 0;
+  }
+}
