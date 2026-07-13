@@ -331,6 +331,7 @@ export async function deployV3() {
   assertSourceProvenance(authorities.broadcast);
 
   runForge(["fmt", "--check"], "forge fmt --check");
+  runForge(["clean"], "forge clean");
   runForge(["build"], "forge build");
   runForge(["build", "--sizes"], "forge build --sizes");
   runForge(["test", "-vvv"], "forge test -vvv");
@@ -347,6 +348,8 @@ export async function deployV3() {
     "script/DeployV3.s.sol:DeployV3",
     "--chain",
     String(manifest.chainId),
+    "--rpc-url",
+    "base_sepolia",
     "--broadcast",
     "--slow",
     "--verify",
