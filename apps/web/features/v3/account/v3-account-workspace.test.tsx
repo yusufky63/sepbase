@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Address } from "viem";
@@ -99,28 +99,6 @@ function accountClient(input?: { withName?: boolean; fail?: boolean; primaryName
       blockNumber,
     })),
     quoteRegistration: vi.fn(async () => 500n),
-    getMigrationEligibility: vi.fn(async ({ account: reviewedAccount, legacyLabel }: {
-      account: Address;
-      legacyLabel: string;
-    }, reviewedBlock: bigint) => ({
-      account: reviewedAccount,
-      label: legacyLabel,
-      tokenId: 7n,
-      blockNumber: reviewedBlock,
-      blockTimestamp: 1_900_000_000n,
-      sourceChainId: 84_532n,
-      legacyRegistry: "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945" as Address,
-      migrationStartsAt: 1_800_000_000n,
-      migrationEndsAt: 2_000_000_000n,
-      phase: "open" as const,
-      legacyStatus: "active" as const,
-      legacyOwner: reviewedAccount,
-      legacyExpiresAt: 2_000_000_000n,
-      legacyResolution: other,
-      reserved: true,
-      eligible: true,
-      reason: null,
-    })),
   });
 }
 
@@ -178,17 +156,12 @@ describe("V3 account workspace boundaries", () => {
     expect(await screen.findByRole("button", { name: "Clear primary" })).toBeEnabled();
   });
 
-  it("reviews exact v2 migration state before enabling a guarded claim", async () => {
+  it("does not expose legacy migration controls in the account UI", async () => {
     mocks.useAccount.mockReturnValue({ address: account, chainId: 84_532 });
     mocks.getClient.mockImplementation(() => accountClient());
     renderWorkspace();
-
-    const label = await screen.findByLabelText("Exact v2 label");
-    fireEvent.change(label, { target: { value: "alice" } });
-    fireEvent.click(screen.getByRole("button", { name: "Review eligibility" }));
-
-    expect(await screen.findByText("ELIGIBLE TO CLAIM")).toBeInTheDocument();
-    expect(screen.getByText(other)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Claim v2 name" })).toBeEnabled();
+    expect(await screen.findByText(/does not own any V3 names yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/MOVE A V2 NAME/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Exact v2 label/i)).not.toBeInTheDocument();
   });
 });

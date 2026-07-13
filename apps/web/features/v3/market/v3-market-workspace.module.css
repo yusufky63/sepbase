@@ -13,9 +13,7 @@
 }
 
 .kicker,
-.hero dt,
-.metrics span,
-.connection span,
+.viewTabs span,
 .section > header span,
 .row span,
 .empty strong,
@@ -32,19 +30,19 @@
 }
 
 .heroGrid {
-  min-height: 360px;
+  min-height: 270px;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--grid-gutter);
   align-items: end;
-  padding-block: var(--space-7);
+  padding-block: var(--space-6);
 }
 
 .heroGrid h1 {
   grid-column: 1 / span 8;
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(3.5rem, 7vw, 6.5rem);
+  font-size: clamp(3.5rem, 6vw, 5.75rem);
   font-weight: 800;
   letter-spacing: -.075em;
   line-height: .78;
@@ -57,7 +55,7 @@
 .heroCopy {
   grid-column: 9 / -1;
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .heroCopy > p {
@@ -67,75 +65,77 @@
   line-height: 1.25;
 }
 
-.heroCopy dl {
-  margin: 0;
-}
-
-.heroCopy dl > div {
-  padding-block: var(--space-3);
-  display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
-  gap: var(--space-3);
-  border-top: 1px solid var(--line);
-}
-
-.heroCopy dd {
-  min-width: 0;
-  margin: 0;
+.heroCopy > .paymentNote {
+  max-width: 42ch;
+  color: var(--muted);
   font-family: var(--font-mono), monospace;
   font-size: var(--text-xs);
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-.metrics {
+.marketNav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-inline: calc(var(--market-pad) * -1);
-  border-top: 1px solid var(--foreground);
+  grid-template-columns: 8fr 4fr;
+  border-bottom: 1px solid var(--foreground);
 }
 
-.metrics > div {
-  min-height: 112px;
-  padding: var(--space-4) var(--market-pad);
+.viewTabs {
   display: grid;
-  align-content: space-between;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border-right: 1px solid var(--foreground);
 }
 
-.metrics > div:last-child {
+.viewTabs button {
+  min-width: 0;
+  min-height: 88px;
+  padding: var(--space-3) var(--market-pad);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--foreground);
+  border-block: 0;
+  border-left: 0;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+}
+
+.viewTabs button:last-child {
   border-right: 0;
 }
 
-.metrics strong {
-  overflow-wrap: anywhere;
+.viewTabs button[aria-selected="true"] {
+  background: var(--foreground);
+  color: var(--foreground-inverse);
+}
+
+.viewTabs button[aria-selected="true"] span {
+  color: inherit;
+}
+
+.viewTabs strong {
   font-family: var(--font-mono), monospace;
   font-size: var(--text-lg);
 }
 
-.connection {
-  display: grid;
-  grid-template-columns: 3fr 3fr 6fr;
-  border-bottom: 1px solid var(--foreground);
-}
-
-.connection > div {
-  min-height: 80px;
+.marketTools {
   padding: var(--space-3) var(--market-pad);
-  display: grid;
-  align-content: space-between;
-  border-right: 1px solid var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.connection > div:last-child {
-  border-right: 0;
-}
-
-.connection strong {
-  font-family: var(--font-mono), monospace;
+.marketTools p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--muted);
   font-size: var(--text-sm);
 }
 
-.connectionAction button,
+.marketTools button,
 .state button {
   width: fit-content;
   min-height: 42px;
@@ -147,13 +147,14 @@
   font: 700 var(--text-sm) var(--font-mono), monospace;
 }
 
-.connectionAction button:hover:not(:disabled),
+.marketTools button:hover:not(:disabled),
 .state button:hover:not(:disabled) {
   background: var(--foreground);
   color: var(--foreground-inverse);
 }
 
-.connectionAction button:focus-visible,
+.marketTools button:focus-visible,
+.viewTabs button:focus-visible,
 .state button:focus-visible,
 .rowAction:focus-visible,
 .formGrid input:focus-visible,
@@ -393,11 +394,11 @@
   font-size: var(--text-xl);
 }
 
-.composer {
-  scroll-margin-top: 90px;
+.manage {
   border-bottom: 1px solid var(--foreground);
 }
 
+.manage > summary,
 .composer > summary {
   min-height: 72px;
   padding: var(--space-3) var(--market-pad);
@@ -410,14 +411,25 @@
   font-family: var(--font-mono), monospace;
 }
 
+.manage > summary span,
 .composer > summary span {
   color: var(--muted);
   font-size: var(--text-xs);
 }
 
+.manage > summary:focus-visible,
 .composer > summary:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: -5px;
+}
+
+.manage .section {
+  border-bottom: 0;
+}
+
+.composer {
+  scroll-margin-top: 90px;
+  border-bottom: 1px solid var(--foreground);
 }
 
 .composer > header {
@@ -518,7 +530,7 @@
 
 @media (max-width: 980px) {
   .heroGrid {
-    min-height: 340px;
+    min-height: 280px;
   }
 
   .heroGrid h1 {
@@ -528,6 +540,10 @@
 
   .heroCopy {
     grid-column: 8 / -1;
+  }
+
+  .marketNav {
+    grid-template-columns: 7fr 5fr;
   }
 
   .row {
@@ -578,19 +594,21 @@
     font-size: clamp(3.3rem, 17vw, 6rem);
   }
 
-  .metrics,
-  .connection,
+  .marketNav,
   .accountGrid,
   .ownedNames {
     grid-template-columns: 1fr;
   }
 
-  .metrics {
-    margin-inline: 0;
+  .viewTabs {
+    border-right: 0;
   }
 
-  .metrics > div,
-  .connection > div,
+  .marketTools {
+    min-height: 88px;
+    border-top: 1px solid var(--foreground);
+  }
+
   .accountGrid > div,
   .ownedNames article {
     border-right: 0;
@@ -624,7 +642,6 @@
 }
 
 @media (max-width: 500px) {
-  .heroCopy dl > div,
   .row,
   .ownedNames article {
     grid-template-columns: 1fr;
@@ -653,5 +670,21 @@
   .pagination span {
     grid-column: 1 / -1;
     grid-row: 1;
+  }
+
+  .viewTabs button {
+    min-height: 76px;
+    padding-inline: var(--space-3);
+  }
+
+  .viewTabs span {
+    font-size: .65rem;
+  }
+
+  .marketTools,
+  .manage > summary,
+  .composer > summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

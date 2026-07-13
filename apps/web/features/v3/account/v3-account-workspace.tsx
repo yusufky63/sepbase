@@ -34,7 +34,6 @@ import {
   loadV3AccountSnapshot,
   prepareV3AccountAction,
   validateV3AddressRecord,
-  validateV3MigrationLabel,
   validateV3Recipient,
   validateV3TextRecord,
   v3AccountTabIndexForKey,
@@ -94,16 +93,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
     referral: string;
     marketplace: string;
   }>({ account: account.address, referral: account.address ?? "", marketplace: account.address ?? "" });
-  const [migrationDraft, setMigrationDraft] = useState<{
-    account: Address | undefined;
-    label: string;
-    recipient: string;
-    resolutionPolicy: "recipient" | "legacy";
-  }>({ account: account.address, label: "", recipient: account.address ?? "", resolutionPolicy: "recipient" });
-  const [reviewedMigration, setReviewedMigration] = useState<{
-    account: Address;
-    label: string;
-  } | null>(null);
 
   const operational = isV3ManifestOperational();
   const correctChain = account.chainId === v3BrowserManifest.chainId;
@@ -144,43 +133,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
       );
     },
   });
-  const migrationLabelInput = migrationDraft.account === account.address ? migrationDraft.label : "";
-  const migrationRecipientInput = migrationDraft.account === account.address
-    ? migrationDraft.recipient
-    : account.address ?? "";
-  const migrationResolutionPolicy = migrationDraft.account === account.address
-    ? migrationDraft.resolutionPolicy
-    : "recipient";
-  const migrationLabel = validateV3MigrationLabel(migrationLabelInput);
-  const reviewedMigrationLabel = reviewedMigration && reviewedMigration.account === account.address
-    ? reviewedMigration.label
-    : null;
-  const migrationQuery = useQuery({
-    queryKey: [
-      "v3-migration-eligibility",
-      v3BrowserManifest.suiteReleaseId,
-      account.address ?? null,
-      reviewedMigrationLabel,
-      currentReady?.snapshot.blockNumber.toString() ?? null,
-    ],
-    enabled: Boolean(currentReady && account.address && reviewedMigrationLabel),
-    retry: false,
-    queryFn: () => {
-      if (!currentReady || !account.address || !reviewedMigrationLabel) {
-        throw new Error("V3_MIGRATION_REVIEW_NOT_READY");
-      }
-      return currentReady.client.getMigrationEligibility({
-        account: account.address,
-        legacyLabel: reviewedMigrationLabel,
-      }, currentReady.snapshot.blockNumber);
-    },
-  });
-  const migrationEligibility = migrationQuery.data
-    && migrationQuery.data.account === account.address
-    && migrationQuery.data.label === reviewedMigrationLabel
-    && migrationQuery.data.blockNumber === currentReady?.snapshot.blockNumber
-    ? migrationQuery.data
-    : null;
   const addressInput = selected
     ? addressDraft?.tokenId === selected.tokenId
       ? addressDraft.value
@@ -205,7 +157,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
     : account.address ?? "";
   const referralRecipient = validateV3Recipient(referralInput, v3BrowserManifest);
   const marketplaceRecipient = validateV3Recipient(marketplaceInput, v3BrowserManifest);
-  const migrationRecipient = validateV3Recipient(migrationRecipientInput, v3BrowserManifest);
 
   function selectTab(nextTab: V3AccountTab) {
     setTab(nextTab);
@@ -234,7 +185,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
         setSelectedTokenId(null);
       }
       await accountQuery.refetch();
-      if (action.kind === "migrate") await migrationQuery.refetch();
     } catch {
       // The shared executor exposes a sanitized UI state and never marks a failed receipt complete.
     }
@@ -251,24 +201,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
       referral: kind === "referral" ? value : current.account === account.address ? current.referral : account.address ?? "",
       marketplace: kind === "marketplace" ? value : current.account === account.address ? current.marketplace : account.address ?? "",
     }));
-  }
-
-  function updateMigrationDraft(
-    update: Partial<Pick<typeof migrationDraft, "label" | "recipient" | "resolutionPolicy">>,
-  ) {
-    setMigrationDraft((current) => ({
-      account: account.address,
-      label: current.account === account.address ? current.label : "",
-      recipient: current.account === account.address ? current.recipient : account.address ?? "",
-      resolutionPolicy: current.account === account.address ? current.resolutionPolicy : "recipient",
-      ...update,
-    }));
-  }
-
-  function reviewMigration(event: FormEvent) {
-    event.preventDefault();
-    if (!account.address || !migrationLabel.label) return;
-    setReviewedMigration({ account: account.address, label: migrationLabel.label });
   }
 
   if (!operational) {
@@ -578,119 +510,6 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                 </div>
               )}
 
-              <section className={styles.migrationSection} aria-labelledby="v3-migration-heading">
-                <div className={styles.panelHeading}>
-                  <span>MOVE A V2 NAME</span>
-                  <h2 id="v3-migration-heading">Bring an eligible name to V3</h2>
-                  <small>Your current V2 ownership and expiry are checked before anything is prepared.</small>
-                </div>
-                <form className={styles.actionForm} onSubmit={reviewMigration}>
-                  <div className={styles.formHeading}>
-                    <span>LEGACY LABEL</span>
-                    <strong>Review exact v2 identity</strong>
-                  </div>
-                  <label htmlFor="v3-migration-label">Exact v2 label</label>
-                  <input
-                    id="v3-migration-label"
-                    value={migrationLabelInput}
-                    onChange={(event) => {
-                      updateMigrationDraft({ label: event.target.value });
-                      setReviewedMigration(null);
-                    }}
-                    aria-invalid={migrationLabel.error !== null}
-                    aria-describedby="v3-migration-label-help"
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                  <small id="v3-migration-label-help" className={migrationLabel.error ? styles.fieldError : styles.fieldHint}>
-                    {migrationLabel.error ?? "Lowercase ASCII only; no suffix, trimming, case fold, or Unicode normalization is applied."}
-                  </small>
-                  <Button type="submit" disabled={!migrationLabel.label || execution.isPending}>Review eligibility</Button>
-                </form>
-
-                {migrationQuery.isFetching ? (
-                  <div className={styles.state} role="status">
-                    <span>CHECKING ELIGIBILITY</span>
-                    <h2>Checking your V2 name.</h2>
-                    <p>No wallet action is prepared until ownership and expiry are confirmed.</p>
-                  </div>
-                ) : null}
-
-                {migrationQuery.isError ? (
-                  <div className={`${styles.state} ${styles.errorState}`} role="alert">
-                    <span>COULD NOT CHECK</span>
-                    <h2>Eligibility could not be confirmed.</h2>
-                    <p>This does not mean the name is ineligible. Try again shortly.</p>
-                  </div>
-                ) : null}
-
-                {migrationEligibility ? (
-                  <>
-                    <div className={styles.nameSummary} aria-live="polite">
-                      <div><span>LABEL</span><strong>{migrationEligibility.label}.sepbase</strong></div>
-                      <div><span>ELIGIBILITY</span><strong>{migrationEligibility.eligible ? "ELIGIBLE TO CLAIM" : migrationEligibility.reason?.toUpperCase()}</strong></div>
-                      <div><span>V2 OWNER</span><code>{migrationEligibility.legacyOwner ?? "NO ACTIVE OWNER"}</code></div>
-                      <div><span>V2 LIFECYCLE</span><strong>{migrationEligibility.legacyStatus.toUpperCase()}</strong></div>
-                      <div><span>V2 EXPIRY</span><strong>{migrationEligibility.legacyExpiresAt > 0n ? formatDate(migrationEligibility.legacyExpiresAt) : "NOT SET"}</strong></div>
-                      <div><span>V2 ADDRESS RECORD</span><code>{migrationEligibility.legacyResolution}</code></div>
-                    </div>
-                    <form className={styles.actionForm} onSubmit={(event) => submit(event,
-                      migrationEligibility.eligible
-                        && migrationEligibility.legacyOwner
-                        && migrationRecipient.address
-                        ? {
-                            kind: "migrate",
-                            legacyLabel: migrationEligibility.label,
-                            recipient: migrationRecipient.address,
-                            expectedLegacyOwner: migrationEligibility.legacyOwner,
-                            importLegacyResolution: migrationResolutionPolicy === "legacy",
-                            ...(migrationResolutionPolicy === "legacy"
-                              ? { expectedLegacyResolution: migrationEligibility.legacyResolution }
-                              : {}),
-                          }
-                        : null,
-                    )}>
-                      <div className={styles.formHeading}>
-                        <span>CLAIM POLICY</span>
-                        <strong>Confirm recipient and resolver</strong>
-                      </div>
-                      <label htmlFor="v3-migration-recipient">V3 owner</label>
-                      <input
-                        id="v3-migration-recipient"
-                        value={migrationRecipientInput}
-                        onChange={(event) => updateMigrationDraft({ recipient: event.target.value })}
-                        aria-invalid={migrationRecipient.error !== null}
-                        aria-describedby="v3-migration-recipient-help"
-                        autoComplete="off"
-                        spellCheck={false}
-                      />
-                      <small id="v3-migration-recipient-help" className={migrationRecipient.error ? styles.fieldError : styles.fieldHint}>
-                        {migrationRecipient.error ?? `Verified V3 owner: ${migrationRecipient.address}`}
-                      </small>
-                      <label htmlFor="v3-migration-resolution-policy">Initial V3 address record</label>
-                      <select
-                        id="v3-migration-resolution-policy"
-                        value={migrationResolutionPolicy}
-                        onChange={(event) => updateMigrationDraft({
-                          resolutionPolicy: event.target.value as "recipient" | "legacy",
-                        })}
-                      >
-                        <option value="recipient">Use the V3 owner address</option>
-                        <option value="legacy">Copy the pinned v2 address record</option>
-                      </select>
-                      <small className={styles.fieldHint}>
-                        Listings, profile text and primary-name state are never copied. A copied address is guarded against v2 changes before claim.
-                      </small>
-                      <Button
-                        type="submit"
-                        disabled={!migrationEligibility.eligible || !migrationEligibility.legacyOwner || !migrationRecipient.address || execution.isPending}
-                      >
-                        Claim v2 name
-                      </Button>
-                    </form>
-                  </>
-                ) : null}
-              </section>
             </div>
           ) : null}
 

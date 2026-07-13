@@ -10,7 +10,6 @@ import {
   loadV3AccountSnapshot,
   prepareV3AccountAction,
   validateV3AddressRecord,
-  validateV3MigrationLabel,
   validateV3Recipient,
   validateV3TextRecord,
   v3AccountTabIndexForKey,
@@ -73,7 +72,6 @@ describe("V3 account model", () => {
       prepareTransfer: vi.fn(async () => plan),
       prepareReferralClaim: vi.fn(async () => plan),
       prepareMarketplaceClaim: vi.fn(async () => plan),
-      prepareMigrationClaim: vi.fn(async () => plan),
     };
     const client = methods as unknown as SepbaseV3Client;
     await prepareV3AccountAction(client, account, { kind: "renew", tokenId: 7n, durationYears: 2 });
@@ -84,27 +82,11 @@ describe("V3 account model", () => {
     await prepareV3AccountAction(client, account, { kind: "transfer", tokenId: 7n, recipient });
     await prepareV3AccountAction(client, account, { kind: "claim-referral", recipient });
     await prepareV3AccountAction(client, account, { kind: "claim-marketplace", recipient });
-    await prepareV3AccountAction(client, account, {
-      kind: "migrate",
-      legacyLabel: "alice-one",
-      recipient,
-      expectedLegacyOwner: account,
-      importLegacyResolution: true,
-      expectedLegacyResolution: recipient,
-    });
 
     expect(methods.prepareRenew).toHaveBeenCalledWith({ owner: account, tokenId: 7n, durationYears: 2 });
     expect(methods.prepareClearPrimary).toHaveBeenCalledWith({ owner: account });
     expect(methods.prepareTransfer).toHaveBeenCalledWith({ owner: account, recipient, tokenId: 7n, safe: true });
     expect(methods.prepareMarketplaceClaim).toHaveBeenCalledWith({ account, recipient });
-    expect(methods.prepareMigrationClaim).toHaveBeenCalledWith({
-      caller: account,
-      legacyLabel: "alice-one",
-      recipient,
-      expectedLegacyOwner: account,
-      importLegacyResolution: true,
-      expectedLegacyResolution: recipient,
-    });
   });
 
   it("rejects unsafe recipients and enforces resolver byte limits", () => {
@@ -117,9 +99,6 @@ describe("V3 account model", () => {
     expect(validateV3TextRecord("k".repeat(65), "value")).toMatch(/64/);
     expect(validateV3TextRecord("url", "x".repeat(513))).toMatch(/512/);
     expect(validateV3TextRecord("url", "https://example.com")).toBeNull();
-    expect(validateV3MigrationLabel("alice-one")).toEqual({ label: "alice-one", error: null });
-    expect(validateV3MigrationLabel("Alice").error).toMatch(/exact/i);
-    expect(validateV3MigrationLabel("alice.sepbase").error).toMatch(/without a suffix/i);
   });
 
   it("requires forward confirmation for primary and supports keyboard tab movement", () => {

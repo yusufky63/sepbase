@@ -105,11 +105,20 @@ afterEach(() => {
 });
 
 describe("V3MarketWorkspace", () => {
-  it("shows same-block names for every market row, resets recipient on wallet change and disables controls under the global lease", async () => {
+  it("keeps market types in simple tabs, resets recipient on wallet change and disables controls under the global lease", async () => {
     const user = userEvent.setup();
     const view = render(<V3MarketWorkspace />);
-    expect((await screen.findAllByText("alice.base")).length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+    expect(await screen.findByText("alice.base")).toBeInTheDocument();
+    expect(screen.queryByText("OPEN")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Offers/i }));
+    expect(await screen.findByText("OPEN")).toBeInTheDocument();
+    expect(screen.getByText("alice.base")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Auctions/i }));
+    expect(screen.getByRole("button", { name: "Complete alice.base" })).toBeEnabled();
+
+    await user.click(screen.getByRole("tab", { name: /For sale/i }));
 
     await user.click(screen.getByRole("button", { name: "Buy alice.base" }));
     expect(screen.getByTestId("review-intent")).toHaveTextContent(`fixed-buy:${mocks.walletA}`);

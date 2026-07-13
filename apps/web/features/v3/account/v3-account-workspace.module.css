@@ -498,15 +498,6 @@
   border-bottom: 1px solid var(--line);
 }
 
-.migrationSection {
-  margin-top: var(--space-12);
-  border-top: 1px solid var(--foreground);
-}
-
-.migrationSection > .panelHeading {
-  padding-top: var(--space-8);
-}
-
 .marketLink p {
   max-width: 680px;
   color: var(--muted);

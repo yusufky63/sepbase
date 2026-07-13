@@ -12,7 +12,6 @@ import type {
   V3SuiteManifest,
   V3TransactionPlan,
 } from "@sepbase/sdk";
-import { assertLegacyV2MigrationLabel } from "@sepbase/sdk";
 
 export type V3AccountTab = "names" | "referrals" | "listings";
 
@@ -30,15 +29,7 @@ export type V3AccountAction =
   | { kind: "clear-primary" }
   | { kind: "transfer"; tokenId: bigint; recipient: Address }
   | { kind: "claim-referral"; recipient: Address }
-  | { kind: "claim-marketplace"; recipient: Address }
-  | {
-    kind: "migrate";
-    legacyLabel: string;
-    recipient: Address;
-    expectedLegacyOwner: Address;
-    importLegacyResolution: boolean;
-    expectedLegacyResolution?: Address;
-  };
+  | { kind: "claim-marketplace"; recipient: Address };
 
 export async function loadV3AccountSnapshot(
   client: SepbaseV3Client,
@@ -96,28 +87,6 @@ export function prepareV3AccountAction(
       return client.prepareReferralClaim({ account, recipient: action.recipient });
     case "claim-marketplace":
       return client.prepareMarketplaceClaim({ account, recipient: action.recipient });
-    case "migrate":
-      return client.prepareMigrationClaim({
-        caller: account,
-        legacyLabel: action.legacyLabel,
-        recipient: action.recipient,
-        expectedLegacyOwner: action.expectedLegacyOwner,
-        importLegacyResolution: action.importLegacyResolution,
-        ...(action.expectedLegacyResolution === undefined
-          ? {}
-          : { expectedLegacyResolution: action.expectedLegacyResolution }),
-      });
-  }
-}
-
-export function validateV3MigrationLabel(value: string) {
-  try {
-    return { label: assertLegacyV2MigrationLabel(value), error: null };
-  } catch {
-    return {
-      label: null,
-      error: "Enter the exact 1-32 character lowercase ASCII v2 label without a suffix.",
-    };
   }
 }
 
