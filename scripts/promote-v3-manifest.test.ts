@@ -214,6 +214,10 @@ fakeBlockHash.receipts[0]!.blockHash = `0x${"0".repeat(64)}`;
 const parsedWithOpStackPlaceholder = parseV3BroadcastRun(fakeBlockHash, draft.chainId);
 assert.equal(parsedWithOpStackPlaceholder.modules.registry.recordedBlockHash, null);
 
+const shortCommit = structuredClone(positive);
+shortCommit.commit = "abcdef1";
+assert.equal(parseV3BroadcastRun(shortCommit, draft.chainId).commit, "abcdef1");
+
 const malformedBlockHash = structuredClone(positive);
 malformedBlockHash.receipts[0]!.blockHash = "0x1234";
 assert.throws(

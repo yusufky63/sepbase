@@ -114,6 +114,18 @@ function assertLocalDeploymentSource(root: string, expectedCommit: string) {
   }
 }
 
+function assertRecordedCommit(root: string, recordedCommit: string | null, expectedCommit: string) {
+  if (!recordedCommit) fail("run-latest source commit is missing.");
+  const resolved = spawnSync(
+    "git",
+    ["rev-parse", "--verify", `${recordedCommit}^{commit}`],
+    { cwd: root, encoding: "utf8", shell: false },
+  );
+  if (resolved.status !== 0 || resolved.stdout.trim() !== expectedCommit) {
+    fail("run-latest source commit differs from SOURCE_COMMIT.");
+  }
+}
+
 async function readAbi(root: string, key: V3SuiteModuleKey): Promise<Abi> {
   const path = resolve(
     root,
@@ -309,9 +321,7 @@ export async function promoteV3Manifest(options: PromoteV3ManifestOptions) {
   if (!expectedCommit || !/^[a-f0-9]{40}$/.test(expectedCommit)) {
     fail("SOURCE_COMMIT must declare the reviewed lowercase 40-character source commit.");
   }
-  if (evidence.commit !== expectedCommit) {
-    fail("run-latest source commit differs from SOURCE_COMMIT.");
-  }
+  assertRecordedCommit(root, evidence.commit, expectedCommit);
   assertLocalDeploymentSource(root, expectedCommit);
   assertV3DeploymentArguments(evidence, draft);
   const verified = await verifyChainEvidence(root, rpcUrl, draft, evidence);

@@ -244,8 +244,8 @@ export function parseV3BroadcastRun(
     fail("the seven module addresses must be distinct.");
   }
   const commit = nullableString(run.commit, "run-latest.commit");
-  if (commit !== null && !/^[a-f0-9]{40}$/.test(commit)) {
-    fail("run-latest.commit must be a lowercase 40-character git commit or null.");
+  if (commit !== null && !/^[a-f0-9]{7,40}$/.test(commit)) {
+    fail("run-latest.commit must be a lowercase 7-40 character git commit or null.");
   }
   return { chainId: expectedChainId, modules, configure, transactionHashes, commit };
 }
