@@ -167,8 +167,13 @@ export async function createV3SuiteContext(options: {
   const rpcUrl = safeRpcUrl(options.rpcUrl ?? manifest.rpcUrl, allowedRpcOrigins);
   const publicClient = createPublicClient({
     chain,
+    batch: {
+      // Collapse concurrent immutable contract reads into the configured
+      // Multicall3. Provider HTTP batches still charge each nested request and
+      // can exhaust a one-second compute-unit window during suite bootstrap.
+      multicall: { batchSize: 1_024, wait: 25 },
+    },
     transport: http(rpcUrl, {
-      batch: { batchSize: 50, wait: 25 },
       fetchOptions: { redirect: "error" },
       retryCount: 3,
       retryDelay: 500,
