@@ -111,10 +111,10 @@ jobs:
           pnpm --filter @sepbase/mcp pack --pack-destination "$GITHUB_WORKSPACE/package-tarballs"
 
       - name: Publish SDK with npm provenance
-        run: npm publish "package-tarballs/sepbase-sdk-${{ steps.release.outputs.version }}.tgz" --access public --provenance
+        run: npm publish "./package-tarballs/sepbase-sdk-${{ steps.release.outputs.version }}.tgz" --access public --provenance
 
       - name: Publish React package with npm provenance
-        run: npm publish "package-tarballs/sepbase-react-${{ steps.release.outputs.version }}.tgz" --access public --provenance
+        run: npm publish "./package-tarballs/sepbase-react-${{ steps.release.outputs.version }}.tgz" --access public --provenance
 
       - name: Publish MCP package with npm provenance
-        run: npm publish "package-tarballs/sepbase-mcp-${{ steps.release.outputs.version }}.tgz" --access public --provenance
+        run: npm publish "./package-tarballs/sepbase-mcp-${{ steps.release.outputs.version }}.tgz" --access public --provenance
