@@ -125,8 +125,22 @@ const [deploymentRaw, agentRaw, v3Raw, openApi, llms] = await Promise.all([
 ]);
 const deployment = deploymentManifestSchema.parse(deploymentRaw);
 const agent = agentIntegrationManifestSchema.parse(agentRaw);
-const v3Envelope = v3Raw as { data?: unknown };
-const v3 = parseV3SuiteManifest(v3Envelope.data);
+const v3StatusEnvelope = v3Raw as {
+  data?: {
+    schemaVersion?: unknown;
+    suiteReleaseId?: unknown;
+    releaseStatus?: unknown;
+    chainId?: unknown;
+    contracts?: unknown;
+  };
+};
+assert.ok(v3StatusEnvelope.data && typeof v3StatusEnvelope.data === "object", "V3 status data is missing.");
+const v3 = parseV3SuiteManifest(await json(agent.discovery.v3TargetManifest));
+assert.equal(v3StatusEnvelope.data.schemaVersion, v3.schemaVersion, "V3 status schema version drifted.");
+assert.equal(v3StatusEnvelope.data.suiteReleaseId, v3.suiteReleaseId, "V3 status suite release ID drifted.");
+assert.equal(v3StatusEnvelope.data.releaseStatus, v3.releaseStatus, "V3 status release state drifted.");
+assert.equal(v3StatusEnvelope.data.chainId, v3.chainId, "V3 status chain ID drifted.");
+assert.deepEqual(v3StatusEnvelope.data.contracts, v3.contracts, "V3 status contract inventory drifted.");
 
 assert.equal(new URL(deployment.metadataBaseURI).origin, origin, "V2 metadataBaseURI is not on the final origin.");
 assert.equal(new URL(v3.metadataBaseURI).origin, origin, "V3 metadataBaseURI is not on the final origin.");
