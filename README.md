@@ -134,7 +134,7 @@ scripts/           Validation, manifest, deployment, smoke, and release tooling
 
 Requirements:
 
-- Node.js `22.13.0+`
+- Node.js `22.14.0+`
 - pnpm `11.7.0+`
 - Foundry with Solidity `0.8.36` support
 
