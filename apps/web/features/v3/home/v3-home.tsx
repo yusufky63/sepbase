@@ -10,43 +10,29 @@ import homeStyles from "@/app/home.module.css";
 import { V3HomeRecentNames } from "./v3-home-recent";
 import { V3HomeStats } from "./v3-home-stats";
 
-function formatProtocolDuration(secondsValue: string) {
-  const seconds = BigInt(secondsValue);
-  if (seconds % 86_400n === 0n) return `${seconds / 86_400n} DAYS`;
-  if (seconds % 3_600n === 0n) return `${seconds / 3_600n} HOURS`;
-  if (seconds % 60n === 0n) return `${seconds / 60n} MIN`;
-  return `${seconds} SEC`;
-}
-
 export function V3Home() {
   const heroNameParts = projectConfig.brand.shortName.split("/");
   const standardAnnualPrice = BigInt(v3Manifest.pricing.annualPriceBaseUnits);
   const pricingTiers = [
-    { index: "01", label: "1 CODE POINT", length: 1, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[0] },
-    { index: "02", label: "2 CODE POINTS", length: 2, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[1] },
-    { index: "03", label: "3 CODE POINTS", length: 3, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[2] },
+    { index: "01", label: "1 CHARACTER", length: 1, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[0] },
+    { index: "02", label: "2 CHARACTERS", length: 2, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[1] },
+    { index: "03", label: "3 CHARACTERS", length: 3, multiplier: v3Manifest.pricing.shortNamePriceMultipliers[2] },
     {
       index: "04",
-      label: `4-${v3Manifest.nameRules.maxCodepoints} CODE POINTS`,
+      label: `4-${v3Manifest.nameRules.maxCodepoints} CHARACTERS`,
       length: 4,
       multiplier: 1,
     },
   ] as const;
   const allowedYears = v3Manifest.nameRules.allowedYears;
   const termLabel = `${allowedYears[0]}-${allowedYears.at(-1)} years`;
-  const marketModels = [
-    v3Manifest.capabilities.fixedListings ? "fixed listings" : null,
-    v3Manifest.capabilities.offers ? "escrowed offers" : null,
-    v3Manifest.capabilities.englishAuctions ? "English auctions" : null,
-  ].filter((value): value is string => value !== null).join(", ");
-
   return (
     <>
       <section className={homeStyles.hero}>
         <div className={homeStyles.heroInner}>
           <div className={homeStyles.heroIndex}>
             <span>{v3Manifest.chainName.toUpperCase()}</span>
-            <span>V3 / CHAIN {v3Manifest.chainId}</span>
+            <span>TESTNET / NAMES</span>
           </div>
           <h1>
             {heroNameParts.map((part) => <span key={part}>{part}</span>)}
@@ -65,24 +51,22 @@ export function V3Home() {
                   showFiat={false}
                 />
               </strong>
-              <small>TESTNET ASSET / NO FIAT VALUE IMPLIED</small>
+              <small>REGISTRATION PAYMENT</small>
             </div>
             <div>
-              <span>NAME RULES</span>
-              <strong>ENSIP-15 / UNICODE</strong>
-              <small>MAX {v3Manifest.nameRules.maxUtf8Bytes} UTF-8 BYTES</small>
+              <span>TERM</span>
+              <strong>{termLabel}</strong>
+              <small>CHOOSE WHEN YOU REGISTER</small>
             </div>
             <div>
-              <span>REGISTRATION</span>
-              <strong>COMMIT → REVEAL</strong>
-              <small>
-                EARLIEST {formatProtocolDuration(v3Manifest.commitment.minAgeSeconds)} / LATEST {formatProtocolDuration(v3Manifest.commitment.maxAgeSeconds)}
-              </small>
+              <span>REFERRAL</span>
+              <strong>{formatBps(v3Manifest.pricing.referralRewardBps)}</strong>
+              <small>REWARD FOR THE REFERRER</small>
             </div>
             <div>
               <span>MARKET FEE</span>
               <strong>{formatBps(v3Manifest.pricing.marketplaceFeeBps)}</strong>
-              <small>{termLabel.toUpperCase()} REGISTRATION TERMS</small>
+              <small>FIXED SALES, OFFERS AND AUCTIONS</small>
             </div>
           </div>
         </div>
@@ -91,8 +75,8 @@ export function V3Home() {
       <section className={homeStyles.statsSection} aria-labelledby="v3-platform-stats-heading">
         <MotionReveal className={homeStyles.sectionInner}>
           <div className={homeStyles.sectionHeading}>
-            <p>02 / V3 REGISTRY</p>
-            <h2 id="v3-platform-stats-heading">Confirmed state, read from the verified suite.</h2>
+            <p>02 / PLATFORM</p>
+            <h2 id="v3-platform-stats-heading">The registry, at a glance.</h2>
           </div>
           <V3HomeStats />
         </MotionReveal>
@@ -101,8 +85,8 @@ export function V3Home() {
       <section className={homeStyles.pricingSection}>
         <MotionReveal className={homeStyles.sectionInner}>
           <div className={`${homeStyles.sectionHeading} ${homeStyles.sectionHeadingReverse}`}>
-            <p>03 / V3 PRICING</p>
-            <h2>Canonical code points set the short-name premium.</h2>
+            <p>03 / PRICING</p>
+            <h2>Shorter names carry a fixed premium.</h2>
           </div>
           <div className={homeStyles.pricingGrid}>
             {pricingTiers.map((tier) => (
@@ -131,12 +115,12 @@ export function V3Home() {
         <MotionReveal className={homeStyles.sectionInner}>
           <div className={homeStyles.sectionHeading}>
             <p>04 / NAME OBJECT</p>
-            <h2>One normalized name, one ERC-721 identity and resolver node.</h2>
+            <h2>A readable address is also an owned name.</h2>
           </div>
           <Nameplate
             label="alice"
             suffix={v3Manifest.suffix}
-            status="V3 / ENSIP-15 NORMALIZED"
+            status="IDENTITY / ACTIVE"
           />
         </MotionReveal>
       </section>
@@ -144,15 +128,15 @@ export function V3Home() {
       <section className={homeStyles.processSection}>
         <MotionReveal className={homeStyles.sectionInner}>
           <div className={`${homeStyles.sectionHeadingInverse} ${homeStyles.sectionHeadingReverse}`}>
-            <p>05 / V3 PROTOCOL</p>
-            <h2>Normalize. Commit. Reveal. Resolve. Trade.</h2>
+            <p>05 / PROTOCOL</p>
+            <h2>Search. Register. Resolve. Trade.</h2>
           </div>
           <div className={homeStyles.processGrid}>
             {[
-              ["01", "NORMALIZE", "ENSIP-15 canonicalizes Unicode before every hash and signature."],
-              ["02", "COMMIT / REVEAL", `Commit first, then reveal after ${formatProtocolDuration(v3Manifest.commitment.minAgeSeconds).toLowerCase()}.`],
-              ["03", "IDENTITY", "Set address, multicoin and text records with forward-confirmed primary resolution."],
-              ["04", "MARKET", `Trade through ${marketModels || "the manifest-declared market models"}.`],
+              ["01", "SEARCH", "Find an available .sepbase name, including supported international characters."],
+              ["02", "REGISTER", "Choose a term and complete two protected wallet steps."],
+              ["03", "IDENTITY", "Set your address, public profile and primary name."],
+              ["04", "MARKET", "List a name, make an offer or join an auction."],
             ].map(([index, title, copy]) => (
               <div key={index}>
                 <span>{index}</span>
@@ -167,8 +151,8 @@ export function V3Home() {
       <section className={homeStyles.recentSection}>
         <MotionReveal className={homeStyles.sectionInner}>
           <div className={homeStyles.sectionHeading}>
-            <p>06 / RECENT V3</p>
-            <h2>Bounded registrations, rechecked against current registry state.</h2>
+            <p>06 / RECENT</p>
+            <h2>Latest names on Sepbase.</h2>
           </div>
           <V3HomeRecentNames />
         </MotionReveal>

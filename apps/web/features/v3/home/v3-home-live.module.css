@@ -73,7 +73,7 @@
 .headerRow,
 .row {
   display: grid;
-  grid-template-columns: 5fr 3fr 2fr 32px;
+  grid-template-columns: 7fr 4fr 32px;
   align-items: center;
   gap: var(--grid-gutter);
   border-bottom: 1px solid var(--line);

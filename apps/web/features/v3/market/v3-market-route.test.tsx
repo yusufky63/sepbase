@@ -19,14 +19,14 @@ afterEach(() => {
 });
 
 describe("V3MarketRoute", () => {
-  it("preserves the previous market until V3 is live", () => {
+  it("preserves the previous market when V3 is not operational", () => {
     operational.mockReturnValue(false);
     render(<V3MarketRoute fallback={<div>V2 MARKET</div>} />);
     expect(screen.getByText("V2 MARKET")).toBeInTheDocument();
     expect(screen.queryByText("VERIFIED V3 MARKET")).not.toBeInTheDocument();
   });
 
-  it("cuts over only after the live manifest is operational", () => {
+  it("uses the V3 market for an operational candidate or live manifest", () => {
     operational.mockReturnValue(true);
     render(<V3MarketRoute fallback={<div>V2 MARKET</div>} />);
     expect(screen.getByText("VERIFIED V3 MARKET")).toBeInTheDocument();

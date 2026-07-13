@@ -109,7 +109,7 @@ describe("V3MarketWorkspace", () => {
     const user = userEvent.setup();
     const view = render(<V3MarketWorkspace />);
     expect((await screen.findAllByText("alice.base")).length).toBeGreaterThanOrEqual(3);
-    expect(screen.getByText(/ACTIVE.*OFFER ACTIVE/)).toBeInTheDocument();
+    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Buy alice.base" }));
     expect(screen.getByTestId("review-intent")).toHaveTextContent(`fixed-buy:${mocks.walletA}`);
@@ -126,7 +126,7 @@ describe("V3MarketWorkspace", () => {
     });
     try {
       expect(screen.getByRole("button", { name: "Buy alice.base" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Refresh same-block view" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Refresh market" })).toBeDisabled();
       expect(screen.getByRole("combobox", { name: "ACTION" })).toBeDisabled();
     } finally {
       act(() => releaseV3MarketExecutionLease(lease!));

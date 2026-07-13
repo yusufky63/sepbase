@@ -11,10 +11,17 @@ import { getV3BrowserClient, isV3ManifestOperational, v3BrowserManifest } from "
 import { chainNameControllerV3Abi } from "@/lib/contract/v3-abi.generated";
 import { clearV3ReferralAttribution, readV3ReferralAttribution } from "@/lib/referrals";
 import { createV3WagmiAdapter } from "@/lib/use-v3-plan-execution";
+import { shortenAddress } from "@/lib/formatting";
 import { V3RegistrationPanel } from "./v3-registration-panel";
 import styles from "./v3-registration-workspace.module.css";
 
 const publicTextKeys = ["avatar", "url", "com.twitter", "com.github"] as const;
+const publicTextLabels: Record<(typeof publicTextKeys)[number], string> = {
+  avatar: "Avatar",
+  url: "Website",
+  "com.twitter": "X / Twitter",
+  "com.github": "GitHub",
+};
 
 type V3NameLoadState =
   | { key: string; status: "error" }
@@ -150,65 +157,63 @@ export function V3RegistrationWorkspace({ label }: { label: string }) {
   if (!isV3ManifestOperational()) {
     return (
       <section className={styles.boundary}>
-        <span>V3 REGISTRATION / DRAFT</span>
-        <h2>Commit-reveal is source-ready, not deployed.</h2>
-        <p>All seven V3 addresses must be verified and the manifest promoted before this wallet flow can request an attestation or transaction.</p>
+        <span>REGISTRATION</span>
+        <h2>Registration is not available yet.</h2>
+        <p>This release is still being prepared. No wallet action has been requested.</p>
       </section>
     );
   }
-  if (currentLoad?.status === "error") return <section className={styles.boundary} role="alert"><h2>V3 name state is unavailable.</h2><p>No availability or price assumption has been made.</p></section>;
-  if (!client || !record) return <section className={styles.boundary} role="status"><h2>Verifying V3 release and name state...</h2></section>;
+  if (currentLoad?.status === "error") return <section className={styles.boundary} role="alert"><h2>We couldn&apos;t load this name.</h2><p>Availability and price were not assumed. Try again shortly.</p></section>;
+  if (!client || !record) return <section className={styles.boundary} role="status"><h2>Checking this name...</h2></section>;
   if (!record.available) {
     const connectedOwner = Boolean(account.address && record.owner?.toLowerCase() === account.address.toLowerCase());
     const expiration = safeExpiration(record.expiresAt);
     return (
       <section className={`${styles.boundary} ${styles.record}`}>
-        <span>V3 NAME / BLOCK {record.blockNumber.toString()}</span>
+        <span>NAME / {v3BrowserManifest.chainName.toUpperCase()}</span>
         <h1>{record.fullName}</h1>
         <p>
-          This name is {record.reserved ? "reserved by protocol policy" : `currently ${record.status}`}.
-          Public values below are pinned to one verified block.
+          This name is {record.reserved ? "reserved" : `currently ${record.status}`}.
         </p>
         <dl className={styles.recordGrid}>
           <div><dt>STATUS</dt><dd>{record.status.toUpperCase()}</dd></div>
-          <div><dt>OWNER</dt><dd><code>{record.owner ?? "NO CURRENT OWNER"}</code></dd></div>
-          <div><dt>ADDRESS</dt><dd><code>{record.resolvedAddress ?? "NOT SET"}</code></dd></div>
+          <div><dt>OWNER</dt><dd title={record.owner ?? undefined}>{record.owner ? shortenAddress(record.owner) : "NO CURRENT OWNER"}</dd></div>
+          <div><dt>RESOLVES TO</dt><dd title={record.resolvedAddress ?? undefined}>{record.resolvedAddress ? shortenAddress(record.resolvedAddress) : "NOT SET"}</dd></div>
           <div><dt>EXPIRES</dt><dd>{expiration
             ? <time dateTime={expiration.toISOString()}>{expiration.toLocaleString()}</time>
             : "NOT APPLICABLE"}</dd></div>
-          <div><dt>TOKEN ID</dt><dd><code>{record.tokenId.toString()}</code></dd></div>
-          <div><dt>TRANSFER NONCE</dt><dd><code>{record.transferNonce.toString()}</code></dd></div>
         </dl>
         <div className={styles.textRecords}>
-          <strong>PUBLIC TEXT RECORDS</strong>
+          <strong>PUBLIC PROFILE</strong>
           {textRecordsUnavailable ? (
             <p role="status">Text records could not be verified and are not being shown as empty.</p>
           ) : textRecords ? (
             <dl>
               {publicTextKeys.map((key) => (
-                <div key={key}><dt>{key}</dt><dd>{textRecords[key] || "NOT SET"}</dd></div>
+                <div key={key}><dt>{publicTextLabels[key]}</dt><dd>{textRecords[key] || "NOT SET"}</dd></div>
               ))}
             </dl>
-          ) : <p role="status">Reading text records at block {record.blockNumber.toString()}...</p>}
+          ) : <p role="status">Loading public profile...</p>}
         </div>
         {connectedOwner ? <Link href="/me">Manage this name</Link> : null}
       </section>
     );
   }
   if (!account.address) {
-    return <section className={styles.boundary}><h2>Connect the registering wallet.</h2><WalletButton /></section>;
+    return <section className={styles.boundary}><span>REGISTRATION</span><h2>Connect your wallet to register this name.</h2><WalletButton /></section>;
   }
   if (account.chainId !== v3BrowserManifest.chainId) {
     return (
       <section className={styles.boundary}>
         <h2>Switch to {v3BrowserManifest.chainName}.</h2>
+        <p>Your wallet must be on the same network as this name.</p>
         <button type="button" onClick={() => void chainSwitch.switchToConfiguredChain()} disabled={chainSwitch.isSwitching}>
           {chainSwitch.isSwitching ? "Switching..." : "Switch network"}
         </button>
       </section>
     );
   }
-  if (!controller) return <section className={styles.boundary} role="status"><h2>Preparing the verified wallet boundary...</h2></section>;
+  if (!controller) return <section className={styles.boundary} role="status"><h2>Preparing registration...</h2></section>;
 
   return (
     <V3RegistrationPanel

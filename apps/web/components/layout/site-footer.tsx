@@ -2,15 +2,20 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { projectConfig } from "@/config/project.config";
 import { deploymentManifest } from "@/lib/deployment-manifest";
+import { v3Manifest, v3PublicUiActive } from "@/lib/v3-api";
 import styles from "./site-layout.module.css";
 
 export function SiteFooter() {
   const wordmark = projectConfig.brand.shortName.split("/");
+  const settlement = v3PublicUiActive ? v3Manifest.settlement : deploymentManifest.settlement;
+  const manifestPath = v3PublicUiActive
+    ? "/deployment-manifest.v3.json"
+    : projectConfig.integration.wellKnownPath;
   return (
     <footer className={styles.footer}>
       <div className={styles.footerRail}>
         <span>{projectConfig.brand.shortName} / DIRECTORY</span>
-        <span>{projectConfig.chain.name.toUpperCase()} / {projectConfig.chain.id}</span>
+        <span>{projectConfig.chain.name.toUpperCase()} / TESTNET</span>
       </div>
       <div className={styles.footerInner}>
         <div className={styles.footerBrand}>
@@ -23,13 +28,13 @@ export function SiteFooter() {
           <span className={styles.footerIndex}>01</span>
           <p className={styles.footerLabel}>NETWORK</p>
           <strong>{projectConfig.chain.name}</strong>
-          <span>{projectConfig.chain.id}</span>
+          <span>TEST NETWORK</span>
         </div>
         <div className={`${styles.footerFact} ${styles.footerSettlement}`}>
           <span className={styles.footerIndex}>02</span>
-          <p className={styles.footerLabel}>SETTLEMENT</p>
-          <strong>{deploymentManifest.settlement.symbol}</strong>
-          <span>{deploymentManifest.settlement.kind.toUpperCase()}</span>
+          <p className={styles.footerLabel}>PAYMENT</p>
+          <strong>{settlement.symbol}</strong>
+          <span>{v3PublicUiActive ? "TEST TOKEN" : deploymentManifest.settlement.kind.toUpperCase()}</span>
         </div>
         <nav className={styles.footerLinks} aria-label="Developer resources">
           <span className={styles.footerIndex}>03</span>
@@ -37,7 +42,7 @@ export function SiteFooter() {
           <Link href={projectConfig.integration.docsPath}>
             <span>Docs</span><ArrowUpRight size={15} aria-hidden="true" />
           </Link>
-          <a href={projectConfig.integration.wellKnownPath}>
+          <a href={manifestPath}>
             <span>Manifest</span><ArrowUpRight size={15} aria-hidden="true" />
           </a>
           <a href="/llms.txt">
@@ -53,7 +58,7 @@ export function SiteFooter() {
       </div>
       <div className={styles.disclaimer}>
         <span>Independent {projectConfig.chain.testnet ? "testnet " : ""}project. Not an official {projectConfig.chain.name} naming service.</span>
-        <span>PROTOCOL / {deploymentManifest.contractVersion}</span>
+        <span>TESTNET / FOR TESTING</span>
       </div>
     </footer>
   );

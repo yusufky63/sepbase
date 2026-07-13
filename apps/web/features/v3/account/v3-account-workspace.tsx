@@ -58,17 +58,17 @@ function assetAmount(amount: bigint) {
 function stageCopy(stage: ReturnType<typeof useV3PlanExecution>["stage"]) {
   const copy = {
     idle: "No transaction is pending.",
-    preparing: "Refreshing contract state and preparing guarded calldata.",
-    "approval-check": "Checking the exact settlement-token allowance.",
-    "approval-simulating": "Simulating the exact settlement-token approval.",
-    "approval-signing": "Approve the exact settlement amount in your wallet.",
-    "approval-confirming": "Waiting for the required approval confirmations.",
-    refreshing: "Re-preparing every economic guard after approval.",
-    simulating: "Simulating the final transaction against current state.",
+    preparing: "Checking the latest name and balance details.",
+    "approval-check": "Checking payment permission.",
+    "approval-simulating": "Preparing payment permission.",
+    "approval-signing": "Confirm payment permission in your wallet.",
+    "approval-confirming": "Waiting for payment permission.",
+    refreshing: "Refreshing the final amount and ownership.",
+    simulating: "Running a final safety check.",
     signing: "Review and sign the transaction in your wallet.",
-    confirming: `Waiting for ${v3BrowserManifest.requiredConfirmations} confirmations and receipt reconciliation.`,
-    confirmed: "Confirmed and reconciled against the prepared V3 plan.",
-    error: "The action was not completed. Refresh state before retrying.",
+    confirming: "Waiting for transaction confirmation.",
+    confirmed: "Transaction confirmed.",
+    error: "The action was not completed. Refresh and try again.",
   } as const;
   return copy[stage];
 }
@@ -274,9 +274,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
   if (!operational) {
     return (
       <section className={styles.boundary}>
-        <span>V3 ACCOUNT / DRAFT</span>
-        <h1>V3 wallet operations are not deployed.</h1>
-        <p>The existing V2 account remains the active `/me` experience until all seven V3 addresses and suite wiring are promoted to candidate or live.</p>
+        <span>ACCOUNT</span>
+        <h1>Account tools are not available yet.</h1>
+        <p>This release is still being prepared. No wallet action has been requested.</p>
       </section>
     );
   }
@@ -284,9 +284,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
   if (!account.address) {
     return (
       <section className={styles.boundary}>
-        <span>V3 ACCOUNT / WALLET</span>
+        <span>ACCOUNT</span>
         <h1>Connect the wallet that owns your names.</h1>
-        <p>Reads and write preparation start only after a wallet is connected.</p>
+        <p>Your names and balances will appear after you connect.</p>
         <WalletButton />
       </section>
     );
@@ -295,9 +295,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
   if (!correctChain) {
     return (
       <section className={styles.boundary}>
-        <span>V3 ACCOUNT / WRONG NETWORK</span>
+        <span>WRONG NETWORK</span>
         <h1>Switch to {v3BrowserManifest.chainName}.</h1>
-        <p>No account write is prepared for chain {account.chainId ?? "unknown"}.</p>
+        <p>Your wallet must be on the same network as your names.</p>
         <Button
           onClick={() => void chainSwitch.switchToConfiguredChain()}
           disabled={chainSwitch.isSwitching}
@@ -312,13 +312,12 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
     <>
       <section className={styles.hero}>
         <div className={styles.inner}>
-          <div className={styles.kicker}>V3 ACCOUNT / {v3BrowserManifest.chainName.toUpperCase()}</div>
+          <div className={styles.kicker}>ACCOUNT / {v3BrowserManifest.chainName.toUpperCase()}</div>
           <div className={styles.titleRow}>
-            <h1>ME<span>/V3</span></h1>
+            <h1>ME<span>/</span></h1>
             <div className={styles.accountState}>
-              <span>CONNECTED OWNER</span>
+              <span>CONNECTED WALLET</span>
               <strong title={account.address}>{shortenAddress(account.address, 6)}</strong>
-              <small>{v3BrowserManifest.suiteReleaseId}</small>
             </div>
           </div>
           <div className={styles.metrics} aria-live="polite">
@@ -349,8 +348,8 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
       <section className={styles.workspace}>
         <div className={styles.inner}>
           <div className={styles.snapshotBar}>
-            <span>BLOCK-PINNED ACCOUNT SNAPSHOT</span>
-            <strong>{currentReady ? `BLOCK ${currentReady.snapshot.blockNumber}` : accountQuery.isError ? "UNAVAILABLE" : "LOADING"}</strong>
+            <span>ACCOUNT DATA</span>
+            <strong>{currentReady ? "UP TO DATE" : accountQuery.isError ? "UNAVAILABLE" : "LOADING"}</strong>
             <Button
               variant="quiet"
               icon={<RefreshCw size={16} aria-hidden="true" />}
@@ -361,7 +360,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
             </Button>
           </div>
 
-          <div className={styles.tabs} role="tablist" aria-label="V3 account sections">
+          <div className={styles.tabs} role="tablist" aria-label="Account sections">
             {tabs.map((item, index) => {
               const Icon = item.icon;
               return (
@@ -387,17 +386,16 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
 
           {!currentReady && !accountQuery.isError ? (
             <div className={styles.state} role="status">
-              <span>READING / PINNED</span>
-              <h2>Verifying account ownership and balances.</h2>
-              <p>Names, rewards, market claims, and primary state are requested at the same block.</p>
+              <span>ACCOUNT</span>
+              <h2>Loading your names and balances.</h2>
             </div>
           ) : null}
 
           {accountQuery.isError ? (
             <div className={`${styles.state} ${styles.errorState}`} role="alert">
-              <span>UNAVAILABLE / NOT ZERO</span>
-              <h2>V3 account state could not be verified.</h2>
-              <p>The block-pinned V3 account snapshot is unavailable. Balances are not being treated as zero.</p>
+              <span>ACCOUNT UNAVAILABLE</span>
+              <h2>We couldn&apos;t load your account.</h2>
+              <p>Balances are unavailable and are not being shown as zero.</p>
               <Button variant="quiet" onClick={() => void accountQuery.refetch()}>Try again</Button>
             </div>
           ) : null}
@@ -407,12 +405,12 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
               <div className={styles.panelHeading}>
                 <span>01 / OWNERSHIP</span>
                 <h2>Names, records, renewal, and transfer</h2>
-                <small>Every write re-reads ownership before simulation.</small>
+                <small>Manage one name at a time.</small>
               </div>
 
               {currentReady.snapshot.names.total === 0n ? (
                 <div className={styles.emptyState}>
-                  <p>This address owns zero V3 names at block {currentReady.snapshot.blockNumber.toString()}.</p>
+                  <p>This wallet does not own any V3 names yet.</p>
                   <Link href="/">Search names</Link>
                 </div>
               ) : (
@@ -457,9 +455,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                     <div className={styles.nameActions}>
                       <div className={styles.nameSummary}>
                         <div><span>SELECTED</span><strong>{selected.fullName}</strong></div>
-                        <div><span>TOKEN ID</span><code>{selected.tokenId.toString()}</code></div>
-                        <div><span>FORWARD ADDRESS</span><code>{selected.resolvedAddress ?? "NOT SET"}</code></div>
-                        <div><span>TRANSFER NONCE</span><code>{selected.transferNonce.toString()}</code></div>
+                        <div><span>STATUS</span><strong>{selected.status.toUpperCase()}</strong></div>
+                        <div><span>ADDRESS</span><code>{selected.resolvedAddress ?? "NOT SET"}</code></div>
+                        <div><span>EXPIRES</span><strong>{selected.expiresAt ? formatDate(selected.expiresAt) : "NO EXPIRY"}</strong></div>
                       </div>
 
                       <form className={styles.actionForm} onSubmit={(event) => submit(event, {
@@ -478,9 +476,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                           {v3BrowserManifest.nameRules.allowedYears.map((year) => <option value={year} key={year}>{year} year{year === 1 ? "" : "s"}</option>)}
                         </select>
                         <div className={styles.reviewValue}>
-                          <span>PINNED QUOTE</span>
+                          <span>RENEWAL PRICE</span>
                           <strong>{quoteQuery.data !== undefined ? assetAmount(quoteQuery.data) : quoteQuery.isError ? "UNAVAILABLE" : "CHECKING"}</strong>
-                          <small>The SDK embeds a freshly read expected amount; ERC-20 approval is exact.</small>
+                          <small>The exact amount is checked again before your wallet signs.</small>
                         </div>
                         <Button type="submit" disabled={!operationAvailable(selected) || quoteQuery.data === undefined || execution.isPending}>Renew name</Button>
                       </form>
@@ -488,7 +486,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                       <form className={styles.actionForm} onSubmit={(event) => submit(event,
                         addressRecord.address ? { kind: "set-address", label: selected.label, target: addressRecord.address } : null,
                       )}>
-                        <div className={styles.formHeading}><span>RESOLVER / ADDRESS</span><strong>Set forward address</strong></div>
+                        <div className={styles.formHeading}><span>ADDRESS</span><strong>Choose where this name points</strong></div>
                         <label htmlFor="v3-address-record">EVM address</label>
                         <input
                           id="v3-address-record"
@@ -500,7 +498,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                           spellCheck={false}
                         />
                         <small id="v3-address-record-help" className={addressRecord.error ? styles.fieldError : styles.fieldHint}>
-                          {addressRecord.error ?? "The zero address explicitly clears forward resolution."}
+                          {addressRecord.error ?? "Use the zero address only if you want to clear this value."}
                         </small>
                         <Button type="submit" disabled={!operationAvailable(selected) || !addressRecord.address || execution.isPending}>Set address</Button>
                       </form>
@@ -508,8 +506,8 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                       <form className={styles.actionForm} onSubmit={(event) => submit(event,
                         textError ? null : { kind: "set-text", label: selected.label, key: textKey, value: textValue },
                       )}>
-                        <div className={styles.formHeading}><span>RESOLVER / TEXT</span><strong>Publish a public text record</strong></div>
-                        <label htmlFor="v3-text-key">Key</label>
+                        <div className={styles.formHeading}><span>PUBLIC PROFILE</span><strong>Add a profile field</strong></div>
+                        <label htmlFor="v3-text-key">Profile field</label>
                         <input
                           id="v3-text-key"
                           value={textKey}
@@ -518,7 +516,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                           aria-invalid={textError !== null}
                           aria-describedby="v3-text-help"
                         />
-                        <label htmlFor="v3-text-value">Value</label>
+                        <label htmlFor="v3-text-value">Profile value</label>
                         <textarea
                           id="v3-text-value"
                           value={textValue}
@@ -527,12 +525,12 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                           aria-invalid={textError !== null}
                           aria-describedby="v3-text-help"
                         />
-                        <small id="v3-text-help" className={textError ? styles.fieldError : styles.fieldHint}>{textError ?? "Public, untrusted on-chain data. 64-byte key / 512-byte value limits."}</small>
+                        <small id="v3-text-help" className={textError ? styles.fieldError : styles.fieldHint}>{textError ?? "This information is public. Do not add private details."}</small>
                         <Button type="submit" disabled={!operationAvailable(selected) || textError !== null || execution.isPending}>Set text record</Button>
                       </form>
 
                       <div className={styles.actionForm}>
-                        <div className={styles.formHeading}><span>PRIMARY</span><strong>Forward-confirmed reverse name</strong></div>
+                        <div className={styles.formHeading}><span>PRIMARY NAME</span><strong>Use this as your wallet name</strong></div>
                         <p>{primaryPermission.allowed
                           ? `${selected.fullName} resolves to the connected owner and can become primary.`
                           : primaryPermission.reason}</p>
@@ -571,7 +569,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                           spellCheck={false}
                         />
                         <small id="v3-transfer-help" className={transferRecipient.error ? styles.fieldError : styles.fieldHint}>
-                          {transferRecipient.error ?? "Safe ERC-721 transfer; ownership and transfer nonce are refreshed before signing."}
+                          {transferRecipient.error ?? "The recipient becomes the new owner. Review the address carefully."}
                         </small>
                         <Button variant="danger" type="submit" icon={<Send size={16} aria-hidden="true" />} disabled={!operationAvailable(selected) || !transferRecipient.address || execution.isPending}>Transfer name</Button>
                       </form>
@@ -582,9 +580,9 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
 
               <section className={styles.migrationSection} aria-labelledby="v3-migration-heading">
                 <div className={styles.panelHeading}>
-                  <span>V2 → V3 / CLAIM</span>
-                  <h2 id="v3-migration-heading">Migrate an eligible legacy name</h2>
-                  <small>Live v2 ownership and lifecycle are re-read at block {currentReady.snapshot.blockNumber.toString()}.</small>
+                  <span>MOVE A V2 NAME</span>
+                  <h2 id="v3-migration-heading">Bring an eligible name to V3</h2>
+                  <small>Your current V2 ownership and expiry are checked before anything is prepared.</small>
                 </div>
                 <form className={styles.actionForm} onSubmit={reviewMigration}>
                   <div className={styles.formHeading}>
@@ -612,17 +610,17 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
 
                 {migrationQuery.isFetching ? (
                   <div className={styles.state} role="status">
-                    <span>MIGRATION / PINNED READ</span>
-                    <h2>Checking the announced v2 migration policy.</h2>
-                    <p>No claim plan is prepared until the live owner, lifecycle, window and reservation agree.</p>
+                    <span>CHECKING ELIGIBILITY</span>
+                    <h2>Checking your V2 name.</h2>
+                    <p>No wallet action is prepared until ownership and expiry are confirmed.</p>
                   </div>
                 ) : null}
 
                 {migrationQuery.isError ? (
                   <div className={`${styles.state} ${styles.errorState}`} role="alert">
-                    <span>MIGRATION / UNAVAILABLE</span>
-                    <h2>Legacy eligibility could not be verified.</h2>
-                    <p>The read is unavailable, not ineligible. Review again before preparing any claim.</p>
+                    <span>COULD NOT CHECK</span>
+                    <h2>Eligibility could not be confirmed.</h2>
+                    <p>This does not mean the name is ineligible. Try again shortly.</p>
                   </div>
                 ) : null}
 
@@ -701,13 +699,13 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
               <div className={styles.panelHeading}>
                 <span>02 / REFERRALS</span>
                 <h2>Claim registration rewards</h2>
-                <small>Pull-payment balance at block {currentReady.snapshot.blockNumber.toString()}.</small>
+                <small>Rewards become available after successful referred registrations.</small>
               </div>
               <div className={styles.claimGrid}>
                 <div className={styles.claimAmount} data-zero={currentReady.snapshot.balances.referralRewards === 0n}>
-                  <span>CLAIMABLE / {currentReady.snapshot.balances.referralRewards === 0n ? "VERIFIED ZERO" : "AVAILABLE"}</span>
+                  <span>{currentReady.snapshot.balances.referralRewards === 0n ? "NO REWARDS YET" : "AVAILABLE TO CLAIM"}</span>
                   <strong>{assetAmount(currentReady.snapshot.balances.referralRewards)}</strong>
-                  <p>Rewards accrue only after a successful V3 registration reveal.</p>
+                  <p>Rewards are credited after a referred registration completes.</p>
                 </div>
                 <form onSubmit={(event) => submit(event,
                   referralRecipient.address ? { kind: "claim-referral", recipient: referralRecipient.address } : null,
@@ -736,13 +734,13 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
               <div className={styles.panelHeading}>
                 <span>03 / MARKET</span>
                 <h2>Claim proceeds and refunds</h2>
-                <small>Seller proceeds, offer refunds, and outbid refunds share this pull balance.</small>
+                <small>Sale proceeds and refundable offers or bids appear together.</small>
               </div>
               <div className={styles.claimGrid}>
                 <div className={styles.claimAmount} data-zero={currentReady.snapshot.balances.marketplaceClaimable === 0n}>
-                  <span>CLAIMABLE / {currentReady.snapshot.balances.marketplaceClaimable === 0n ? "VERIFIED ZERO" : "AVAILABLE"}</span>
+                  <span>{currentReady.snapshot.balances.marketplaceClaimable === 0n ? "NO BALANCE TO CLAIM" : "AVAILABLE TO CLAIM"}</span>
                   <strong>{assetAmount(currentReady.snapshot.balances.marketplaceClaimable)}</strong>
-                  <p>The marketplace never pushes funds during settlement.</p>
+                  <p>Claim the available balance to the address you choose.</p>
                 </div>
                 <form onSubmit={(event) => submit(event,
                   marketplaceRecipient.address ? { kind: "claim-marketplace", recipient: marketplaceRecipient.address } : null,
@@ -764,7 +762,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                 </form>
               </div>
               <div className={styles.marketLink}>
-                <p>Fixed listings, escrowed offers, and English auctions are managed from the V3 market workspace.</p>
+                <p>Listings, offers and auctions are managed from the market.</p>
                 <Link href="/market">Open market <ExternalLink size={15} aria-hidden="true" /></Link>
               </div>
             </div>
@@ -773,7 +771,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
           {currentReady ? (
             <div className={styles.transactionState} data-state={execution.stage} aria-live="polite">
               <div>
-                <span>TRANSACTION / {execution.stage.toUpperCase()}</span>
+                <span>TRANSACTION</span>
                 <strong>{stageCopy(execution.stage)}</strong>
               </div>
               {execution.result ? (
@@ -781,7 +779,7 @@ export function V3AccountWorkspace({ initialTab = "names" }: { initialTab?: V3Ac
                   View confirmed transaction <ExternalLink size={15} aria-hidden="true" />
                 </a>
               ) : null}
-              {execution.error ? <p role="alert">No completion was recorded. Refresh the pinned state and retry.</p> : null}
+              {execution.error ? <p role="alert">The action was not completed. Refresh your account and try again.</p> : null}
             </div>
           ) : null}
         </div>

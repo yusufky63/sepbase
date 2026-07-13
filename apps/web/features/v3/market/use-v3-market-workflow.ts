@@ -207,7 +207,7 @@ export function useV3MarketWorkflow({
     }
 
     try {
-      const snapshot = await readFresh(run, "Reading fresh block-pinned guards.");
+      const snapshot = await readFresh(run, "Checking current price and ownership.");
       if (snapshot) setInternalState({ status: "ready", intentKey, snapshot });
     } catch (error) {
       if (run !== activeRun.current) return;
@@ -237,7 +237,7 @@ export function useV3MarketWorkflow({
     const run = ++activeRun.current;
 
     try {
-      const snapshot = await readFresh(run, "Refreshing every economic guard before plan preparation.");
+      const snapshot = await readFresh(run, "Checking the final price and ownership before your wallet opens.");
       if (!snapshot) return;
       assertExecutable(request, snapshot);
 

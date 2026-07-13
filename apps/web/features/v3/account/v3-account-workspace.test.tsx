@@ -151,16 +151,16 @@ describe("V3 account workspace boundaries", () => {
     mocks.useAccount.mockReturnValue({ address: account, chainId: 84_532 });
     mocks.getClient.mockImplementation(() => accountClient({ fail: true }));
     renderWorkspace();
-    expect(await screen.findByRole("alert")).toHaveTextContent(/not being treated as zero/i);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/not being shown as zero/i);
   });
 
   it("renders a confirmed empty account and explicit zero balances", async () => {
     mocks.useAccount.mockReturnValue({ address: account, chainId: 84_532 });
     mocks.getClient.mockImplementation(() => accountClient());
     renderWorkspace();
-    expect(await screen.findByText(/owns zero V3 names at block 96/i)).toBeInTheDocument();
+    expect(await screen.findByText(/does not own any V3 names yet/i)).toBeInTheDocument();
     expect(screen.getAllByText("0 USDC").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText("BLOCK 96")).toBeInTheDocument();
+    expect(screen.getByText("UP TO DATE")).toBeInTheDocument();
   });
 
   it("disables primary until forward resolution confirms the connected owner", async () => {

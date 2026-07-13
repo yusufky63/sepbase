@@ -27,10 +27,11 @@ function candidate(): V3SuiteManifest {
 }
 
 describe("referral attribution scope", () => {
-  it("keeps V2 attribution active until the V3 release is live", () => {
+  it("uses release-scoped V3 attribution for an operational candidate", () => {
     expect(isV3ReferralOperational(draft)).toBe(false);
-    expect(isV3ReferralOperational(candidate())).toBe(false);
-    expect(referralAttributionCookieName).toBe(referralCookieName);
+    expect(isV3ReferralOperational(candidate())).toBe(true);
+    expect(referralAttributionCookieName).not.toBe(referralCookieName);
+    expect(referralAttributionCookieName).toBe(v3ReferralCookieNameFor(release));
   });
 
   it("binds a V3 cookie name to the exact suite release, chain and controller", () => {

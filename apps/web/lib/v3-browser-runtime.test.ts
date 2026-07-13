@@ -6,8 +6,8 @@ import {
 } from "./v3-browser-runtime";
 
 describe("V3 browser runtime", () => {
-  it("keeps the complete candidate out of the public browser UI", () => {
-    expect(isV3ManifestOperational()).toBe(false);
+  it("enables the complete candidate for Base Sepolia browser testing", () => {
+    expect(isV3ManifestOperational()).toBe(true);
   });
 
   it("pins manifest and RPC origins without accepting request-controlled URLs", () => {
@@ -19,7 +19,7 @@ describe("V3 browser runtime", () => {
     });
   });
 
-  it("requires live status, all runtime identities and locked wiring", () => {
+  it("requires candidate or live status, all runtime identities and locked wiring", () => {
     const live = structuredClone(v3BrowserManifest);
     live.releaseStatus = "live";
     expect(isV3ManifestOperational(live)).toBe(true);

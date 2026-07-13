@@ -62,13 +62,13 @@ describe("V3RegistrationPanel", () => {
     );
 
     await user.tab();
-    const input = screen.getByRole("textbox", { name: "Raw UTF-8 name" });
+    const input = screen.getByRole("textbox", { name: "Name" });
     expect(input).toHaveFocus();
     await user.type(input, "Alice.sepbase");
-    await user.click(screen.getByRole("button", { name: "Review canonical name" }));
-    expect(screen.getByRole("status")).toHaveTextContent("Canonical confirmation is required");
-    await user.click(screen.getByRole("button", { name: /Confirm canonical label/ }));
-    expect(screen.getByRole("status")).toHaveTextContent("Request a scoped attestation");
+    await user.click(screen.getByRole("button", { name: "Review name" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Review the final spelling");
+    await user.click(screen.getByRole("button", { name: /Use "alice"/ }));
+    expect(screen.getByRole("status")).toHaveTextContent("ready for a secure availability check");
     expect(document.body).not.toHaveTextContent(/commitment secret:|0x42{32}/i);
   });
 
@@ -88,8 +88,8 @@ describe("V3RegistrationPanel", () => {
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent("cannot refer itself");
-    await user.type(screen.getByRole("textbox", { name: "Raw UTF-8 name" }), "alice");
-    await user.click(screen.getByRole("button", { name: "Review canonical name" }));
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "alice");
+    await user.click(screen.getByRole("button", { name: "Review name" }));
     expect(flow.getSnapshot().draft?.referrer).toBeUndefined();
     await user.click(screen.getByRole("button", { name: "Clear referral" }));
     expect(onClearReferral).toHaveBeenCalledOnce();

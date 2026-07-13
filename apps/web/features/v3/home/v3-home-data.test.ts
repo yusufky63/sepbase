@@ -84,11 +84,11 @@ describe("V3 home reads", () => {
   });
 
   it("bounds the event window, deduplicates tokens and rechecks current state", async () => {
-    const getLogs = vi.fn(async () => [
+    const getLogs = vi.fn(async (request: { toBlock: bigint }) => request.toBlock === 20_000n ? [
       { args: { tokenId: 1n }, blockNumber: 19_000n },
       { args: { tokenId: 2n }, blockNumber: 19_500n },
       { args: { tokenId: 1n }, blockNumber: 19_900n },
-    ]);
+    ] : []);
     const readContract = vi.fn(async (request: { functionName: string; args?: readonly unknown[] }) => {
       if (request.functionName !== "labelOf") throw new Error("unexpected read");
       return request.args?.[0] === 1n ? "alice" : "released";
@@ -114,9 +114,15 @@ describe("V3 home reads", () => {
     const result = await readV3HomeRecentNames(sdk, blockNumber);
 
     expect(blockNumber).toBe(20_000n);
-    expect(getLogs).toHaveBeenCalledWith(expect.objectContaining({
+    expect(getLogs).toHaveBeenCalledTimes(5);
+    expect(getLogs).toHaveBeenNthCalledWith(1, expect.objectContaining({
       address: controller,
       fromBlock: 10_001n,
+      toBlock: 12_000n,
+    }));
+    expect(getLogs).toHaveBeenLastCalledWith(expect.objectContaining({
+      address: controller,
+      fromBlock: 18_001n,
       toBlock: 20_000n,
     }));
     expect(getNameRecord).toHaveBeenCalledTimes(2);

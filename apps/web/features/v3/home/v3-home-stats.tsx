@@ -49,11 +49,9 @@ export function V3HomeStats() {
           </div>
         ))}
       </dl>
-      {ready ? (
-        <p className={styles.snapshot}>CONFIRMATION-PINNED BLOCK / {ready.blockNumber.toString()}</p>
-      ) : !loading ? (
+      {!ready && !loading ? (
         <p className={styles.warning} role="alert">
-          The V3 registry snapshot could not be verified. V2 metrics are not substituted.
+          Current platform status could not be loaded. Try again shortly.
         </p>
       ) : null}
     </div>

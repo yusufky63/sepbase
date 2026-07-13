@@ -9,7 +9,7 @@ const contractScope = protocolAddress?.slice(2).toLowerCase() ?? "pending";
 export const referralCookieName = `cns_ref_v1_${projectConfig.chain.id}_${contractScope}`;
 
 export function isV3ReferralOperational(manifest: V3SuiteManifest) {
-  return manifest.releaseStatus === "live"
+  return (manifest.releaseStatus === "candidate" || manifest.releaseStatus === "live")
     && Boolean(manifest.contracts.controller.address)
     && Object.values(manifest.contracts).every((module) => module.address && module.runtimeCodeHash)
     && manifest.wiring.suiteConfigured;

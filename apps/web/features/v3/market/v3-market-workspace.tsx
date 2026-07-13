@@ -125,9 +125,9 @@ function PageControls({
   onNext: () => void;
 }) {
   return (
-    <nav className={styles.pagination} aria-label="Pinned market page navigation">
+    <nav className={styles.pagination} aria-label="Market page navigation">
       <button type="button" onClick={onPrevious} disabled={!hasPrevious || busy}>Previous</button>
-      <span>CURSOR {cursor.toString()} / PINNED PAGE</span>
+      <span>PAGE {cursor.toString()}</span>
       <button type="button" onClick={onNext} disabled={nextCursor <= cursor || busy}>Next</button>
       {error ? <strong role="alert">Page read failed; the current pinned page was kept.</strong> : null}
     </nav>
@@ -157,7 +157,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   const { sendTransactionAsync } = useSendTransaction();
   const chainSwitch = useConfiguredChainSwitch();
   const marketExecutionLocked = useV3MarketExecutionLocked();
-  const formRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDetailsElement>(null);
   const [client, setClient] = useState<SepbaseV3Client | null>(null);
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [refreshSequence, setRefreshSequence] = useState(0);
@@ -165,6 +165,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   const [pageHistory, setPageHistory] = useState<PageHistory>(emptyPageHistory);
   const [paging, setPaging] = useState<MarketPageKey | null>(null);
   const [pageError, setPageError] = useState<MarketPageKey | null>(null);
+  const [composerOpen, setComposerOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -279,6 +280,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
       recipient: current.recipient || account.address || "",
       ...values,
     }));
+    setComposerOpen(true);
     requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, [account.address, marketExecutionLocked]);
 
@@ -351,36 +353,36 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   }, [client, loadState, marketExecutionLocked, pageHistory, paging]);
 
   return (
-    <main className={styles.workspace}>
+    <div className={styles.workspace}>
       <section className={styles.hero}>
-        <div className={styles.kicker}>V3 MARKET / {v3BrowserManifest.chainName.toUpperCase()}</div>
+        <div className={styles.kicker}>MARKET / {v3BrowserManifest.chainName.toUpperCase()}</div>
         <div className={styles.heroGrid}>
-          <h1>FIXED.<br />OFFERS.<br /><span>AUCTIONS.</span></h1>
+          <h1>NAME<br /><span>MARKET</span></h1>
           <div className={styles.heroCopy}>
-            <p>One verified suite, three guarded settlement modes, and pull-payment claims.</p>
+            <p>Buy a name, make an offer, or join an auction.</p>
             <dl>
-              <div><dt>SUITE</dt><dd><code>{v3BrowserManifest.suiteReleaseId}</code></dd></div>
-              <div><dt>SETTLEMENT</dt><dd>{v3BrowserManifest.settlement.symbol} / {v3BrowserManifest.settlement.decimals} DECIMALS</dd></div>
-              <div><dt>CONFIRMATIONS</dt><dd>{v3BrowserManifest.requiredConfirmations}</dd></div>
+              <div><dt>PAYMENT</dt><dd>{v3BrowserManifest.settlement.symbol}</dd></div>
+              <div><dt>GAS</dt><dd>BASE SEPOLIA ETH</dd></div>
+              <div><dt>MARKET</dt><dd>FIXED · OFFERS · AUCTIONS</dd></div>
             </dl>
           </div>
         </div>
         <div className={styles.metrics}>
-          <div><span>CONFIRMED BLOCK</span><strong>{snapshot?.blockNumber.toString() ?? "—"}</strong></div>
           <div><span>LISTINGS</span><strong>{snapshot?.listings.length ?? "—"}</strong></div>
           <div><span>OFFERS</span><strong>{snapshot?.offers.length ?? "—"}</strong></div>
           <div><span>AUCTIONS</span><strong>{snapshot?.auctions.length ?? "—"}</strong></div>
+          <div><span>PAYMENT</span><strong>{v3BrowserManifest.settlement.symbol}</strong></div>
         </div>
       </section>
 
       <section className={styles.connection} aria-label="Wallet and market reader status">
         <div>
-          <span>EXTERNAL WALLET</span>
+          <span>WALLET</span>
           <strong>{account.address ? shortAddress(account.address) : "READ-ONLY"}</strong>
         </div>
         <div>
           <span>NETWORK</span>
-          <strong>{account.chainId ? `EIP155:${account.chainId}` : "NOT CONNECTED"}</strong>
+          <strong>{account.chainId === v3BrowserManifest.chainId ? v3BrowserManifest.chainName : account.chainId ? "WRONG NETWORK" : "NOT CONNECTED"}</strong>
         </div>
         <div className={styles.connectionAction}>
           {!account.address ? (
@@ -395,7 +397,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
             </button>
           ) : (
             <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={paging !== null || marketExecutionLocked}>
-              Refresh same-block view
+              Refresh market
             </button>
           )}
         </div>
@@ -403,16 +405,16 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
 
       {loadState.status === "loading" ? (
         <section className={styles.state} role="status">
-          <span>VERIFIED READ IN PROGRESS</span>
-          <h2>Pinning the market to one confirmed block.</h2>
+          <span>MARKET</span>
+          <h2>Loading current market activity.</h2>
         </section>
       ) : null}
       {loadState.status === "error" ? (
         <section className={styles.state} role="alert" data-error="true">
-          <span>MARKET STATE UNAVAILABLE</span>
-          <h2>No market assumption was made.</h2>
-          <p>{loadState.message}</p>
-          <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={marketExecutionLocked}>Retry verified read</button>
+          <span>MARKET UNAVAILABLE</span>
+          <h2>We couldn&apos;t load the market.</h2>
+          <p>No listings or balances were shown as zero. Try again shortly.</p>
+          <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={marketExecutionLocked}>Try again</button>
         </section>
       ) : null}
 
@@ -421,17 +423,17 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
           <section className={styles.section} aria-labelledby="v3-listings-heading">
             <header><span>01 / FIXED</span><h2 id="v3-listings-heading">ACTIVE LISTINGS</h2></header>
             {snapshot.listings.length === 0 ? (
-              <div className={styles.empty}><strong>ZERO VERIFIED LISTINGS</strong><p>This is a real empty result at block {snapshot.blockNumber.toString()}.</p></div>
+              <div className={styles.empty}><strong>NO ACTIVE LISTINGS YET</strong><p>Names listed at a fixed price will appear here.</p></div>
             ) : (
               <div className={styles.rows}>
                 {snapshot.listings.map((listing) => {
                   const name = requireV3MarketNameContext(snapshot.nameContexts, listing.tokenId);
                   return (
                   <article className={styles.row} key={listing.tokenId.toString()}>
-                    <div><span>NAME</span><strong>{name.fullName}</strong><code>TOKEN {listing.tokenId.toString()}</code></div>
+                    <div><span>NAME</span><strong>{name.fullName}</strong></div>
                     <div><span>SELLER</span><code title={listing.seller}>{shortAddress(listing.seller)}</code></div>
                     <div><span>PRICE</span><strong>{settlementAmount(listing.price)}</strong></div>
-                    <div><span>LIFECYCLE / EXPIRY</span><strong>{name.lifecycle.toUpperCase()}</strong><time>{date(name.expiresAt)}</time><small>LISTING DEADLINE {date(listing.deadline)}</small></div>
+                    <div><span>AVAILABLE UNTIL</span><time>{date(listing.deadline)}</time><small>NAME EXPIRES {date(name.expiresAt)}</small></div>
                     <div className={styles.rowActions}>
                       {sameAddress(listing.seller, account.address) ? (
                         <>
@@ -441,7 +443,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
                       ) : (
                         <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-buy", { tokenId: listing.tokenId.toString() })}>Buy {name.fullName}</ActionButton>
                       )}
-                      <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-invalidate", { tokenId: listing.tokenId.toString() })}>Check stale</ActionButton>
+                      <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-invalidate", { tokenId: listing.tokenId.toString() })}>Check listing</ActionButton>
                     </div>
                   </article>
                   );
@@ -460,17 +462,17 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
           </section>
 
           <section className={styles.section} aria-labelledby="v3-offers-heading">
-            <header><span>02 / ESCROW</span><h2 id="v3-offers-heading">OFFERS</h2></header>
+            <header><span>02 / OFFERS</span><h2 id="v3-offers-heading">OFFERS</h2></header>
             {snapshot.offers.length === 0 ? (
-              <div className={styles.empty}><strong>ZERO VERIFIED OFFERS</strong><p>No active or terminal offer was returned at the pinned block.</p></div>
+              <div className={styles.empty}><strong>NO OFFERS YET</strong><p>Offers made for names will appear here.</p></div>
             ) : (
               <div className={styles.rows}>
                 {snapshot.offers.map((offer) => {
                   const name = requireV3MarketNameContext(snapshot.nameContexts, offer.tokenId);
                   return (
                   <article className={styles.row} key={offer.offerId}>
-                    <div><span>OFFER</span><code title={offer.offerId}>{offer.offerId.slice(0, 12)}…</code></div>
-                    <div><span>NAME / STATE</span><strong>{name.fullName}</strong><small>TOKEN {offer.tokenId.toString()} / {name.lifecycle.toUpperCase()} / OFFER {offer.state.toUpperCase()}</small><time>NAME EXPIRES {date(name.expiresAt)}</time></div>
+                    <div><span>STATUS</span><strong>{offer.stale ? "NEEDS REVIEW" : offer.state.toUpperCase()}</strong></div>
+                    <div><span>NAME</span><strong>{name.fullName}</strong><time>OFFER ENDS {date(offer.deadline)}</time></div>
                     <div><span>BUYER</span><code>{shortAddress(offer.buyer)}</code></div>
                     <div><span>AMOUNT</span><strong>{settlementAmount(offer.amount)}</strong></div>
                     <div className={styles.rowActions}>
@@ -501,19 +503,19 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
           </section>
 
           <section className={styles.section} aria-labelledby="v3-auctions-heading">
-            <header><span>03 / ENGLISH</span><h2 id="v3-auctions-heading">AUCTIONS</h2></header>
+            <header><span>03 / AUCTIONS</span><h2 id="v3-auctions-heading">AUCTIONS</h2></header>
             {snapshot.auctions.length === 0 ? (
-              <div className={styles.empty}><strong>ZERO VERIFIED AUCTIONS</strong><p>No auction custody exists at the pinned block.</p></div>
+              <div className={styles.empty}><strong>NO ACTIVE AUCTIONS YET</strong><p>Names offered by auction will appear here.</p></div>
             ) : (
               <div className={styles.rows}>
                 {snapshot.auctions.map((auction) => {
                   const name = requireV3MarketNameContext(snapshot.nameContexts, auction.tokenId);
                   return (
                   <article className={styles.row} key={auction.tokenId.toString()}>
-                    <div><span>NAME</span><strong>{name.fullName}</strong><code>TOKEN {auction.tokenId.toString()}</code></div>
+                    <div><span>NAME</span><strong>{name.fullName}</strong></div>
                     <div><span>RESERVE</span><strong>{settlementAmount(auction.reservePrice)}</strong></div>
                     <div><span>HIGHEST BID</span><strong>{settlementAmount(auction.highestBid)}</strong></div>
-                    <div><span>ENDS / NAME EXPIRY</span><time>{date(auction.endAt)}</time><strong>{name.lifecycle.toUpperCase()}</strong><small>NAME EXPIRES {date(name.expiresAt)}</small></div>
+                    <div><span>ENDS</span><time>{date(auction.endAt)}</time><small>NAME EXPIRES {date(name.expiresAt)}</small></div>
                     <div className={styles.rowActions}>
                       <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-bid", { tokenId: auction.tokenId.toString() })}>Bid on {name.fullName}</ActionButton>
                       {sameAddress(auction.seller, account.address) && auction.highestBid === 0n ? (
@@ -539,7 +541,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
 
           {account.address ? (
             <section className={styles.section} aria-labelledby="v3-owner-heading">
-              <header><span>04 / OWNER</span><h2 id="v3-owner-heading">NAMES &amp; CLAIMS</h2></header>
+              <header><span>04 / YOUR MARKET</span><h2 id="v3-owner-heading">NAMES &amp; BALANCE</h2></header>
               <div className={styles.accountGrid}>
                 <div>
                   <span>REFERRAL CREDIT</span>
@@ -547,20 +549,20 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
                   <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("claim", { claimKind: "referral" })}>Claim referral</ActionButton>
                 </div>
                 <div>
-                  <span>UNIFIED MARKET CREDIT</span>
+                  <span>MARKET BALANCE</span>
                   <strong>{snapshot.balances ? settlementAmount(snapshot.balances.marketplaceClaimable) : "UNAVAILABLE"}</strong>
                   <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("claim", { claimKind: "seller-proceeds" })}>Claim market balance</ActionButton>
                 </div>
               </div>
               {snapshot.ownedNames.length === 0 ? (
-                <div className={styles.empty}><strong>ZERO OWNED ACTIVE NAMES</strong><p>No owner action is inferred from this result.</p></div>
+                <div className={styles.empty}><strong>NO ACTIVE NAMES IN THIS WALLET</strong><p>Register or connect the wallet that owns your name.</p></div>
               ) : (
                 <div className={styles.ownedNames}>
                   {snapshot.ownedNames.map((name) => (
                     <article key={name.tokenId.toString()}>
-                      <div><span>NAME</span><strong>{name.fullName}</strong><code>TOKEN {name.tokenId.toString()}</code></div>
+                      <div><span>NAME</span><strong>{name.fullName}</strong></div>
                       <div className={styles.rowActions}>
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("marketplace-approve", { tokenId: name.tokenId.toString() })}>Approve one token</ActionButton>
+                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("marketplace-approve", { tokenId: name.tokenId.toString() })}>Enable market actions</ActionButton>
                         <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-list", { tokenId: name.tokenId.toString() })}>List</ActionButton>
                         <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-create", { tokenId: name.tokenId.toString() })}>Auction</ActionButton>
                       </div>
@@ -573,11 +575,22 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
         </>
       ) : null}
 
-      <section className={styles.composer} ref={formRef} aria-labelledby="v3-action-heading" aria-busy={marketExecutionLocked}>
+      <details
+        className={styles.composer}
+        ref={formRef}
+        open={composerOpen}
+        onToggle={(event) => setComposerOpen(event.currentTarget.open)}
+        aria-labelledby="v3-action-heading"
+        aria-busy={marketExecutionLocked}
+      >
+        <summary>
+          <strong>Manage the market</strong>
+          <span>List, offer, bid or claim</span>
+        </summary>
         <header>
-          <span>GUARDED TRANSACTION COMPOSER</span>
-          <h2 id="v3-action-heading">PREPARE ONE ACTION</h2>
-          <p>Reads never sign. Every write is re-prepared, simulated, externally signed, confirmed and reconciled.</p>
+          <span>MARKET ACTION</span>
+          <h2 id="v3-action-heading">REVIEW YOUR ACTION</h2>
+          <p>Choose one action. Price and ownership are checked again before your wallet asks you to sign.</p>
         </header>
         <div className={styles.formGrid}>
           <label className={styles.actionSelect}>
@@ -587,36 +600,36 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
               disabled={marketExecutionLocked}
               onChange={(event) => setForm((current) => ({ ...current, action: event.target.value as V3MarketActionKind }))}
             >
-              <optgroup label="Token approval">
-                <option value="marketplace-approve">Approve one token for marketplace</option>
+              <optgroup label="Name access">
+                <option value="marketplace-approve">Enable selected name</option>
               </optgroup>
               <optgroup label="Fixed price">
-                <option value="fixed-list">List</option>
+                <option value="fixed-list">List name</option>
                 <option value="fixed-update">Update listing</option>
                 <option value="fixed-cancel">Cancel listing</option>
-                <option value="fixed-invalidate">Invalidate stale listing</option>
-                <option value="fixed-buy">Buy</option>
+                <option value="fixed-invalidate">Refresh listing</option>
+                <option value="fixed-buy">Buy name</option>
               </optgroup>
-              <optgroup label="Escrowed offer">
-                <option value="offer-create">Create offer</option>
+              <optgroup label="Offers">
+                <option value="offer-create">Make offer</option>
                 <option value="offer-accept">Accept offer</option>
                 <option value="offer-cancel">Cancel offer</option>
-                <option value="offer-invalidate">Invalidate stale offer</option>
+                <option value="offer-invalidate">Refresh offer</option>
               </optgroup>
-              <optgroup label="English auction">
+              <optgroup label="Auctions">
                 <option value="auction-create">Create auction</option>
-                <option value="auction-bid">Bid</option>
+                <option value="auction-bid">Place bid</option>
                 <option value="auction-cancel">Cancel auction</option>
-                <option value="auction-finalize">Finalize auction</option>
+                <option value="auction-finalize">Finish auction</option>
               </optgroup>
-              <optgroup label="Pull payment">
-                <option value="claim">Claim unified balance</option>
+              <optgroup label="Balance">
+                <option value="claim">Claim balance</option>
               </optgroup>
             </select>
           </label>
 
-          {needsToken ? <Field label="TOKEN ID" value={form.tokenId} onChange={(tokenId) => setForm((current) => ({ ...current, tokenId }))} inputMode="numeric" disabled={marketExecutionLocked} /> : null}
-          {needsOffer ? <Field label="OFFER ID / BYTES32" value={form.offerId} onChange={(offerId) => setForm((current) => ({ ...current, offerId }))} disabled={marketExecutionLocked} /> : null}
+          {needsToken ? <Field label="NAME ID" value={form.tokenId} onChange={(tokenId) => setForm((current) => ({ ...current, tokenId }))} inputMode="numeric" disabled={marketExecutionLocked} /> : null}
+          {needsOffer ? <Field label="OFFER REFERENCE" value={form.offerId} onChange={(offerId) => setForm((current) => ({ ...current, offerId }))} disabled={marketExecutionLocked} /> : null}
           {needsPrice ? <Field label={form.action === "auction-create" ? "RESERVE PRICE" : "PRICE"} value={form.price} onChange={(price) => setForm((current) => ({ ...current, price }))} inputMode="decimal" suffix={v3BrowserManifest.settlement.symbol} disabled={marketExecutionLocked} /> : null}
           {needsAmount ? <Field label={form.action === "auction-bid" ? "BID AMOUNT" : "OFFER AMOUNT"} value={form.amount} onChange={(amount) => setForm((current) => ({ ...current, amount }))} inputMode="decimal" suffix={v3BrowserManifest.settlement.symbol} disabled={marketExecutionLocked} /> : null}
           {needsDeadline ? <Field label="DEADLINE" type="datetime-local" value={form.deadline} onChange={(deadline) => setForm((current) => ({ ...current, deadline }))} disabled={marketExecutionLocked} /> : null}
@@ -632,26 +645,26 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
               <span>CLAIM SOURCE</span>
               <select value={form.claimKind} disabled={marketExecutionLocked} onChange={(event) => setForm((current) => ({ ...current, claimKind: event.target.value as V3ClaimKind }))}>
                 <option value="referral">Referral rewards</option>
-                <option value="seller-proceeds">Marketplace balance — seller proceeds</option>
-                <option value="offer-refund">Marketplace balance — offer refund</option>
-                <option value="outbid-refund">Marketplace balance — outbid refund</option>
-                <option value="auction-refund">Marketplace balance — auction refund</option>
+                <option value="seller-proceeds">Name sales</option>
+                <option value="offer-refund">Refunded offer</option>
+                <option value="outbid-refund">Outbid refund</option>
+                <option value="auction-refund">Auction refund</option>
               </select>
             </label>
           ) : null}
         </div>
         <div className={styles.formSummary}>
           <span>{V3_MARKET_ACTION_COPY[form.action].group} / {V3_MARKET_ACTION_COPY[form.action].title.toUpperCase()}</span>
-          <strong>{marketExecutionLocked ? "A MARKET WALLET OPERATION IS IN PROGRESS" : intentResult.error ?? "FORM VALID / LOAD FRESH ONCHAIN GUARDS NEXT"}</strong>
-          {form.action === "marketplace-approve" ? <p>This creates only ERC-721 per-token approval. It never requests unlimited setApprovalForAll authority.</p> : null}
-          {form.action === "claim" && form.claimKind !== "referral" ? <p>Offer, outbid, auction and seller credits share one onchain marketplace claimable balance and one claim selector.</p> : null}
+          <strong>{marketExecutionLocked ? "A WALLET ACTION IS IN PROGRESS" : intentResult.error ?? "READY TO REVIEW"}</strong>
+          {form.action === "marketplace-approve" ? <p>This enables market actions only for the selected name. It does not request unlimited approval.</p> : null}
+          {form.action === "claim" && form.claimKind !== "referral" ? <p>Sale proceeds and refundable balances are collected together.</p> : null}
         </div>
-      </section>
+      </details>
 
-      {!account.address ? (
-        <section className={styles.state}><span>READ-ONLY MODE</span><h2>Connect a wallet to prepare guarded actions.</h2><WalletButton /></section>
+      {!composerOpen ? null : !account.address ? (
+        <section className={styles.state}><span>READ-ONLY</span><h2>Connect a wallet to use market actions.</h2><WalletButton /></section>
       ) : account.chainId !== v3BrowserManifest.chainId ? (
-        <section className={styles.state}><span>WRONG NETWORK</span><h2>Switch before loading transaction guards.</h2></section>
+        <section className={styles.state}><span>WRONG NETWORK</span><h2>Switch to {v3BrowserManifest.chainName} to continue.</h2></section>
       ) : intentResult.intent && reader && execution ? (
         <V3MarketActionPanel
           release={release}
@@ -662,11 +675,11 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
         />
       ) : (
         <section className={styles.state} role={intentResult.error ? "alert" : "status"}>
-          <span>{intentResult.error ? "FORM INCOMPLETE" : "ADAPTER LOADING"}</span>
-          <h2>{intentResult.error ?? "Verifying the V3 SDK and wallet adapter."}</h2>
+          <span>{intentResult.error ? "CHECK THE FORM" : "PREPARING"}</span>
+          <h2>{intentResult.error ?? "Preparing your wallet."}</h2>
         </section>
       )}
-    </main>
+    </div>
   );
 }
 

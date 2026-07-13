@@ -24,17 +24,17 @@ type V3MarketActionPanelProps = {
 };
 
 const stageCopy = {
-  preparing: "Preparing a fresh SDK transaction plan",
-  "approval-check": "Checking exact ERC-20 allowance",
-  "approval-simulating": "Simulating exact ERC-20 approval",
-  "approval-signing": "Waiting for approval in the external wallet",
-  "approval-confirming": "Confirming approval before any market write",
-  refreshing: "Re-preparing every guard after approval",
-  simulating: "Simulating the guarded market transaction",
-  signing: "Waiting for the external wallet",
-  confirming: "Waiting for receipt and SDK reconciliation",
-  confirmed: "Receipt reconciled",
-  error: "Execution stopped",
+  preparing: "Checking the latest name and price",
+  "approval-check": "Checking payment permission",
+  "approval-simulating": "Preparing payment permission",
+  "approval-signing": "Confirm payment permission in your wallet",
+  "approval-confirming": "Waiting for payment permission",
+  refreshing: "Refreshing the final price and ownership",
+  simulating: "Running a final safety check",
+  signing: "Review and confirm in your wallet",
+  confirming: "Waiting for transaction confirmation",
+  confirmed: "Transaction confirmed",
+  error: "Transaction stopped",
 } as const;
 
 function fieldLabel(value: string) {
@@ -100,24 +100,37 @@ export function V3MarketActionPanel({
   const recipient = intendedRecipient(intent, snapshot);
   const refreshLabel =
     workflow.state.status === "error" || workflow.state.status === "unavailable"
-      ? "Retry fresh read"
+      ? "Try again"
       : workflow.state.status === "complete"
-        ? "Read reconciled state"
-        : "Load fresh snapshot";
+        ? "Refresh current details"
+        : "Review current details";
 
   return (
     <section className={styles.panel} aria-labelledby={titleId} aria-busy={busy}>
       <header className={styles.header}>
         <div>
-          <span>{copy.group} / {release.status.toUpperCase()}</span>
+          <span>{copy.group}</span>
           <h3 id={titleId}>{copy.title}</h3>
+          <p>Review the current name, amount and recipient before continuing.</p>
         </div>
-        <dl>
+      </header>
+
+      <details className={styles.advanced}>
+        <summary>Advanced request details</summary>
+        <dl className={styles.advancedMeta}>
           <div><dt>ACCOUNT</dt><dd><code>{account}</code></dd></div>
           <div><dt>CHAIN</dt><dd>{release.chainId}</dd></div>
           <div><dt>SUITE</dt><dd><code>{release.suiteReleaseId}</code></dd></div>
         </dl>
-      </header>
+        <div className={styles.requestGrid} aria-label="Requested action inputs">
+          {Object.entries(intent).filter(([key]) => key !== "kind").map(([key, value]) => (
+            <div key={key}>
+              <span>{fieldLabel(key)}</span>
+              <code>{fieldValue(value)}</code>
+            </div>
+          ))}
+        </div>
+      </details>
 
       {!workflow.operational ? (
         <div className={styles.draftBoundary} role="status">
@@ -130,18 +143,9 @@ export function V3MarketActionPanel({
         </div>
       ) : null}
 
-      <div className={styles.requestGrid} aria-label="Requested action inputs">
-        {Object.entries(intent).filter(([key]) => key !== "kind").map(([key, value]) => (
-          <div key={key}>
-            <span>{fieldLabel(key)}</span>
-            <code>{fieldValue(value)}</code>
-          </div>
-        ))}
-      </div>
-
       {workflow.state.status === "idle" && workflow.operational ? (
         <div className={styles.neutralState} role="status">
-          Load a fresh block-pinned snapshot before simulation becomes available.
+          Review current details before continuing.
         </div>
       ) : null}
 
@@ -151,33 +155,57 @@ export function V3MarketActionPanel({
 
       {workflow.state.status === "processing" ? (
         <div className={styles.processingState} role="status" aria-live="polite">
-          <span>{workflow.state.stage.toUpperCase()}</span>
+          <span>TRANSACTION</span>
           <strong>{stageCopy[workflow.state.stage]}</strong>
-          <p>Economic completion is withheld until the SDK reconciles the confirmed receipt.</p>
+          <p>Keep this page open until confirmation is complete.</p>
         </div>
       ) : null}
 
       {workflow.state.status === "unavailable" ? (
         <div className={styles.errorState} role="alert">
-          <span>{workflow.state.code}</span>
-          <strong>STATE UNAVAILABLE</strong>
+          <span>TRY AGAIN</span>
+          <strong>CURRENT DETAILS COULD NOT BE LOADED</strong>
           <p>{workflow.state.message}</p>
-          {workflow.state.blockNumber ? <code>Last block: {workflow.state.blockNumber.toString()}</code> : null}
         </div>
       ) : null}
 
       {workflow.state.status === "error" ? (
         <div className={styles.errorState} role="alert">
-          <span>{workflow.state.code}</span>
-          <strong>EXECUTION STOPPED</strong>
+          <span>NOT COMPLETED</span>
+          <strong>THE TRANSACTION STOPPED SAFELY</strong>
           <p>{workflow.state.message}</p>
-          <p>Retry always begins with a new read; no failed send is replayed automatically.</p>
+          <p>Nothing is retried automatically. Review current details before trying again.</p>
         </div>
       ) : null}
 
       {snapshot ? (
         <>
-          <div className={styles.snapshotGrid}>
+          <div className={styles.reviewGrid}>
+            <div>
+              <span>NAME</span>
+              <strong>{snapshot.nameContext?.fullName ?? "NOT APPLICABLE"}</strong>
+            </div>
+            <div data-zero={snapshot.settlementAmount === 0n ? "true" : "false"}>
+              <span>AMOUNT</span>
+              <strong>
+                {snapshot.settlementAmount === 0n ? "ZERO / " : ""}
+                {formatUnits(snapshot.settlementAmount, snapshot.settlement.decimals)} {snapshot.settlement.symbol}
+              </strong>
+            </div>
+            <div>
+              <span>RECIPIENT</span>
+              <code>{recipient ?? "NOT APPLICABLE"}</code>
+            </div>
+            <div>
+              <span>READY</span>
+              <strong>{snapshot.permission.allowed ? "YES" : "NO"}</strong>
+              {snapshot.permission.reason ? <small>{snapshot.permission.reason}</small> : null}
+            </div>
+          </div>
+
+          <details className={styles.advanced}>
+            <summary>Advanced safety checks</summary>
+            <div className={styles.snapshotGrid}>
             <div>
               <span>PINNED BLOCK</span>
               <strong>{snapshot.blockNumber.toString()}</strong>
@@ -238,36 +266,35 @@ export function V3MarketActionPanel({
                 </small>
               ) : null}
             </div>
-          </div>
-
-          <div className={styles.guardSection}>
-            <div className={styles.guardHeading}>
-              <span>FRESH ECONOMIC GUARDS</span>
-              <strong>{Object.keys(snapshot.guards).length} VALUES</strong>
             </div>
-            <dl>
-              {Object.entries(snapshot.guards).map(([key, value]) => (
-                <div key={key}>
-                  <dt>{fieldLabel(key)}</dt>
-                  <dd><code>{fieldValue(value)}</code></dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+
+            <div className={styles.guardSection}>
+              <div className={styles.guardHeading}>
+                <span>FRESH ECONOMIC GUARDS</span>
+                <strong>{Object.keys(snapshot.guards).length} VALUES</strong>
+              </div>
+              <dl>
+                {Object.entries(snapshot.guards).map(([key, value]) => (
+                  <div key={key}>
+                    <dt>{fieldLabel(key)}</dt>
+                    <dd><code>{fieldValue(value)}</code></dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </details>
         </>
       ) : null}
 
       {workflow.state.status === "complete" ? (
         <div className={styles.completeState} role="status">
-          <span>RECEIPT RECONCILED</span>
-          <strong>ECONOMIC ACTION CONFIRMED</strong>
-          <code>{workflow.state.result.hash}</code>
-          <p>
-            Confirmed at block {workflow.state.result.blockNumber.toString()}.
-            {workflow.state.result.approvalHash
-              ? ` Exact approval: ${workflow.state.result.approvalHash}.`
-              : " No approval transaction was required."}
-          </p>
+          <span>COMPLETE</span>
+          <strong>TRANSACTION CONFIRMED</strong>
+          <p>Your market balance and name state have been refreshed.</p>
+          <details>
+            <summary>Transaction reference</summary>
+            <code>{workflow.state.result.hash}</code>
+          </details>
         </div>
       ) : null}
 

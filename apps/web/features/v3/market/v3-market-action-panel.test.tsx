@@ -251,16 +251,16 @@ describe("V3 market action foundation", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
     expect(await screen.findByText("EXPECTED PRICE")).toBeInTheDocument();
-    expect(screen.getByText("alice.base")).toBeInTheDocument();
+    expect(screen.getAllByText("alice.base").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("EXPECTED FEE BPS")).toBeInTheDocument();
     expect(screen.getByText("EXPECTED LISTING NONCE")).toBeInTheDocument();
-    expect(screen.getAllByText(recipient)).toHaveLength(3);
+    expect(screen.getAllByText(recipient).length).toBeGreaterThanOrEqual(3);
 
-    await user.click(screen.getByRole("button", { name: "Simulate and buy" }));
+    await user.click(screen.getByRole("button", { name: "Buy name" }));
     await waitFor(() => expect(client.reconcileTransaction).toHaveBeenCalledOnce());
-    expect(screen.queryByText("ECONOMIC ACTION CONFIRMED")).not.toBeInTheDocument();
+    expect(screen.queryByText("TRANSACTION CONFIRMED")).not.toBeInTheDocument();
     expect(reader.readAction).toHaveBeenCalledTimes(2);
     expect(reader.prepareAction).toHaveBeenCalledTimes(2);
     expect(reader.prepareAction).toHaveBeenNthCalledWith(
@@ -284,7 +284,7 @@ describe("V3 market action foundation", () => {
       reconciliation.resolve({ hash: transactionHash, blockNumber: 120n, status: "success" });
       await reconciliation.promise;
     });
-    expect(await screen.findByText("ECONOMIC ACTION CONFIRMED")).toBeInTheDocument();
+    expect(await screen.findByText("TRANSACTION CONFIRMED")).toBeInTheDocument();
     expect(screen.getByText(transactionHash)).toBeInTheDocument();
   });
 
@@ -301,10 +301,10 @@ describe("V3 market action foundation", () => {
         execution={fixture.execution}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
     expect(await screen.findByText("ACTIVE / STALE")).toBeInTheDocument();
     expect(screen.getByText("BLOCKED")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Simulate acceptance" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Accept offer" })).toBeDisabled();
 
     const unavailableRead = deferred<V3MarketReadResult>();
     const unavailableReader = {
@@ -320,8 +320,8 @@ describe("V3 market action foundation", () => {
         execution={fixture.execution}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
-    expect(screen.getByRole("status")).toHaveTextContent("Reading fresh block-pinned guards.");
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Checking current price and ownership.");
     await act(async () => {
       unavailableRead.resolve({
         status: "unavailable",
@@ -331,7 +331,7 @@ describe("V3 market action foundation", () => {
       });
       await unavailableRead.promise;
     });
-    expect(await screen.findByRole("alert")).toHaveTextContent("STATE UNAVAILABLE");
+    expect(await screen.findByRole("alert")).toHaveTextContent("CURRENT DETAILS COULD NOT BE LOADED");
     expect(screen.queryByText(/ZERO \/ 0/)).not.toBeInTheDocument();
 
     const zeroReader = readerFor(claimSnapshot());
@@ -344,9 +344,9 @@ describe("V3 market action foundation", () => {
         execution={fixture.execution}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
-    expect(await screen.findByText(/ZERO \/ 0 USDC/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Simulate claim" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
+    expect((await screen.findAllByText(/ZERO \/ 0 USDC/)).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("button", { name: "Claim balance" })).toBeDisabled();
   });
 
   it("shows highest-bid/end-time guards and retries from a fresh read after failure", async () => {
@@ -368,14 +368,14 @@ describe("V3 market action foundation", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
     expect(await screen.findByText("EXPECTED HIGHEST BID")).toBeInTheDocument();
     expect(screen.getByText("EXPECTED END AT")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Simulate bid" }));
+    await user.click(screen.getByRole("button", { name: "Place bid" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Fresh auction read failed.");
     expect(reader.prepareAction).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: "Retry fresh read" }));
+    await user.click(screen.getByRole("button", { name: "Try again" }));
     expect(await screen.findByText("ALLOWED AT SNAPSHOT")).toBeInTheDocument();
     expect(reader.readAction).toHaveBeenCalledTimes(3);
   });
@@ -417,9 +417,9 @@ describe("V3 market action foundation", () => {
         execution={fixture.execution}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Load fresh snapshot" }));
-    await screen.findByText("alice.base");
-    await user.click(screen.getByRole("button", { name: "Simulate and buy" }));
+    await user.click(screen.getByRole("button", { name: "Review current details" }));
+    expect((await screen.findAllByText("alice.base")).length).toBeGreaterThanOrEqual(2);
+    await user.click(screen.getByRole("button", { name: "Buy name" }));
     await waitFor(() => expect(fixture.adapter.send).toHaveBeenCalledTimes(1));
     first.unmount();
 
@@ -432,14 +432,14 @@ describe("V3 market action foundation", () => {
         execution={fixture.execution}
       />,
     );
-    expect(screen.getByRole("button", { name: "Load fresh snapshot" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Simulate and buy" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Review current details" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Buy name" })).toBeDisabled();
     expect(fixture.adapter.send).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       pendingSend.resolve(transactionHash);
       await pendingSend.promise;
     });
-    await waitFor(() => expect(screen.getByRole("button", { name: "Load fresh snapshot" })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Review current details" })).toBeEnabled());
   });
 });

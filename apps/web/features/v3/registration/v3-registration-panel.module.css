@@ -6,6 +6,7 @@
 }
 
 .header,
+.payment,
 .form,
 .status,
 .error,
@@ -13,13 +14,14 @@
 .evidence,
 .actions,
 .timeline,
-.footer {
+.footer,
+.advanced {
   grid-column: 1 / -1;
   min-width: 0;
 }
 
 .header {
-  min-height: 240px;
+  min-height: 190px;
   padding: var(--space-6);
   display: grid;
   align-content: space-between;
@@ -28,6 +30,7 @@
 }
 
 .header > span,
+.payment > span,
 .status > span,
 .evidence dt,
 .timeline dt,
@@ -49,12 +52,27 @@
 }
 
 .header p,
+.payment p,
 .status p,
 .error p,
 .footer p {
   margin: 0;
   color: var(--muted);
   font-size: var(--text-sm);
+}
+
+.payment {
+  min-height: 112px;
+  padding: var(--space-4) var(--space-6);
+  display: grid;
+  grid-template-columns: 2fr 4fr 6fr;
+  align-items: center;
+  gap: var(--grid-gutter);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.payment strong {
+  font-family: var(--font-mono), monospace;
 }
 
 .form {
@@ -232,8 +250,34 @@
   border-bottom: 0;
 }
 
+.advanced {
+  border-bottom: 0;
+}
+
+.advanced > summary {
+  min-height: 64px;
+  padding: var(--space-3) var(--space-6);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-top: 1px solid var(--foreground);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.advanced > summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -5px;
+}
+
+.advancedContent {
+  border-top: 1px solid var(--line);
+}
+
 @media (max-width: 640px) {
   .header,
+  .payment,
   .form fieldset,
   .status,
   .error,
@@ -243,6 +287,10 @@
   .actions,
   .footer {
     padding-inline: var(--space-4);
+  }
+
+  .payment {
+    grid-template-columns: 1fr;
   }
 
   .form label,

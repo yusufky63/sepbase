@@ -13,7 +13,7 @@ import manifestJson from "../public/deployment-manifest.v3.json";
 export const v3BrowserManifest = parseV3SuiteManifest(manifestJson);
 
 export function isV3ManifestOperational(manifest: V3SuiteManifest = v3BrowserManifest) {
-  return manifest.releaseStatus === "live"
+  return (manifest.releaseStatus === "candidate" || manifest.releaseStatus === "live")
     && Object.values(manifest.contracts).every((module) => module.address && module.runtimeCodeHash)
     && manifest.wiring.suiteConfigured;
 }

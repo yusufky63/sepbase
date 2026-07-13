@@ -6,6 +6,7 @@ import { parseAbiItem, type Address } from "viem";
 
 export const V3_HOME_RECENT_BLOCK_WINDOW = 10_000n;
 export const V3_HOME_RECENT_LIMIT = 8;
+export const V3_HOME_LOG_BLOCK_RANGE = 2_000n;
 
 const registrationCompletedEvent = parseAbiItem(
   "event RegistrationCompleted(uint256 indexed tokenId, bytes32 indexed node, address indexed recipient, address payer, uint64 expiration, uint256 amount, bytes32 resolverInitializationHash)",
@@ -101,12 +102,27 @@ export async function readV3HomeRecentNames(
     ? blockNumber - windowBlocks + 1n
     : 0n;
   const fromBlock = deploymentBlock > windowStart ? deploymentBlock : windowStart;
-  const logs = await client.publicClient.getLogs({
+  let chunkStart = fromBlock;
+  let chunkEnd = chunkStart + V3_HOME_LOG_BLOCK_RANGE - 1n;
+  if (chunkEnd > blockNumber) chunkEnd = blockNumber;
+  const logs = [...await client.publicClient.getLogs({
     address: client.contracts.controller.address,
     event: registrationCompletedEvent,
-    fromBlock,
-    toBlock: blockNumber,
-  });
+    fromBlock: chunkStart,
+    toBlock: chunkEnd,
+  })];
+  while (chunkEnd < blockNumber) {
+    chunkStart = chunkEnd + 1n;
+    chunkEnd = chunkStart + V3_HOME_LOG_BLOCK_RANGE - 1n;
+    if (chunkEnd > blockNumber) chunkEnd = blockNumber;
+    const chunk = await client.publicClient.getLogs({
+      address: client.contracts.controller.address,
+      event: registrationCompletedEvent,
+      fromBlock: chunkStart,
+      toBlock: chunkEnd,
+    });
+    logs.push(...chunk);
+  }
 
   const candidates: Array<{ tokenId: bigint; registrationBlock: bigint }> = [];
   const seen = new Set<string>();

@@ -11,14 +11,15 @@ vi.mock("./v3-home-recent", () => ({ V3HomeRecentNames: () => <div>V3 recent nam
 import { V3Home } from "./v3-home";
 
 describe("V3 home content", () => {
-  it("uses the V3 manifest economics and protocol model without a fiat claim", () => {
+  it("uses the V3 economics in user-facing language without a fiat claim", () => {
     render(<V3Home />);
 
     expect(screen.getAllByText("0.0005 USDC").length).toBeGreaterThan(0);
-    expect(screen.getByText("TESTNET ASSET / NO FIAT VALUE IMPLIED")).toBeInTheDocument();
-    expect(screen.getByText("ENSIP-15 / UNICODE")).toBeInTheDocument();
-    expect(screen.getByText("COMMIT → REVEAL")).toBeInTheDocument();
-    expect(screen.getByText(/escrowed offers, English auctions/i)).toBeInTheDocument();
-    expect(screen.queryByText(/List and buy names at fixed prices/i)).not.toBeInTheDocument();
+    expect(screen.getByText("REGISTRATION PAYMENT")).toBeInTheDocument();
+    expect(screen.getByText("1-5 years")).toBeInTheDocument();
+    expect(screen.getByText("FIXED SALES, OFFERS AND AUCTIONS")).toBeInTheDocument();
+    expect(screen.getByText(/two protected wallet steps/i)).toBeInTheDocument();
+    expect(screen.queryByText("ENSIP-15 / UNICODE")).not.toBeInTheDocument();
+    expect(screen.queryByText(/COMMIT/)).not.toBeInTheDocument();
   });
 });
