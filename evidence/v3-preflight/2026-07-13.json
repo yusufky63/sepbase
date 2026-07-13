@@ -77,12 +77,15 @@
     "hostedRuntimeRedeployed": false
   },
   "postDeploymentUpdate": {
-    "observedAt": "2026-07-13T19:10:00.000+03:00",
+    "observedAt": "2026-07-13T19:32:00.000+03:00",
     "sourceCommit": "a2d3ac739a3ae5ccaf63fd4bc20c97b124de7c72",
     "deploymentEvidence": "evidence/v3-deployment/2026-07-13.json",
     "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
     "releaseStatus": "candidate",
     "allSevenSourcesVerified": true,
+    "hostedCandidateDeployment": "dpl_D9U98US6hoi1tyx9umf3woRwUHmi",
+    "hostedCandidateSmoke": "pass",
+    "encryptedCasRouteDeployed": true,
     "paidExecutionAvailable": false
   },
   "releaseBlockers": [

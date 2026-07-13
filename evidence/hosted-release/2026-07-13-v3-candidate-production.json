@@ -3,12 +3,12 @@
   "releaseStatus": "candidate",
   "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
   "environment": "production",
-  "sourceCommit": "6fd142c82fa7eb05bc8cf7c8cc21232c513ebc37",
+  "sourceCommit": "5443b196ac9de3db8977a7ebf141e2475b92f721",
   "sourceTreeClean": true,
-  "deploymentId": "dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in",
-  "deploymentUrl": "https://sepbase-qsqtpkfwu-yusufky63s-projects.vercel.app",
+  "deploymentId": "dpl_D9U98US6hoi1tyx9umf3woRwUHmi",
+  "deploymentUrl": "https://sepbase-5r0vng80o-yusufky63s-projects.vercel.app",
   "canonicalOrigin": "https://sepbase.vercel.app",
-  "createdAt": "2026-07-13T16:13:16.000Z",
+  "createdAt": "2026-07-13T16:30:07.000Z",
   "verification": {
     "deployment": {
       "status": "READY",

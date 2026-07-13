@@ -231,9 +231,9 @@ At the 2026-07-13 audit, production deployment `dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj
 
 The later production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` is also `Ready` on the canonical origin. It adds authenticated Base Sepolia RPC, WalletConnect configuration and the encrypted internal CAS route. Final-origin smoke again passed 4 pages, 8 ABIs and the exact 8+39 MCP inventories; disconnected `/`, `/me` and `/market` browser checks had zero page/console errors, and a 15-minute error-log query returned zero entries. With no CAS resource/secrets the internal route correctly fails closed with `503 CAS_AUTH_NOT_CONFIGURED`; the paid route remains `503 X402_PAID_EXECUTION_AWAITING_V3`. Evidence is `evidence/hosted-release/2026-07-13-cas-source-production.json`. The working tree was dirty when deployed, so the release must be committed and redeployed before it is reproducible from Git.
 
-Production deployment `dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in` supersedes that hosted
+Production deployment `dpl_D9U98US6hoi1tyx9umf3woRwUHmi` supersedes that hosted
 baseline at the canonical origin. It was built from clean commit
-`6fd142c82fa7eb05bc8cf7c8cc21232c513ebc37` and serves the populated V3 candidate
+`5443b196ac9de3db8977a7ebf141e2475b92f721` and serves the populated V3 candidate
 manifest. `HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check` passed four pages,
 eight ABIs, OpenAPI/`llms.txt`, exact 8+39 MCP inventories, free quote, V3 market reads
 and paid fail-closed behavior. Neon/CAS env and schema are deployed; an unauthenticated
