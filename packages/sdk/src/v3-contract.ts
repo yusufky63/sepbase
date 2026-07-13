@@ -163,7 +163,13 @@ export async function createV3SuiteContext(options: {
   const rpcUrl = safeRpcUrl(options.rpcUrl ?? manifest.rpcUrl, allowedRpcOrigins);
   const publicClient = createPublicClient({
     chain,
-    transport: http(rpcUrl, { fetchOptions: { redirect: "error" } }),
+    transport: http(rpcUrl, {
+      batch: { batchSize: 50, wait: 25 },
+      fetchOptions: { redirect: "error" },
+      retryCount: 3,
+      retryDelay: 500,
+      timeout: 20_000,
+    }),
   }) as PublicClient;
   let verificationBlockNumber: bigint;
 
