@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "candidate",
+  "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
+  "environment": "production",
+  "sourceCommit": "298b12f2c141220b76a8936d4d179dfceb94c7c8",
+  "sourceTreeClean": true,
+  "deploymentId": "dpl_8UMHeaRYYKyXxBy6E9BEnWt25XJz",
+  "deploymentUrl": "https://sepbase-fyunct199-yusufky63s-projects.vercel.app",
+  "canonicalOrigin": "https://sepbase.vercel.app",
+  "createdAt": "2026-07-13T20:18:05.000Z",
+  "verification": {
+    "deployment": {
+      "status": "READY",
+      "target": "production",
+      "canonicalAliasApplied": true
+    },
+    "hostedCandidateSmoke": {
+      "command": "HOSTED_RELEASE_ORIGIN=https://sepbase.vercel.app HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check",
+      "status": "passed",
+      "pages": 4,
+      "abiArtifacts": 8,
+      "v2McpTools": 8,
+      "v3McpTools": 39
+    },
+    "browser": {
+      "marketDesktop": {
+        "viewport": "1440x1000",
+        "initialHeading": "AVAILABLE NAMES",
+        "offersHeading": "NAME OFFERS",
+        "auctionsHeading": "LIVE AUCTIONS",
+        "advancedToolsVisibleWhileDisconnected": false,
+        "legacyOrMigrationTextVisible": false,
+        "horizontalOverflow": false,
+        "consoleErrors": 0
+      },
+      "marketMobile": {
+        "viewport": "390x844",
+        "tabsPresent": [
+          "FOR SALE",
+          "OFFERS",
+          "AUCTIONS"
+        ],
+        "horizontalOverflow": false,
+        "consoleErrors": 0
+      },
+      "accountDesktop": {
+        "legacyOrMigrationTextVisible": false,
+        "consoleErrors": 0
+      }
+    },
+    "paidRegistration": {
+      "paidExecutionAvailable": false,
+      "activationChangedByThisRelease": false
+    }
+  },
+  "limits": [
+    "This remains a Base Sepolia candidate, not an audited or production-ready live promotion.",
+    "No funded browser-wallet market transaction was run.",
+    "Paid x402 execution remains fail closed.",
+    "The public account intentionally exposes no V2 migration or legacy-name controls."
+  ]
+}
