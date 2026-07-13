@@ -116,6 +116,10 @@ function assertEqual(value: unknown, expected: unknown, label: string) {
   if (value !== expected) throw new ManifestMismatchError(`${label} does not match the V3 manifest.`);
 }
 
+function waitForRpcRateWindow() {
+  return new Promise<void>((resolve) => setTimeout(resolve, 1_100));
+}
+
 export async function createV3SuiteContext(options: {
   manifestUrl: string | URL;
   rpcUrl?: string;
@@ -301,6 +305,11 @@ export async function createV3SuiteContext(options: {
     assertAddress(migrationOwner, manifest.deployment.owner, "Migration owner");
     assertAddress(universalRegistry, contracts.registry.address, "Universal resolver registry wiring");
 
+    // Managed providers commonly account each call inside a JSON-RPC batch against a
+    // one-second compute-unit window. Keep the two largest immutable verification
+    // batches in separate windows so initialization remains deterministic and retry-safe.
+    await waitForRpcRateWindow();
+
     const expectedKind = manifest.settlement.kind === "native" ? 0 : 1;
     assertEqual(controllerSettlementKind, expectedKind, "Controller settlement kind");
     assertEqual(marketplaceSettlementKind, expectedKind, "Marketplace settlement kind");
@@ -375,6 +384,7 @@ export async function createV3SuiteContext(options: {
     }
 
     if (manifest.settlement.kind === "erc20" && manifest.settlement.tokenAddress) {
+      await waitForRpcRateWindow();
       const erc20MetadataAbi = [
         { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
         { type: "function", name: "symbol", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
