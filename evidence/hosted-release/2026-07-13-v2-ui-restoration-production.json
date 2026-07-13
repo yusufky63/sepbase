@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "candidate",
+  "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
+  "publicUiRelease": "v2",
+  "environment": "production",
+  "sourceCommit": "fce67a39172bc1735d365adc52021acc431d98f4",
+  "sourceTreeClean": true,
+  "deploymentId": "dpl_EqGUWqpDVkHkvE8jZQu2S9ymsLag",
+  "deploymentUrl": "https://sepbase-g4bw8hxma-yusufky63s-projects.vercel.app",
+  "canonicalOrigin": "https://sepbase.vercel.app",
+  "createdAt": "2026-07-13T19:02:12.337Z",
+  "verification": {
+    "deployment": {
+      "status": "READY",
+      "target": "production",
+      "canonicalAliasApplied": true
+    },
+    "hostedCandidateSmoke": {
+      "command": "HOSTED_RELEASE_ORIGIN=https://sepbase.vercel.app HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check",
+      "status": "passed",
+      "pages": 4,
+      "abiArtifacts": 8,
+      "v2McpTools": 8,
+      "v3McpTools": 39
+    },
+    "publicUi": {
+      "routesChecked": [
+        "/",
+        "/market",
+        "/me",
+        "/name/alice"
+      ],
+      "homeSettlement": "ETH",
+      "marketSettlement": "ETH",
+      "marketMode": "fixed-price-v2",
+      "marketExposesCaipNetworkId": false,
+      "accountDisconnectVisible": true,
+      "accountInterfaceFailureVisible": false,
+      "accountBigIntFailureVisible": false,
+      "siteOriginConsoleErrors": 0,
+      "walletExtensionProviderCollisionObserved": true
+    },
+    "runtimeErrorLog": {
+      "window": "1h",
+      "level": "error",
+      "entries": 0
+    }
+  },
+  "limits": [
+    "The V3 suite remains candidate and its immutable settlement profile remains Circle test USDC; this release restores the current v2 native-ETH public UI rather than changing V3 contracts.",
+    "Rabby and MetaMask both attempted to install window.ethereum in the verification browser and emitted extension-origin provider-collision messages; no sepbase.vercel.app console error was observed.",
+    "No funded wallet transaction was submitted during this UI verification.",
+    "Paid x402 execution, independent audit, soak and live V3 promotion remain pending."
+  ]
+}
