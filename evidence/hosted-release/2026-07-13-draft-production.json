@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "draft",
+  "environment": "production",
+  "sourceCommit": "cac5e118859635f3dcd533e75da7f99207d4f5e8",
+  "deploymentId": "dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj",
+  "deploymentUrl": "https://sepbase-8lwsgbucf-yusufky63s-projects.vercel.app",
+  "canonicalOrigin": "https://sepbase.vercel.app",
+  "createdAtEpochMs": 1783939798931,
+  "verification": {
+    "hostedDraftSmoke": {
+      "status": "passed",
+      "pages": 4,
+      "abiArtifacts": 8,
+      "v2McpTools": 8,
+      "v3McpTools": 39
+    },
+    "x402FreeQuote": {
+      "status": "passed",
+      "authenticationAlgorithm": "hmac-sha256",
+      "authenticationKeyId": "sepbase-quote-2026-07-13-v1",
+      "paidExecutionAvailable": false
+    },
+    "browser": {
+      "status": "passed",
+      "routes": [
+        "/",
+        "/me",
+        "/market",
+        "/developers"
+      ],
+      "desktop": true,
+      "mobileViewport": "390x844",
+      "pageErrors": 0,
+      "consoleErrors": 0
+    },
+    "runtimeErrorLog": {
+      "window": "1h",
+      "entries": 0
+    }
+  },
+  "limits": [
+    "All seven V3 contract addresses remain null in the draft manifest.",
+    "No funded V3 wallet transaction or migration claim was executed.",
+    "Paid x402 execution remains activation-gated and unavailable.",
+    "Authenticated server RPC, WalletConnect project ID, external attestation issuer, durable paid store and managed keeper remain release blockers."
+  ]
+}
