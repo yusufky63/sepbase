@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "candidate",
+  "suiteReleaseId": "sha256:afd20a1a0ac6608a1ea1528c111600f4d74f5faf33b15b915cb8137598dada34",
+  "environment": "production",
+  "sourceCommit": "6fd142c82fa7eb05bc8cf7c8cc21232c513ebc37",
+  "sourceTreeClean": true,
+  "deploymentId": "dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in",
+  "deploymentUrl": "https://sepbase-qsqtpkfwu-yusufky63s-projects.vercel.app",
+  "canonicalOrigin": "https://sepbase.vercel.app",
+  "createdAt": "2026-07-13T16:13:16.000Z",
+  "verification": {
+    "deployment": {
+      "status": "READY",
+      "target": "production",
+      "canonicalAliasApplied": true,
+      "internalCasRouteBundled": true
+    },
+    "hostedCandidateSmoke": {
+      "command": "HOSTED_RELEASE_ORIGIN=https://sepbase.vercel.app HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check",
+      "status": "passed",
+      "pages": 4,
+      "abiArtifacts": 8,
+      "v2McpTools": 8,
+      "v3McpTools": 39,
+      "v3MarketReadStatus": 200
+    },
+    "v3Manifest": {
+      "releaseStatus": "candidate",
+      "allSevenAddressesPresent": true,
+      "allSevenRuntimeHashesPresent": true,
+      "paidExecutionAvailable": false
+    },
+    "encryptedCas": {
+      "route": "/api/internal/x402/store",
+      "databaseResource": "vercel-neon:neon-fuchsia-fountain",
+      "databaseProvisioned": true,
+      "schemaApplied": "001_x402_cas",
+      "productionSecretsConfigured": true,
+      "unauthenticatedStatus": 401,
+      "unauthenticatedCode": "CAS_UNAUTHORIZED",
+      "authenticatedRuntimeSmoke": false,
+      "backupRestoreDrill": false,
+      "distributedConcurrencyRun": false
+    },
+    "paidRegistration": {
+      "status": 503,
+      "code": "X402_PAID_EXECUTION_AWAITING_V3",
+      "network": "eip155:84532",
+      "paidExecutionAvailable": false
+    },
+    "runtimeErrorLog": {
+      "window": "15m",
+      "level": "error",
+      "entries": 0
+    }
+  },
+  "limits": [
+    "Candidate is not live promotion; default product routing and paid x402 remain gated.",
+    "No authenticated CAS mutation, backup/restore or distributed concurrency drill was run on production.",
+    "No managed keeper signer or managed normalization issuer has been provisioned or funded.",
+    "No funded browser-wallet registration, migration, marketplace or paid x402 execution was run.",
+    "Independent audit, soak, alert test and incident drill remain pending.",
+    "The authenticated RPC credential exposed in chat must be rotated."
+  ]
+}

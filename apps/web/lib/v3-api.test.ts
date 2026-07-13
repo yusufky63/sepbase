@@ -8,8 +8,8 @@ import {
 } from "./v3-api";
 
 describe("V3 API release boundary", () => {
-  it("keeps draft reads and paid x402 execution fail closed", () => {
-    expect(v3Deployed).toBe(false);
+  it("enables candidate reads while paid x402 execution stays fail closed", () => {
+    expect(v3Deployed).toBe(true);
     expect(v3PaidX402Operational).toBe(false);
     expect(v3PublicCapabilities().paidX402).toBe(false);
     expect(v3PublicX402Status().paidExecutionAvailable).toBe(false);

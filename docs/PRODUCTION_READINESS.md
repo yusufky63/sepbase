@@ -27,7 +27,7 @@ Canlı v2'nin test/smoke kanıtı bu v3 gate'lerini kapatmaz.
 
 Bu bölüm v2 historical/current durumu anlatır: SEPBASE v2 kontratı Base Sepolia üzerinde canlı, source-verified ve gerçek çoklu hesap write smoke'undan geçmiştir. Metadata URI transaction `0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b` ile final HTTPS API'ye taşınmış ve beş confirmation sonrasında doğrulanmıştır.
 
-Production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` [sepbase.vercel.app](https://sepbase.vercel.app) üzerinde `Ready` durumundadır. Canonical-origin smoke dört sayfayı, sekiz ABI artifact'ını ve exact 8+39 MCP tool envanterini doğrulamıştır. Authenticated Base Sepolia RPC ve WalletConnect config deployment'a alınmıştır; disconnected `/`, `/me` ve `/market` browser smoke'unda page/console error yoktur. Bu release sırasında PostgreSQL/secrets henüz yoktu ve encrypted CAS route'u doğru şekilde `503 CAS_AUTH_NOT_CONFIGURED` döndürdü; paid route da `503 X402_PAID_EXECUTION_AWAITING_V3` durumundaydı. Neon resource, CAS secrets ve schema daha sonra provision edildi ve yeni deployment/smoke bekliyor. On beş dakikalık error-log sorgusu sıfır kayıt döndürmüştür. Kanıt `evidence/hosted-release/2026-07-13-cas-source-production.json` içindedir. Deployment dirty working tree'den üretildiği için henüz Git commit'inden tek başına reproducible değildir. Bu hosted draft/source kanıtıdır: yedi V3 adresi hâlâ null, paid execution unavailable ve deployed-V3 kabul satırları açıktır.
+Production deployment `dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in` [sepbase.vercel.app](https://sepbase.vercel.app) üzerinde `Ready` durumundadır ve temiz Git commit'i `6fd142c82fa7eb05bc8cf7c8cc21232c513ebc37` üzerinden üretilmiştir. Canonical-origin candidate smoke dört sayfayı, sekiz ABI artifact'ını, OpenAPI/`llms.txt`, exact 8+39 MCP tool envanterini, populated V3 manifesti ve V3 market read yüzeyini doğrulamıştır. Neon/CAS production env ve schema deployment'a alınmıştır; unauthenticated internal istek `401 CAS_UNAUTHORIZED` ile reddedilir. Paid route candidate durumunda `503 X402_PAID_EXECUTION_AWAITING_V3` kalır. On beş dakikalık error-log sorgusu sıfır kayıt döndürmüştür. Kanıt `evidence/hosted-release/2026-07-13-v3-candidate-production.json` içindedir. Bu hosted candidate kanıtıdır; funded wallet, authenticated CAS mutation ve live/paid kabul satırlarını kapatmaz.
 
 `@sepbase/sdk`, `@sepbase/react` ve `@sepbase/mcp` `0.1.0`, public GitHub source'tan workflow `29246721839` ile public npm'e SLSA provenance taşıyarak yayınlanmıştır. Exact sürümler authorization header olmadan isolated strict-NodeNext consumer'a kurulmuş, type/runtime smoke geçmiştir. Integrity ve attestation kanıtı `evidence/npm-release/2026-07-13-v0.1.0.json` içindedir.
 
@@ -46,18 +46,18 @@ Base Sepolia V3 release'i henüz live değildir. Suite deployment/source verific
 | Referral | Hazır | On-chain attribution, expected BPS guard, pull-payment claim smoke |
 | Marketplace | Hazır | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
 | Solvency | Hazır | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
-| Existing hosted web | Production draft hazır | `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` canonical origin, 4 page + 8 ABI + 8/39 MCP, disconnected browser ve zero-error log smoke PASS; live-V3 değil |
+| Existing hosted web | Production candidate hazır | `dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in` canonical origin, 4 page + 8 ABI + 8/39 MCP + V3 market ve zero-error log smoke PASS; live-V3 değil |
 | V3 contract candidate | Zincirde hazır | Yedi source-verified adres, locked wiring, 8 başarılı receipt ve pinned-block candidate doğrulaması PASS; live cutover değil |
-| Agent discovery + MCP | Production draft hazır | Schema-4 discovery, OpenAPI, `llms.txt`, 8 current-v2 + 39 V3 tool final-origin smoke PASS; candidate hosted redeploy/smoke bekliyor |
+| Agent discovery + MCP | Production candidate hazır | Schema-4 discovery, OpenAPI, `llms.txt`, 8 current-v2 + 39 V3 tool final-origin smoke PASS; signing/broadcast yok |
 | x402 quote | Ücretsiz quote hazır | Production HMAC key ID `sepbase-quote-2026-07-13-v1` ile short-lived quote PASS; paid execution unavailable |
 | x402 paid execution | Source-ready / activation-gated | Runtime wiring ve local failure/replay tests mevcut; live V3, external services, funded E2E ve audit yok |
-| Entegrasyon | Kısmen hazır | Candidate manifest/ABI/API/OpenAPI/`llms.txt` ve public/provenanced packages hazır; hosted candidate ve funded runtime kanıtı bekliyor |
+| Entegrasyon | Kısmen hazır | Candidate manifest/ABI/API/OpenAPI/`llms.txt`, hosted agent routes ve public/provenanced packages hazır; funded runtime kanıtı bekliyor |
 | CI tanımı | Doğrulandı | SHA-pinned GitHub Actions release gates ve npm publish workflow `29246721839` başarılı; branch protection ayrıca yönetilmeli |
 | Release gate | Hazır | `pnpm release:check` environment/deployment girdilerini; `pnpm hosted:check` final-origin page/manifest/ABI/OpenAPI/llms/MCP/x402 parity'sini kontrol eder |
 
 ## Production öncesi zorunlu
 
-1. **V3 hosted candidate:** Tamamlanan deploy/source-verify/binding kanıtı final origin'e alınmalı; manifest/ABI/OpenAPI/MCP parity ve pinned-block read smoke tekrarlanmalıdır.
+1. **V3 live cutover:** Hosted candidate tamamlandı; live promotion ancak audit/soak/incident/funded-E2E kanıtlarından sonra yapılmalı ve final-origin parity yeniden doğrulanmalıdır.
 2. **Authenticated RPC:** Server-only `RPC_URL` hosted ortamda tanımlanmıştır; sohbette açığa çıkan credential rotate edilmeli, ardından rate-limit/availability monitoring eklenmelidir. Provider URL'si hiçbir `NEXT_PUBLIC_*`, manifest, hata veya log alanına yazılmamalıdır.
 3. **WalletConnect:** Project ID production deployment'tadır; gerçek iOS/Android connect, chain-switch, disconnect-all ve funded transaction smoke'u çalışmalıdır.
 4. **Funded V3 hosted E2E:** External normalization attestation, commit/reveal, resolver/primary, fixed/offer/auction ve bütün claim/refund yolları desktop/mobile wallet'larla final origin üzerinde receipt/post-state ile doğrulanmalıdır.

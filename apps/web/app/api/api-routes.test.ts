@@ -88,20 +88,23 @@ describe("public API contracts", () => {
     expect(openApi.paths).toHaveProperty("/api/v3/market");
   });
 
-  it("publishes seven-module V3 draft discovery without pretending it is deployed", async () => {
+  it("publishes the seven-module V3 candidate without pretending paid execution is live", async () => {
     const statusResponse = getV3Status();
     expect(statusResponse.status).toBe(200);
     const status = await statusResponse.json() as {
       data: {
         releaseStatus: string;
-        contracts: Record<string, { address: string | null }>;
+        contracts: Record<string, { address: string | null; runtimeCodeHash: string | null }>;
         capabilities: { paidX402: boolean };
         x402: { paidExecutionAvailable: boolean };
       };
     };
-    expect(status.data.releaseStatus).toBe("draft");
+    expect(status.data.releaseStatus).toBe("candidate");
     expect(Object.keys(status.data.contracts)).toHaveLength(7);
-    expect(Object.values(status.data.contracts).every((module) => module.address === null)).toBe(true);
+    expect(Object.values(status.data.contracts).every((module) => (
+      /^0x[a-fA-F0-9]{40}$/.test(module.address ?? "")
+      && /^0x[a-fA-F0-9]{64}$/.test(module.runtimeCodeHash ?? "")
+    ))).toBe(true);
     expect(status.data.capabilities.paidX402).toBe(false);
     expect(status.data.x402.paidExecutionAvailable).toBe(false);
 
@@ -123,11 +126,5 @@ describe("public API contracts", () => {
       error: { code: "INVALID_TEXT_KEY" },
     });
 
-    const pending = await getV3Name(
-      new Request("http://localhost:3000/api/v3/name/alice"),
-      { params: Promise.resolve({ label: "alice" }) },
-    );
-    expect(pending.status).toBe(503);
-    await expect(pending.json()).resolves.toMatchObject({ error: { code: "V3_NOT_DEPLOYED" } });
   });
 });

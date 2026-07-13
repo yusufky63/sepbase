@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { NotDeployedError } from "@sepbase/sdk";
 import {
-  getV3BrowserClient,
   isV3ManifestOperational,
   v3BrowserClientOptions,
   v3BrowserManifest,
 } from "./v3-browser-runtime";
 
 describe("V3 browser runtime", () => {
-  it("keeps the address-free draft unavailable before any runtime fetch", async () => {
-    expect(isV3ManifestOperational()).toBe(false);
-    await expect(getV3BrowserClient()).rejects.toBeInstanceOf(NotDeployedError);
+  it("marks the complete candidate operational", () => {
+    expect(isV3ManifestOperational()).toBe(true);
   });
 
   it("pins manifest and RPC origins without accepting request-controlled URLs", () => {
@@ -23,9 +20,12 @@ describe("V3 browser runtime", () => {
   });
 
   it("requires candidate/live status, all runtime identities and locked wiring", () => {
-    const candidate = structuredClone(v3BrowserManifest);
-    candidate.releaseStatus = "candidate";
-    candidate.wiring.suiteConfigured = true;
-    expect(isV3ManifestOperational(candidate)).toBe(false);
+    const incomplete = structuredClone(v3BrowserManifest);
+    incomplete.contracts.controller.address = null;
+    expect(isV3ManifestOperational(incomplete)).toBe(false);
+
+    const draft = structuredClone(v3BrowserManifest);
+    draft.releaseStatus = "draft";
+    expect(isV3ManifestOperational(draft)).toBe(false);
   });
 });

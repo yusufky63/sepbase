@@ -52,6 +52,8 @@ async function verifiedContext(options: {
   manifest.releaseStatus = "candidate";
   manifest.deployment.blockNumber = "80";
   manifest.multicall3.blockCreated = 1;
+  manifest.migration.startsAt = "100";
+  manifest.migration.endsAt = "300";
   const contracts = {} as V3SuiteContext["contracts"];
   V3_SUITE_MODULE_KEYS.forEach((key, index) => {
     const address = getAddress(`0x${(index + 3).toString(16).padStart(2, "0").repeat(20)}`);
@@ -143,10 +145,28 @@ describe("v3 client safety primitives", () => {
   });
 
   it("refuses to construct an operational client from the address-free draft", async () => {
-    const manifest = await draftArtifact();
+    const manifest = parseV3SuiteManifest(JSON.parse(await draftArtifact()) as unknown);
+    manifest.releaseStatus = "draft";
+    for (const key of V3_SUITE_MODULE_KEYS) {
+      manifest.contracts[key].address = null;
+      manifest.contracts[key].runtimeCodeHash = null;
+    }
+    manifest.normalization.attestor = null;
+    manifest.wiring.suiteConfigured = false;
+    manifest.deployment = {
+      blockNumber: null,
+      deployedAt: null,
+      transactionHashes: [],
+      owner: null,
+      treasury: null,
+    };
+    manifest.migration.startsAt = null;
+    manifest.migration.endsAt = null;
+    manifest.gitCommit = null;
+    manifest.suiteReleaseId = await calculateV3SuiteReleaseId(manifest);
     await expect(createSepbaseV3Client({
       manifestUrl: "https://names.example/deployment-manifest.v3.json",
-      fetcher: async () => new Response(manifest, {
+      fetcher: async () => new Response(JSON.stringify(manifest), {
         status: 200,
         headers: { "content-type": "application/json" },
       }),

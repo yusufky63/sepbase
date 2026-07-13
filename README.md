@@ -18,7 +18,7 @@ SEPBASE is an independent, single-chain onchain name registry for Base Sepolia. 
 | Marketplace fee | `0%` for the current deployment |
 | Design direction | Modular Typography, black/white, Base Blue `#0000ff` |
 
-> Repository/live status: the V3 suite is deployed and source-verified on Base Sepolia, and the repository publishes a chain-verified `candidate` manifest. The current production origin may still serve the preceding draft until the new hosted release is completed and smoked. Paid x402 execution remains unavailable.
+> Repository/live status: production deployment `dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in` is `Ready` at [sepbase.vercel.app](https://sepbase.vercel.app) and serves the chain-verified V3 `candidate` manifest. Final-origin smoke passed four pages, eight ABIs, OpenAPI/`llms.txt`, 8+39 MCP tools and V3 market reads. The default product has not been promoted to live V3, and paid x402 execution remains unavailable.
 
 ## V3 production target
 

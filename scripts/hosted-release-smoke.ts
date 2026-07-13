@@ -7,7 +7,7 @@ import {
   V3_SUITE_MODULE_KEYS,
 } from "../packages/sdk/src/v3-manifest";
 
-type Expectation = "draft" | "live";
+type Expectation = "draft" | "candidate" | "live";
 
 const rawOrigin = process.env.HOSTED_RELEASE_ORIGIN;
 if (!rawOrigin) throw new Error("HOSTED_RELEASE_ORIGIN is required.");
@@ -21,8 +21,8 @@ if (originUrl.protocol !== "https:") {
 }
 const origin = originUrl.origin;
 const expectation = (process.env.HOSTED_RELEASE_EXPECTATION ?? "live") as Expectation;
-if (expectation !== "draft" && expectation !== "live") {
-  throw new Error("HOSTED_RELEASE_EXPECTATION must be draft or live.");
+if (expectation !== "draft" && expectation !== "candidate" && expectation !== "live") {
+  throw new Error("HOSTED_RELEASE_EXPECTATION must be draft, candidate or live.");
 }
 
 const bypassSecret = process.env.HOSTED_RELEASE_BYPASS_SECRET?.trim();
@@ -197,14 +197,14 @@ const smokeRecipient = "0x2222222222222222222222222222222222222222";
 const smokeLabel = `smoke-${Date.now().toString(36)}`;
 const quotePath = `/api/x402/registration/quote?label=${smokeLabel}&durationYears=1&recipient=${smokeRecipient}`;
 await json(quotePath, 200);
-if (expectation === "draft") {
+if (expectation !== "live") {
   const x402Response = await request(agent.x402.resourceEndpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json", Origin: origin },
     body: "{}",
   });
   const body = await x402Response.json() as { error?: { code?: string } };
-  assert.equal(x402Response.status, 503, "Draft paid x402 route must remain fail-closed.");
+  assert.equal(x402Response.status, 503, `${expectation} paid x402 route must remain fail-closed.`);
   assert.equal(body.error?.code, "X402_PAID_EXECUTION_AWAITING_V3");
   const status = await json<{ error?: { code?: string } }>(
     `/api/x402/registration/status?paymentIdentifier=pay_${"1".repeat(16)}&planId=sha256:${"2".repeat(64)}`,
@@ -213,8 +213,16 @@ if (expectation === "draft") {
   assert.equal(status.error?.code, "X402_PAID_EXECUTION_AWAITING_V3");
   assert.equal(agent.x402.paidExecutionAvailable, false);
   assert.equal(v3.x402.paidExecutionAvailable, false);
-  const market = await json<{ error?: { code?: string } }>("/api/v3/market", 503);
-  assert.equal(market.error?.code, "V3_NOT_DEPLOYED");
+  if (expectation === "draft") {
+    const market = await json<{ error?: { code?: string } }>("/api/v3/market", 503);
+    assert.equal(market.error?.code, "V3_NOT_DEPLOYED");
+  } else {
+    await json("/api/v3/market", 200);
+    for (const key of V3_SUITE_MODULE_KEYS) {
+      assert.notEqual(v3.contracts[key].address, null, `Candidate V3 ${key} address is null.`);
+      assert.notEqual(v3.contracts[key].runtimeCodeHash, null, `Candidate V3 ${key} runtime hash is null.`);
+    }
+  }
 } else {
   const preparedResponse = await request(agent.x402.quoteEndpoint, {
     method: "POST",

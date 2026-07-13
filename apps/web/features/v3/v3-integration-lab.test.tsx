@@ -6,16 +6,17 @@ import { V3IntegrationLab } from "./v3-integration-lab";
 afterEach(cleanup);
 
 describe("V3IntegrationLab", () => {
-  it("presents the manifest as a draft source artifact without operational claims", () => {
+  it("presents the deployed candidate without making live or paid claims", () => {
     render(<V3IntegrationLab />);
 
-    expect(screen.getByText("DRAFT / CURRENT SOURCE STATE")).toHaveAttribute("aria-current", "step");
-    expect(screen.getByText("CANDIDATE / NOT CURRENT")).toBeInTheDocument();
+    expect(screen.getByText("DRAFT / NOT CURRENT")).toBeInTheDocument();
+    expect(screen.getByText("CANDIDATE / CURRENT SOURCE STATE")).toHaveAttribute("aria-current", "step");
     expect(screen.getByText("LIVE / NOT CURRENT")).toBeInTheDocument();
-    expect(screen.getAllByText("ADDRESS NULL / NOT DEPLOYED")).toHaveLength(7);
+    expect(screen.queryByText("ADDRESS NULL / NOT DEPLOYED")).not.toBeInTheDocument();
     expect(screen.getByText("FALSE / DISABLED")).toBeInTheDocument();
     expect(screen.getByText(/No RPC, wallet, attestation, payment, or write call is made/i)).toBeInTheDocument();
-    expect(screen.getByText(/never requests V3 chain state while all seven manifest addresses are null/i)).toBeInTheDocument();
+    expect(screen.getByText("CANDIDATE SAFETY BOUNDARY")).toBeInTheDocument();
+    expect(screen.getByText(/paid x402 and live promotion remain disabled/i)).toBeInTheDocument();
   });
 
   it("derives the same identity for composed and decomposed Unicode", async () => {

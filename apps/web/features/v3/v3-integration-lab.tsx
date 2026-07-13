@@ -39,6 +39,24 @@ const releaseStages = [
 
 const contractModules = Object.entries(v3Manifest.contracts);
 
+const releaseBoundary = v3Manifest.releaseStatus === "draft"
+  ? {
+      title: "DRAFT SAFETY BOUNDARY",
+      summary: "Null addresses and draft status mean the suite is not deployed or live.",
+      detail: "The lab never falls through to V2 or requests V3 chain state from an address-free draft.",
+    }
+  : v3Manifest.releaseStatus === "candidate"
+    ? {
+        title: "CANDIDATE SAFETY BOUNDARY",
+        summary: "Addresses and runtime identities are deployed and release-verified; candidate status is not a live acceptance claim.",
+        detail: "Verified V3 reads and wallet-driven workflows are available, while paid x402 and live promotion remain disabled.",
+      }
+    : {
+        title: "LIVE RELEASE BOUNDARY",
+        summary: "The manifest is the promoted live V3 release identity.",
+        detail: "The local normalizer still never signs, pays, or broadcasts a transaction.",
+      };
+
 function moduleLabel(identifier: string) {
   return identifier.replace(/([a-z])([A-Z])/g, "$1 $2").toUpperCase();
 }
@@ -103,8 +121,7 @@ export function V3IntegrationLab() {
           <span>STATIC RELEASE PANEL</span>
           <h3 id="v3-release-panel-title">V3 source truth, with deployment state explicit.</h3>
           <p>
-            Read directly from <code>/deployment-manifest.v3.json</code>. Null addresses and a
-            draft status are evidence that this suite is not deployed or live.
+            Read directly from <code>/deployment-manifest.v3.json</code>. {releaseBoundary.summary}
           </p>
         </header>
 
@@ -309,11 +326,8 @@ export function V3IntegrationLab() {
         ) : null}
 
         <footer className={styles.safetyFooter}>
-          <strong>DRAFT SAFETY BOUNDARY</strong>
-          <p>
-            The lab never falls through to V2 and never requests V3 chain state while all seven
-            manifest addresses are null. Candidate/live status requires separate release evidence.
-          </p>
+          <strong>{releaseBoundary.title}</strong>
+          <p>{releaseBoundary.detail}</p>
         </footer>
       </article>
     </div>

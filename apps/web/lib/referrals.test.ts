@@ -5,16 +5,18 @@ import {
   isV3ReferralOperational,
   referralAttributionCookieName,
   referralCookieName,
+  v3ReferralCookieName,
   v3ReferralCookieNameFor,
 } from "./referrals";
 
-const draft = parseV3SuiteManifest(v3ManifestJson);
+const release = parseV3SuiteManifest(v3ManifestJson);
+const draft = { ...release, releaseStatus: "draft" } as const satisfies V3SuiteManifest;
 const address = "0x1000000000000000000000000000000000000001" as const;
 const runtimeCodeHash = `0x${"11".repeat(32)}` as const;
 
 function candidate(): V3SuiteManifest {
   return {
-    ...draft,
+    ...release,
     releaseStatus: "candidate",
     contracts: Object.fromEntries(Object.entries(draft.contracts).map(([key, value]) => [key, {
       ...value,
@@ -26,9 +28,10 @@ function candidate(): V3SuiteManifest {
 }
 
 describe("referral attribution scope", () => {
-  it("keeps the live V2 cookie behavior while the V3 manifest is still draft", () => {
+  it("rejects draft attribution but scopes the current candidate to V3", () => {
     expect(isV3ReferralOperational(draft)).toBe(false);
-    expect(referralAttributionCookieName).toBe(referralCookieName);
+    expect(referralAttributionCookieName).toBe(v3ReferralCookieName);
+    expect(referralAttributionCookieName).not.toBe(referralCookieName);
   });
 
   it("binds a V3 cookie name to the exact suite release, chain and controller", () => {

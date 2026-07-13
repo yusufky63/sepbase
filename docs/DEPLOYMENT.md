@@ -217,10 +217,11 @@ curl -fsS https://<final-origin>/llms.txt
 
 Then run MCP `initialize` and `tools/list` requests with the required Streamable HTTP headers in both supported security profiles: a browser request with the exact configured canonical `Origin`, and a server/MCP-client request with no `Origin` header. A non-canonical Preview origin must remain `403`; that is not an MCP outage. Request a free x402 quote for a fresh canonical label without sending a payment signature. The paid registration `POST` must return fail-closed `503` and must not echo payment material.
 
-The repository packages these checks into one strict final-origin gate. It verifies the four public pages, V2/V3 manifests, all eight ABI checksums, OpenAPI server/path parity, `llms.txt`, MCP `2025-11-25` negotiation, both configured-browser-origin and origin-less server-client access, exact 8+39 tool inventories, the free quote, V3 draft/live behavior, and x402 `503`/`402` semantics. It rejects redirects, a localhost or cross-origin metadata URI, stale OpenAPI servers, partial V3 addresses and missing paid availability:
+The repository packages these checks into one strict final-origin gate. It verifies the four public pages, V2/V3 manifests, all eight ABI checksums, OpenAPI server/path parity, `llms.txt`, MCP `2025-11-25` negotiation, both configured-browser-origin and origin-less server-client access, exact 8+39 tool inventories, the free quote, V3 draft/candidate/live behavior, and x402 `503`/`402` semantics. It rejects redirects, a localhost or cross-origin metadata URI, stale OpenAPI servers, partial V3 addresses and missing paid availability:
 
 ```bash
 HOSTED_RELEASE_ORIGIN=https://<candidate-origin> HOSTED_RELEASE_EXPECTATION=draft pnpm hosted:check
+HOSTED_RELEASE_ORIGIN=https://<candidate-origin> HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check
 HOSTED_RELEASE_ORIGIN=https://<final-origin> HOSTED_RELEASE_EXPECTATION=live pnpm hosted:check
 ```
 
@@ -229,6 +230,17 @@ Protected Preview deployments may provide `HOSTED_RELEASE_BYPASS_SECRET` from th
 At the 2026-07-13 audit, production deployment `dpl_5UDQ59oGJX6An7NKnnEYf3dHBgEj` is `Ready` at canonical origin `https://sepbase.vercel.app`. `HOSTED_RELEASE_EXPECTATION=draft pnpm hosted:check` passed four public pages, both manifests, all eight ABI artifacts, OpenAPI/`llms.txt`, exact 8+39 MCP tool inventories, configured-browser-origin and origin-less access, a production-authenticated free x402 quote and the expected paid/V3 draft fail-closed paths. Desktop/mobile browser smoke reported no page or console errors, and a one-hour runtime error-log query returned zero entries. Evidence is `evidence/hosted-release/2026-07-13-draft-production.json`. This is a hosted draft cutover only: all seven V3 addresses remain null, paid execution remains unavailable, and authenticated RPC/WalletConnect/live-V3 funded gates are still open.
 
 The later production deployment `dpl_EbnrRgAhFFZ66J7UafLnf6t38oFy` is also `Ready` on the canonical origin. It adds authenticated Base Sepolia RPC, WalletConnect configuration and the encrypted internal CAS route. Final-origin smoke again passed 4 pages, 8 ABIs and the exact 8+39 MCP inventories; disconnected `/`, `/me` and `/market` browser checks had zero page/console errors, and a 15-minute error-log query returned zero entries. With no CAS resource/secrets the internal route correctly fails closed with `503 CAS_AUTH_NOT_CONFIGURED`; the paid route remains `503 X402_PAID_EXECUTION_AWAITING_V3`. Evidence is `evidence/hosted-release/2026-07-13-cas-source-production.json`. The working tree was dirty when deployed, so the release must be committed and redeployed before it is reproducible from Git.
+
+Production deployment `dpl_c1d5EAPfeCZTqMkXfXfHn32Tt1in` supersedes that hosted
+baseline at the canonical origin. It was built from clean commit
+`6fd142c82fa7eb05bc8cf7c8cc21232c513ebc37` and serves the populated V3 candidate
+manifest. `HOSTED_RELEASE_EXPECTATION=candidate pnpm hosted:check` passed four pages,
+eight ABIs, OpenAPI/`llms.txt`, exact 8+39 MCP inventories, free quote, V3 market reads
+and paid fail-closed behavior. Neon/CAS env and schema are deployed; an unauthenticated
+internal request returns `401 CAS_UNAUTHORIZED`. The 15-minute error-log query returned
+zero entries. Evidence is
+`evidence/hosted-release/2026-07-13-v3-candidate-production.json`. Authenticated CAS
+mutation, funded wallet writes and paid execution remain unproven and disabled.
 
 Before exposing MCP publicly, enforce Origin validation, bounded request size/timeouts, rate limiting and abuse monitoring at the route/hosting boundary. MCP remains read/preparation-only and must never receive a private key, signer, wallet session or broadcast capability.
 

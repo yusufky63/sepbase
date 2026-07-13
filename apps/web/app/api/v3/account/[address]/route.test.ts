@@ -9,12 +9,12 @@ describe("V3 account route", () => {
     expect(() => booleanQuery("banana", "includeTerminal")).toThrow(/true or false/);
   });
 
-  it("fails closed before parsing account input while the suite is a draft", async () => {
+  it("rejects invalid account input before a candidate chain read", async () => {
     const response = await GET(
       new Request("http://localhost/api/v3/account/not-an-address"),
       { params: Promise.resolve({ address: "not-an-address" }) },
     );
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toMatchObject({ error: { code: "V3_NOT_DEPLOYED" } });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "INVALID_ACCOUNT" } });
   });
 });
