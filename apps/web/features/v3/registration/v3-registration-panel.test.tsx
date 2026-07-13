@@ -55,20 +55,23 @@ describe("V3RegistrationPanel", () => {
     render(
       <V3RegistrationPanel
         controller={controller()}
+        durationYears={1}
         payer={payer}
         recipient={recipient}
+        initialName="Alice"
         initialization={{ addressRecord: recipient, textRecords: [] }}
+        quoteAmount={500n}
+        quoteStatus="ready"
+        onDurationYearsChange={vi.fn()}
       />,
     );
 
     await user.tab();
-    const input = screen.getByRole("textbox", { name: "Name" });
-    expect(input).toHaveFocus();
-    await user.type(input, "Alice.sepbase");
+    expect(screen.getByRole("button", { name: "1Y" })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "Review name" }));
-    expect(screen.getByRole("status")).toHaveTextContent("Review the final spelling");
+    expect(screen.getByRole("status")).toHaveTextContent("Confirm the final spelling");
     await user.click(screen.getByRole("button", { name: /Use "alice"/ }));
-    expect(screen.getByRole("status")).toHaveTextContent("ready for a secure availability check");
+    expect(screen.getByRole("status")).toHaveTextContent("ready for its secure availability check");
     expect(document.body).not.toHaveTextContent(/commitment secret:|0x42{32}/i);
   });
 
@@ -79,19 +82,23 @@ describe("V3RegistrationPanel", () => {
     render(
       <V3RegistrationPanel
         controller={flow}
+        durationYears={1}
         payer={payer}
         recipient={recipient}
+        initialName="alice"
         referrer={payer}
         onClearReferral={onClearReferral}
         initialization={{ addressRecord: recipient, textRecords: [] }}
+        quoteAmount={500n}
+        quoteStatus="ready"
+        onDurationYearsChange={vi.fn()}
       />,
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent("cannot refer itself");
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "alice");
     await user.click(screen.getByRole("button", { name: "Review name" }));
     expect(flow.getSnapshot().draft?.referrer).toBeUndefined();
-    await user.click(screen.getByRole("button", { name: "Clear referral" }));
+    await user.click(screen.getByRole("button", { name: "Clear" }));
     expect(onClearReferral).toHaveBeenCalledOnce();
   });
 
@@ -124,11 +131,16 @@ describe("V3RegistrationPanel", () => {
     render(
       <V3RegistrationPanel
         controller={completedController}
+        durationYears={1}
         payer={payer}
         recipient={recipient}
+        initialName="alice"
         referrer={referrer}
         onReferralConsumed={onReferralConsumed}
         initialization={{ addressRecord: recipient, textRecords: [] }}
+        quoteAmount={500n}
+        quoteStatus="ready"
+        onDurationYearsChange={vi.fn()}
       />,
     );
     await waitFor(() => expect(onReferralConsumed).toHaveBeenCalledOnce());

@@ -109,24 +109,24 @@ describe("V3MarketWorkspace", () => {
     const user = userEvent.setup();
     const view = render(<V3MarketWorkspace />);
     expect(await screen.findByText("alice.base")).toBeInTheDocument();
-    expect(screen.queryByText("OPEN")).not.toBeInTheDocument();
+    expect(screen.queryByText("Open")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Offers/i }));
-    expect(await screen.findByText("OPEN")).toBeInTheDocument();
+    expect(await screen.findByText("Open")).toBeInTheDocument();
     expect(screen.getByText("alice.base")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Auctions/i }));
-    expect(screen.getByRole("button", { name: "Complete alice.base" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Complete" })).toBeEnabled();
 
     await user.click(screen.getByRole("tab", { name: /For sale/i }));
 
-    await user.click(screen.getByRole("button", { name: "Buy alice.base" }));
+    await user.click(screen.getByRole("button", { name: "Buy" }));
     expect(screen.getByTestId("review-intent")).toHaveTextContent(`fixed-buy:${mocks.walletA}`);
 
     mocks.account.address = mocks.walletB;
     view.rerender(<V3MarketWorkspace />);
-    await screen.findByRole("button", { name: "Buy alice.base" });
-    await user.click(screen.getByRole("button", { name: "Buy alice.base" }));
+    await screen.findByRole("button", { name: "Buy" });
+    await user.click(screen.getByRole("button", { name: "Buy" }));
     expect(screen.getByTestId("review-intent")).toHaveTextContent(`fixed-buy:${mocks.walletB}`);
 
     let lease: V3MarketExecutionLease | null = null;
@@ -134,12 +134,12 @@ describe("V3MarketWorkspace", () => {
       lease = acquireV3MarketExecutionLease();
     });
     try {
-      expect(screen.getByRole("button", { name: "Buy alice.base" })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "Refresh market" })).toBeDisabled();
-      expect(screen.getByRole("combobox", { name: "ACTION" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Buy" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Refresh" })).toBeDisabled();
+      expect(screen.getByRole("textbox", { name: "Receive at" })).toBeDisabled();
     } finally {
       act(() => releaseV3MarketExecutionLease(lease!));
     }
-    await waitFor(() => expect(screen.getByRole("button", { name: "Buy alice.base" })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Buy" })).toBeEnabled());
   });
 });

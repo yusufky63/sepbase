@@ -8,6 +8,7 @@ import {
   type V3NameRecord,
   type V3Offer,
 } from "@sepbase/sdk";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, type Address } from "viem";
 import { useAccount, usePublicClient, useSendTransaction } from "wagmi";
@@ -18,6 +19,7 @@ import {
   v3BrowserManifest,
 } from "@/lib/v3-browser-runtime";
 import { createV3WagmiAdapter } from "@/lib/use-v3-plan-execution";
+import { formatSettlementAmount } from "@/lib/settlement";
 import { createV3MarketReader } from "./create-v3-market-reader";
 import {
   buildV3MarketIntent,
@@ -39,7 +41,6 @@ import {
 } from "./v3-market-name-context";
 import {
   V3_MARKET_ACTION_COPY,
-  type V3ClaimKind,
   type V3MarketActionKind,
   type V3ReleaseContext,
 } from "./types";
@@ -92,7 +93,7 @@ function date(value: bigint) {
 }
 
 function settlementAmount(value: bigint) {
-  return `${formatUnits(value, v3BrowserManifest.settlement.decimals)} ${v3BrowserManifest.settlement.symbol}`;
+  return `${formatSettlementAmount(value, v3BrowserManifest.settlement.decimals)} test ${v3BrowserManifest.settlement.symbol}`;
 }
 
 function ActionButton({
@@ -110,6 +111,7 @@ function ActionButton({
 function PageControls({
   cursor,
   nextCursor,
+  pageNumber,
   hasPrevious,
   busy,
   error,
@@ -118,6 +120,7 @@ function PageControls({
 }: {
   cursor: bigint;
   nextCursor: bigint;
+  pageNumber: number;
   hasPrevious: boolean;
   busy: boolean;
   error: boolean;
@@ -127,7 +130,7 @@ function PageControls({
   return (
     <nav className={styles.pagination} aria-label="Market page navigation">
       <button type="button" onClick={onPrevious} disabled={!hasPrevious || busy}>Previous</button>
-      <span>PAGE {cursor.toString()}</span>
+      <span>PAGE {pageNumber}</span>
       <button type="button" onClick={onNext} disabled={nextCursor <= cursor || busy}>Next</button>
       {error ? <strong role="alert">Page read failed; the current pinned page was kept.</strong> : null}
     </nav>
@@ -157,7 +160,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   const { sendTransactionAsync } = useSendTransaction();
   const chainSwitch = useConfiguredChainSwitch();
   const marketExecutionLocked = useV3MarketExecutionLocked();
-  const formRef = useRef<HTMLDetailsElement>(null);
+  const formRef = useRef<HTMLElement>(null);
   const [client, setClient] = useState<SepbaseV3Client | null>(null);
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [refreshSequence, setRefreshSequence] = useState(0);
@@ -167,6 +170,7 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   const [pageError, setPageError] = useState<MarketPageKey | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [activeView, setActiveView] = useState<MarketPageKey>("listings");
+  const [manageOpen, setManageOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -281,17 +285,11 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
       recipient: current.recipient || account.address || "",
       ...values,
     }));
+    setManageOpen(false);
     setComposerOpen(true);
     requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, [account.address, marketExecutionLocked]);
 
-  const needsToken = form.action === "marketplace-approve"
-    || form.action.startsWith("fixed-")
-    || form.action === "offer-create"
-    || form.action.startsWith("auction-");
-  const needsOffer = form.action === "offer-cancel"
-    || form.action === "offer-accept"
-    || form.action === "offer-invalidate";
   const needsPrice = form.action === "fixed-list"
     || form.action === "fixed-update"
     || form.action === "auction-create";
@@ -354,338 +352,238 @@ function V3MarketWorkspaceSession({ account }: { account: ReturnType<typeof useA
   }, [client, loadState, marketExecutionLocked, pageHistory, paging]);
 
   return (
-    <div className={styles.workspace}>
+    <>
       <section className={styles.hero}>
-        <div className={styles.kicker}>MARKET / {v3BrowserManifest.chainName.toUpperCase()}</div>
-        <div className={styles.heroGrid}>
-          <h1>NAME<br /><span>MARKET</span></h1>
-          <div className={styles.heroCopy}>
-            <p>Find a name, make an offer, or join an auction.</p>
-            <p className={styles.paymentNote}>Prices use test {v3BrowserManifest.settlement.symbol}. Wallet network fees use Base Sepolia ETH.</p>
+        <div className={styles.inner}>
+          <div className={styles.kicker}>MARKET / {v3BrowserManifest.chainName.toUpperCase()}</div>
+          <div className={styles.titleRow}>
+            <h1>NAME<br /><span>MARKET</span></h1>
+            <div>
+              <p>Buy a listed name, make an offer, or join an auction.</p>
+              <small>Prices use test {v3BrowserManifest.settlement.symbol}. Network fees use Base Sepolia ETH.</small>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className={styles.marketNav} aria-label="Market browsing controls">
-        <div className={styles.viewTabs} role="tablist" aria-label="Market sections">
-          <button type="button" role="tab" aria-selected={activeView === "listings"} onClick={() => setActiveView("listings")}>
-            <span>FOR SALE</span>
-            <strong>{snapshot?.listings.length ?? "-"}</strong>
-          </button>
-          <button type="button" role="tab" aria-selected={activeView === "offers"} onClick={() => setActiveView("offers")}>
-            <span>OFFERS</span>
-            <strong>{snapshot?.offers.length ?? "-"}</strong>
-          </button>
-          <button type="button" role="tab" aria-selected={activeView === "auctions"} onClick={() => setActiveView("auctions")}>
-            <span>AUCTIONS</span>
-            <strong>{snapshot?.auctions.length ?? "-"}</strong>
-          </button>
-        </div>
-        <div className={styles.marketTools}>
-          {!account.address ? <p>Browse freely. Connect only when you are ready to act.</p> : account.chainId !== v3BrowserManifest.chainId ? (
-            <>
-              <p>Switch networks before buying, bidding, or selling.</p>
-            <button
-              type="button"
-              onClick={() => void chainSwitch.switchToConfiguredChain()}
-              disabled={chainSwitch.isSwitching || marketExecutionLocked}
-            >
-              {chainSwitch.isSwitching ? "Switching…" : `Switch to ${v3BrowserManifest.chainName}`}
-            </button>
-            </>
-          ) : (
-            <>
-            <p>Showing confirmed Base Sepolia market activity.</p>
-            <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={paging !== null || marketExecutionLocked}>
-              Refresh market
-            </button>
-            </>
-          )}
-        </div>
-      </section>
+      <section className={styles.market}>
+        <div className={styles.inner}>
+          <div className={styles.toolbar} aria-label="Market browsing controls">
+            <div className={styles.viewTabs} role="tablist" aria-label="Market sections">
+              <button type="button" role="tab" aria-selected={activeView === "listings"} onClick={() => setActiveView("listings")}>
+                For sale <span>{snapshot?.listings.length ?? "-"}</span>
+              </button>
+              <button type="button" role="tab" aria-selected={activeView === "offers"} onClick={() => setActiveView("offers")}>
+                Offers <span>{snapshot?.offers.length ?? "-"}</span>
+              </button>
+              <button type="button" role="tab" aria-selected={activeView === "auctions"} onClick={() => setActiveView("auctions")}>
+                Auctions <span>{snapshot?.auctions.length ?? "-"}</span>
+              </button>
+            </div>
+            <div className={styles.toolbarActions}>
+              {!account.address ? <span>Browse without connecting</span> : account.chainId !== v3BrowserManifest.chainId ? (
+                <button type="button" onClick={() => void chainSwitch.switchToConfiguredChain()} disabled={chainSwitch.isSwitching || marketExecutionLocked}>
+                  {chainSwitch.isSwitching ? "Switching..." : `Switch to ${v3BrowserManifest.chainName}`}
+                </button>
+              ) : (
+                <button type="button" onClick={() => setManageOpen((value) => !value)} disabled={marketExecutionLocked}>
+                  {manageOpen ? "Close selling tools" : "Sell a name"}
+                </button>
+              )}
+              <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={paging !== null || marketExecutionLocked}>
+                Refresh
+              </button>
+            </div>
+          </div>
 
-      {loadState.status === "loading" ? (
-        <section className={styles.state} role="status">
-          <span>MARKET</span>
-          <h2>Loading current market activity.</h2>
-        </section>
-      ) : null}
-      {loadState.status === "error" ? (
-        <section className={styles.state} role="alert" data-error="true">
-          <span>MARKET UNAVAILABLE</span>
-          <h2>We couldn&apos;t load the market.</h2>
-          <p>No listings or balances were shown as zero. Try again shortly.</p>
-          <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={marketExecutionLocked}>Try again</button>
-        </section>
-      ) : null}
+          {loadState.status === "loading" ? (
+            <div className={styles.state} role="status"><span>MARKET</span><h2>Loading verified market activity...</h2></div>
+          ) : null}
+          {loadState.status === "error" ? (
+            <div className={styles.state} role="alert" data-error="true">
+              <span>MARKET UNAVAILABLE</span>
+              <h2>We couldn&apos;t load the market.</h2>
+              <p>No listing or balance was assumed to be zero.</p>
+              <button type="button" onClick={() => setRefreshSequence((value) => value + 1)} disabled={marketExecutionLocked}>Try again</button>
+            </div>
+          ) : null}
 
-      {snapshot ? (
-        <>
-          {activeView === "listings" ? <section className={styles.section} aria-labelledby="v3-listings-heading">
-            <header><span>FOR SALE</span><h2 id="v3-listings-heading">AVAILABLE NAMES</h2></header>
-            {snapshot.listings.length === 0 ? (
-              <div className={styles.empty}><strong>NO ACTIVE LISTINGS YET</strong><p>Names listed at a fixed price will appear here.</p></div>
-            ) : (
-              <div className={styles.rows}>
-                {snapshot.listings.map((listing) => {
-                  const name = requireV3MarketNameContext(snapshot.nameContexts, listing.tokenId);
-                  return (
-                  <article className={styles.row} key={listing.tokenId.toString()}>
-                    <div><span>NAME</span><strong>{name.fullName}</strong></div>
-                    <div><span>SELLER</span><code title={listing.seller}>{shortAddress(listing.seller)}</code></div>
-                    <div><span>PRICE</span><strong>{settlementAmount(listing.price)}</strong></div>
-                    <div><span>AVAILABLE UNTIL</span><time>{date(listing.deadline)}</time><small>NAME EXPIRES {date(name.expiresAt)}</small></div>
-                    <div className={styles.rowActions}>
-                      {sameAddress(listing.seller, account.address) ? (
-                        <>
-                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-update", { tokenId: listing.tokenId.toString(), price: formatUnits(listing.price, v3BrowserManifest.settlement.decimals) })}>Update {name.fullName}</ActionButton>
-                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-cancel", { tokenId: listing.tokenId.toString() })}>Cancel {name.fullName}</ActionButton>
-                        </>
-                      ) : (
-                        <>
-                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-buy", { tokenId: listing.tokenId.toString() })}>Buy {name.fullName}</ActionButton>
-                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-create", { tokenId: listing.tokenId.toString() })}>Offer on {name.fullName}</ActionButton>
-                        </>
-                      )}
-                    </div>
-                  </article>
-                  );
-                })}
+          {snapshot && activeView === "listings" ? (
+            <section className={styles.section} aria-labelledby="v3-listings-heading">
+              <div className={styles.viewHeading}>
+                <div><span>FOR SALE</span><h2 id="v3-listings-heading">Available names</h2></div>
+                <p>Buy at the listed price or make an offer.</p>
               </div>
-            )}
-            <PageControls
-              cursor={snapshot.listingsCursor}
-              nextCursor={snapshot.listingsNextCursor}
-              hasPrevious={pageHistory.listings.length > 0}
-              busy={paging !== null || marketExecutionLocked}
-              error={pageError === "listings"}
-              onPrevious={() => void loadPage("listings", "previous")}
-              onNext={() => void loadPage("listings", "next")}
-            />
-          </section> : null}
-
-          {activeView === "offers" ? <section className={styles.section} aria-labelledby="v3-offers-heading">
-            <header><span>OFFERS</span><h2 id="v3-offers-heading">NAME OFFERS</h2></header>
-            {snapshot.offers.length === 0 ? (
-              <div className={styles.empty}><strong>NO OFFERS YET</strong><p>Offers made for names will appear here.</p></div>
-            ) : (
-              <div className={styles.rows}>
-                {snapshot.offers.map((offer) => {
-                  const name = requireV3MarketNameContext(snapshot.nameContexts, offer.tokenId);
-                  return (
-                  <article className={styles.row} key={offer.offerId}>
-                    <div><span>STATUS</span><strong>{offer.stale ? "OUTDATED" : offer.state === "active" ? "OPEN" : offer.state.toUpperCase()}</strong></div>
-                    <div><span>NAME</span><strong>{name.fullName}</strong><time>OFFER ENDS {date(offer.deadline)}</time></div>
-                    <div><span>BUYER</span><code>{shortAddress(offer.buyer)}</code></div>
-                    <div><span>AMOUNT</span><strong>{settlementAmount(offer.amount)}</strong></div>
-                    <div className={styles.rowActions}>
-                      {offer.state === "active" && sameAddress(offer.ownerSnapshot, account.address) && !offer.stale ? (
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-accept", { offerId: offer.offerId })}>Accept {name.fullName}</ActionButton>
-                      ) : null}
-                      {offer.state === "active" && sameAddress(offer.buyer, account.address) ? (
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-cancel", { offerId: offer.offerId })}>Cancel {name.fullName}</ActionButton>
-                      ) : null}
-                      {offer.state === "active" && offer.stale ? (
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-invalidate", { offerId: offer.offerId })}>Clear outdated offer</ActionButton>
-                      ) : null}
-                    </div>
-                  </article>
-                  );
-                })}
-              </div>
-            )}
-            <PageControls
-              cursor={snapshot.offersCursor}
-              nextCursor={snapshot.offersNextCursor}
-              hasPrevious={pageHistory.offers.length > 0}
-              busy={paging !== null || marketExecutionLocked}
-              error={pageError === "offers"}
-              onPrevious={() => void loadPage("offers", "previous")}
-              onNext={() => void loadPage("offers", "next")}
-            />
-          </section> : null}
-
-          {activeView === "auctions" ? <section className={styles.section} aria-labelledby="v3-auctions-heading">
-            <header><span>AUCTIONS</span><h2 id="v3-auctions-heading">LIVE AUCTIONS</h2></header>
-            {snapshot.auctions.length === 0 ? (
-              <div className={styles.empty}><strong>NO ACTIVE AUCTIONS YET</strong><p>Names offered by auction will appear here.</p></div>
-            ) : (
-              <div className={styles.rows}>
-                {snapshot.auctions.map((auction) => {
-                  const name = requireV3MarketNameContext(snapshot.nameContexts, auction.tokenId);
-                  return (
-                  <article className={styles.row} key={auction.tokenId.toString()}>
-                    <div><span>NAME</span><strong>{name.fullName}</strong></div>
-                    <div><span>RESERVE</span><strong>{settlementAmount(auction.reservePrice)}</strong></div>
-                    <div><span>HIGHEST BID</span><strong>{settlementAmount(auction.highestBid)}</strong></div>
-                    <div><span>ENDS</span><time>{date(auction.endAt)}</time><small>NAME EXPIRES {date(name.expiresAt)}</small></div>
-                    <div className={styles.rowActions}>
-                      <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-bid", { tokenId: auction.tokenId.toString() })}>Bid on {name.fullName}</ActionButton>
-                      {sameAddress(auction.seller, account.address) && auction.highestBid === 0n ? (
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-cancel", { tokenId: auction.tokenId.toString() })}>Cancel {name.fullName}</ActionButton>
-                      ) : null}
-                      <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-finalize", { tokenId: auction.tokenId.toString() })}>Complete {name.fullName}</ActionButton>
-                    </div>
-                  </article>
-                  );
-                })}
-              </div>
-            )}
-            <PageControls
-              cursor={snapshot.auctionsCursor}
-              nextCursor={snapshot.auctionsNextCursor}
-              hasPrevious={pageHistory.auctions.length > 0}
-              busy={paging !== null || marketExecutionLocked}
-              error={pageError === "auctions"}
-              onPrevious={() => void loadPage("auctions", "previous")}
-              onNext={() => void loadPage("auctions", "next")}
-            />
-          </section> : null}
-
-          {account.address ? (
-            <details className={styles.manage}>
-              <summary><strong>Your names and balance</strong><span>Sell a name or collect proceeds</span></summary>
-              <section className={styles.section} aria-labelledby="v3-owner-heading">
-              <header><span>YOUR MARKET</span><h2 id="v3-owner-heading">NAMES &amp; BALANCE</h2></header>
-              <div className={styles.accountGrid}>
-                <div>
-                  <span>REFERRAL CREDIT</span>
-                  <strong>{snapshot.balances ? settlementAmount(snapshot.balances.referralRewards) : "UNAVAILABLE"}</strong>
-                  <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("claim", { claimKind: "referral" })}>Claim referral</ActionButton>
+              {snapshot.listings.length === 0 ? (
+                <div className={styles.empty}><span>MARKET EMPTY</span><h3>No names are listed yet.</h3><p>Connected owners can list a name from “Sell a name”.</p></div>
+              ) : (
+                <div className={styles.table}>
+                  <div className={styles.tableHeader} aria-hidden="true"><span>NO.</span><span>NAME</span><span>SELLER</span><span>AVAILABLE UNTIL</span><span>PRICE</span><span>ACTION</span></div>
+                  {snapshot.listings.map((listing, index) => {
+                    const name = requireV3MarketNameContext(snapshot.nameContexts, listing.tokenId);
+                    return (
+                      <article className={styles.listingRow} key={listing.tokenId.toString()}>
+                        <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
+                        <Link className={styles.nameLink} href={`/name/${encodeURIComponent(name.label)}`}>{name.fullName}</Link>
+                        <span title={listing.seller}>{shortAddress(listing.seller)}</span>
+                        <time>{date(listing.deadline)}</time>
+                        <strong>{settlementAmount(listing.price)}</strong>
+                        <div className={styles.rowActions}>
+                          {sameAddress(listing.seller, account.address) ? (
+                            <>
+                              <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-update", { tokenId: listing.tokenId.toString(), price: formatUnits(listing.price, v3BrowserManifest.settlement.decimals) })}>Update</ActionButton>
+                              <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-cancel", { tokenId: listing.tokenId.toString() })}>Cancel</ActionButton>
+                            </>
+                          ) : (
+                            <>
+                              <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-buy", { tokenId: listing.tokenId.toString() })}>Buy</ActionButton>
+                              <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-create", { tokenId: listing.tokenId.toString() })}>Offer</ActionButton>
+                            </>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-                <div>
-                  <span>MARKET BALANCE</span>
-                  <strong>{snapshot.balances ? settlementAmount(snapshot.balances.marketplaceClaimable) : "UNAVAILABLE"}</strong>
-                  <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("claim", { claimKind: "seller-proceeds" })}>Claim market balance</ActionButton>
+              )}
+              <PageControls cursor={snapshot.listingsCursor} nextCursor={snapshot.listingsNextCursor} pageNumber={pageHistory.listings.length + 1} hasPrevious={pageHistory.listings.length > 0} busy={paging !== null || marketExecutionLocked} error={pageError === "listings"} onPrevious={() => void loadPage("listings", "previous")} onNext={() => void loadPage("listings", "next")} />
+            </section>
+          ) : null}
+
+          {snapshot && activeView === "offers" ? (
+            <section className={styles.section} aria-labelledby="v3-offers-heading">
+              <div className={styles.viewHeading}>
+                <div><span>OFFERS</span><h2 id="v3-offers-heading">Name offers</h2></div>
+                <p>Open offers and their current status.</p>
+              </div>
+              {snapshot.offers.length === 0 ? (
+                <div className={styles.empty}><span>NO OFFERS</span><h3>No open offers yet.</h3><p>Offers made from a listed name will appear here.</p></div>
+              ) : (
+                <div className={styles.table}>
+                  <div className={styles.tableHeader} aria-hidden="true"><span>NO.</span><span>NAME</span><span>BUYER</span><span>STATUS</span><span>AMOUNT</span><span>ACTION</span></div>
+                  {snapshot.offers.map((offer, index) => {
+                    const name = requireV3MarketNameContext(snapshot.nameContexts, offer.tokenId);
+                    return (
+                      <article className={styles.listingRow} key={offer.offerId}>
+                        <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
+                        <Link className={styles.nameLink} href={`/name/${encodeURIComponent(name.label)}`}>{name.fullName}</Link>
+                        <span>{shortAddress(offer.buyer)}</span>
+                        <span>{offer.stale ? "Outdated" : offer.state === "active" ? "Open" : offer.state}</span>
+                        <strong>{settlementAmount(offer.amount)}</strong>
+                        <div className={styles.rowActions}>
+                          {offer.state === "active" && sameAddress(offer.ownerSnapshot, account.address) && !offer.stale ? <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-accept", { offerId: offer.offerId })}>Accept</ActionButton> : null}
+                          {offer.state === "active" && sameAddress(offer.buyer, account.address) ? <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-cancel", { offerId: offer.offerId })}>Cancel</ActionButton> : null}
+                          {offer.state === "active" && offer.stale ? <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("offer-invalidate", { offerId: offer.offerId })}>Clear</ActionButton> : null}
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
+              )}
+              <PageControls cursor={snapshot.offersCursor} nextCursor={snapshot.offersNextCursor} pageNumber={pageHistory.offers.length + 1} hasPrevious={pageHistory.offers.length > 0} busy={paging !== null || marketExecutionLocked} error={pageError === "offers"} onPrevious={() => void loadPage("offers", "previous")} onNext={() => void loadPage("offers", "next")} />
+            </section>
+          ) : null}
+
+          {snapshot && activeView === "auctions" ? (
+            <section className={styles.section} aria-labelledby="v3-auctions-heading">
+              <div className={styles.viewHeading}>
+                <div><span>AUCTIONS</span><h2 id="v3-auctions-heading">Live auctions</h2></div>
+                <p>Place a bid before the auction ends.</p>
+              </div>
+              {snapshot.auctions.length === 0 ? (
+                <div className={styles.empty}><span>NO AUCTIONS</span><h3>No live auctions yet.</h3><p>Connected owners can start one from “Sell a name”.</p></div>
+              ) : (
+                <div className={styles.table}>
+                  <div className={styles.tableHeader} aria-hidden="true"><span>NO.</span><span>NAME</span><span>RESERVE</span><span>HIGHEST BID</span><span>ENDS</span><span>ACTION</span></div>
+                  {snapshot.auctions.map((auction, index) => {
+                    const name = requireV3MarketNameContext(snapshot.nameContexts, auction.tokenId);
+                    return (
+                      <article className={styles.listingRow} key={auction.tokenId.toString()}>
+                        <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
+                        <Link className={styles.nameLink} href={`/name/${encodeURIComponent(name.label)}`}>{name.fullName}</Link>
+                        <strong>{settlementAmount(auction.reservePrice)}</strong>
+                        <strong>{settlementAmount(auction.highestBid)}</strong>
+                        <time>{date(auction.endAt)}</time>
+                        <div className={styles.rowActions}>
+                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-bid", { tokenId: auction.tokenId.toString() })}>Bid</ActionButton>
+                          {sameAddress(auction.seller, account.address) && auction.highestBid === 0n ? <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-cancel", { tokenId: auction.tokenId.toString() })}>Cancel</ActionButton> : null}
+                          <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-finalize", { tokenId: auction.tokenId.toString() })}>Complete</ActionButton>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+              <PageControls cursor={snapshot.auctionsCursor} nextCursor={snapshot.auctionsNextCursor} pageNumber={pageHistory.auctions.length + 1} hasPrevious={pageHistory.auctions.length > 0} busy={paging !== null || marketExecutionLocked} error={pageError === "auctions"} onPrevious={() => void loadPage("auctions", "previous")} onNext={() => void loadPage("auctions", "next")} />
+            </section>
+          ) : null}
+
+          {snapshot && manageOpen && account.address ? (
+            <section className={styles.managePanel} aria-labelledby="v3-owner-heading">
+              <div className={styles.manageHeading}>
+                <div><span>SELL A NAME</span><h2 id="v3-owner-heading">Your names</h2></div>
+                <Link href="/me?tab=listings">Open balances</Link>
               </div>
               {snapshot.ownedNames.length === 0 ? (
-                <div className={styles.empty}><strong>NO ACTIVE NAMES IN THIS WALLET</strong><p>Register or connect the wallet that owns your name.</p></div>
+                <div className={styles.empty}><span>NO NAMES</span><h3>This wallet has no active names.</h3></div>
               ) : (
                 <div className={styles.ownedNames}>
                   {snapshot.ownedNames.map((name) => (
                     <article key={name.tokenId.toString()}>
-                      <div><span>NAME</span><strong>{name.fullName}</strong></div>
+                      <strong>{name.fullName}</strong>
                       <div className={styles.rowActions}>
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("marketplace-approve", { tokenId: name.tokenId.toString() })}>Use on market</ActionButton>
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-list", { tokenId: name.tokenId.toString() })}>List</ActionButton>
-                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-create", { tokenId: name.tokenId.toString() })}>Auction</ActionButton>
+                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("marketplace-approve", { tokenId: name.tokenId.toString() })}>Enable selling</ActionButton>
+                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("fixed-list", { tokenId: name.tokenId.toString() })}>Set price</ActionButton>
+                        <ActionButton disabled={marketExecutionLocked} onClick={() => selectAction("auction-create", { tokenId: name.tokenId.toString() })}>Start auction</ActionButton>
                       </div>
                     </article>
                   ))}
                 </div>
               )}
-              </section>
-            </details>
+            </section>
           ) : null}
-        </>
-      ) : null}
 
-      {account.address || composerOpen ? <details
-        className={styles.composer}
-        ref={formRef}
-        open={composerOpen}
-        onToggle={(event) => setComposerOpen(event.currentTarget.open)}
-        aria-labelledby="v3-action-heading"
-        aria-busy={marketExecutionLocked}
-      >
-        <summary>
-          <strong>Advanced market tools</strong>
-          <span>Manual actions and claims</span>
-        </summary>
-        <header>
-          <span>MARKET ACTION</span>
-          <h2 id="v3-action-heading">REVIEW YOUR ACTION</h2>
-          <p>Choose one action. Price and ownership are checked again before your wallet asks you to sign.</p>
-        </header>
-        <div className={styles.formGrid}>
-          <label className={styles.actionSelect}>
-            <span>ACTION</span>
-            <select
-              value={form.action}
-              disabled={marketExecutionLocked}
-              onChange={(event) => setForm((current) => ({ ...current, action: event.target.value as V3MarketActionKind }))}
-            >
-              <optgroup label="Name access">
-                <option value="marketplace-approve">Enable selected name</option>
-              </optgroup>
-              <optgroup label="Fixed price">
-                <option value="fixed-list">List name</option>
-                <option value="fixed-update">Update listing</option>
-                <option value="fixed-cancel">Cancel listing</option>
-                <option value="fixed-invalidate">Refresh listing</option>
-                <option value="fixed-buy">Buy name</option>
-              </optgroup>
-              <optgroup label="Offers">
-                <option value="offer-create">Make offer</option>
-                <option value="offer-accept">Accept offer</option>
-                <option value="offer-cancel">Cancel offer</option>
-                <option value="offer-invalidate">Refresh offer</option>
-              </optgroup>
-              <optgroup label="Auctions">
-                <option value="auction-create">Create auction</option>
-                <option value="auction-bid">Place bid</option>
-                <option value="auction-cancel">Cancel auction</option>
-                <option value="auction-finalize">Finish auction</option>
-              </optgroup>
-              <optgroup label="Balance">
-                <option value="claim">Claim balance</option>
-              </optgroup>
-            </select>
-          </label>
+          {composerOpen ? (
+            <section className={styles.composer} ref={formRef} aria-labelledby="v3-action-heading" aria-busy={marketExecutionLocked}>
+              <div className={styles.composerHeading}>
+                <div>
+                  <span>{V3_MARKET_ACTION_COPY[form.action].group}</span>
+                  <h2 id="v3-action-heading">{V3_MARKET_ACTION_COPY[form.action].title}</h2>
+                  <p>Price and ownership are checked again before your wallet opens.</p>
+                </div>
+                <button type="button" onClick={() => setComposerOpen(false)} disabled={marketExecutionLocked}>Close</button>
+              </div>
+              <div className={styles.formGrid}>
+                {needsPrice ? <Field label={form.action === "auction-create" ? "Reserve price" : "Price"} value={form.price} onChange={(price) => setForm((current) => ({ ...current, price }))} inputMode="decimal" suffix={`test ${v3BrowserManifest.settlement.symbol}`} disabled={marketExecutionLocked} /> : null}
+                {needsAmount ? <Field label={form.action === "auction-bid" ? "Bid amount" : "Offer amount"} value={form.amount} onChange={(amount) => setForm((current) => ({ ...current, amount }))} inputMode="decimal" suffix={`test ${v3BrowserManifest.settlement.symbol}`} disabled={marketExecutionLocked} /> : null}
+                {needsDeadline ? <Field label="Available until" type="datetime-local" value={form.deadline} onChange={(deadline) => setForm((current) => ({ ...current, deadline }))} disabled={marketExecutionLocked} /> : null}
+                {form.action === "auction-create" ? (
+                  <>
+                    <Field label="Auction starts" type="datetime-local" value={form.startAt} onChange={(startAt) => setForm((current) => ({ ...current, startAt }))} disabled={marketExecutionLocked} />
+                    <Field label="Auction ends" type="datetime-local" value={form.endAt} onChange={(endAt) => setForm((current) => ({ ...current, endAt }))} disabled={marketExecutionLocked} />
+                  </>
+                ) : null}
+                {needsRecipient ? <Field label="Receive at" value={form.recipient} onChange={(recipient) => setForm((current) => ({ ...current, recipient }))} disabled={marketExecutionLocked} /> : null}
+              </div>
+              <div className={styles.formSummary}>
+                <strong>{marketExecutionLocked ? "A wallet action is in progress." : intentResult.error ?? "Ready for final review."}</strong>
+                {form.action === "marketplace-approve" ? <p>This enables selling only for the selected name.</p> : null}
+              </div>
+            </section>
+          ) : null}
 
-          {needsToken ? <Field label="NAME ID" value={form.tokenId} onChange={(tokenId) => setForm((current) => ({ ...current, tokenId }))} inputMode="numeric" disabled={marketExecutionLocked} /> : null}
-          {needsOffer ? <Field label="OFFER REFERENCE" value={form.offerId} onChange={(offerId) => setForm((current) => ({ ...current, offerId }))} disabled={marketExecutionLocked} /> : null}
-          {needsPrice ? <Field label={form.action === "auction-create" ? "RESERVE PRICE" : "PRICE"} value={form.price} onChange={(price) => setForm((current) => ({ ...current, price }))} inputMode="decimal" suffix={v3BrowserManifest.settlement.symbol} disabled={marketExecutionLocked} /> : null}
-          {needsAmount ? <Field label={form.action === "auction-bid" ? "BID AMOUNT" : "OFFER AMOUNT"} value={form.amount} onChange={(amount) => setForm((current) => ({ ...current, amount }))} inputMode="decimal" suffix={v3BrowserManifest.settlement.symbol} disabled={marketExecutionLocked} /> : null}
-          {needsDeadline ? <Field label="DEADLINE" type="datetime-local" value={form.deadline} onChange={(deadline) => setForm((current) => ({ ...current, deadline }))} disabled={marketExecutionLocked} /> : null}
-          {form.action === "auction-create" ? (
-            <>
-              <Field label="START" type="datetime-local" value={form.startAt} onChange={(startAt) => setForm((current) => ({ ...current, startAt }))} disabled={marketExecutionLocked} />
-              <Field label="END" type="datetime-local" value={form.endAt} onChange={(endAt) => setForm((current) => ({ ...current, endAt }))} disabled={marketExecutionLocked} />
-            </>
-          ) : null}
-          {needsRecipient ? <Field label="RECIPIENT" value={form.recipient} onChange={(recipient) => setForm((current) => ({ ...current, recipient }))} disabled={marketExecutionLocked} /> : null}
-          {form.action === "claim" ? (
-            <label>
-              <span>CLAIM SOURCE</span>
-              <select value={form.claimKind} disabled={marketExecutionLocked} onChange={(event) => setForm((current) => ({ ...current, claimKind: event.target.value as V3ClaimKind }))}>
-                <option value="referral">Referral rewards</option>
-                <option value="seller-proceeds">Name sales</option>
-                <option value="offer-refund">Refunded offer</option>
-                <option value="outbid-refund">Outbid refund</option>
-                <option value="auction-refund">Auction refund</option>
-              </select>
-            </label>
-          ) : null}
+          {!composerOpen ? null : !account.address ? (
+            <div className={styles.state}><span>WALLET</span><h2>Connect your wallet to continue.</h2><WalletButton /></div>
+          ) : account.chainId !== v3BrowserManifest.chainId ? (
+            <div className={styles.state}><span>NETWORK</span><h2>Switch to {v3BrowserManifest.chainName} to continue.</h2></div>
+          ) : intentResult.intent && reader && execution ? (
+            <V3MarketActionPanel release={release} account={account.address as Address} intent={intentResult.intent} reader={reader} execution={execution} />
+          ) : (
+            <div className={styles.state} role={intentResult.error ? "alert" : "status"}><span>{intentResult.error ? "CHECK THE FORM" : "PREPARING"}</span><h2>{intentResult.error ?? "Preparing your wallet."}</h2></div>
+          )}
         </div>
-        <div className={styles.formSummary}>
-          <span>{V3_MARKET_ACTION_COPY[form.action].group} / {V3_MARKET_ACTION_COPY[form.action].title.toUpperCase()}</span>
-          <strong>{marketExecutionLocked ? "A WALLET ACTION IS IN PROGRESS" : intentResult.error ?? "READY TO REVIEW"}</strong>
-          {form.action === "marketplace-approve" ? <p>This enables market actions only for the selected name. It does not request unlimited approval.</p> : null}
-          {form.action === "claim" && form.claimKind !== "referral" ? <p>Sale proceeds and refundable balances are collected together.</p> : null}
-        </div>
-      </details> : null}
-
-      {!composerOpen ? null : !account.address ? (
-        <section className={styles.state}><span>READ-ONLY</span><h2>Connect a wallet to use market actions.</h2><WalletButton /></section>
-      ) : account.chainId !== v3BrowserManifest.chainId ? (
-        <section className={styles.state}><span>WRONG NETWORK</span><h2>Switch to {v3BrowserManifest.chainName} to continue.</h2></section>
-      ) : intentResult.intent && reader && execution ? (
-        <V3MarketActionPanel
-          release={release}
-          account={account.address as Address}
-          intent={intentResult.intent}
-          reader={reader}
-          execution={execution}
-        />
-      ) : (
-        <section className={styles.state} role={intentResult.error ? "alert" : "status"}>
-          <span>{intentResult.error ? "CHECK THE FORM" : "PREPARING"}</span>
-          <h2>{intentResult.error ?? "Preparing your wallet."}</h2>
-        </section>
-      )}
-    </div>
+      </section>
+    </>
   );
 }
 

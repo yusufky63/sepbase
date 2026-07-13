@@ -15,7 +15,7 @@ describe("V3 home content", () => {
     render(<V3Home />);
 
     expect(screen.getAllByText("0.0005 USDC").length).toBeGreaterThan(0);
-    expect(screen.getByText("REGISTRATION PAYMENT")).toBeInTheDocument();
+    expect(screen.getByText("TEST USDC / YEAR")).toBeInTheDocument();
     expect(screen.getByText("1-5 years")).toBeInTheDocument();
     expect(screen.getByText("FIXED SALES, OFFERS AND AUCTIONS")).toBeInTheDocument();
     expect(screen.getByText(/two protected wallet steps/i)).toBeInTheDocument();

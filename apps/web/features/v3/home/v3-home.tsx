@@ -51,7 +51,7 @@ export function V3Home() {
                   showFiat={false}
                 />
               </strong>
-              <small>REGISTRATION PAYMENT</small>
+              <small>TEST USDC / YEAR</small>
             </div>
             <div>
               <span>TERM</span>

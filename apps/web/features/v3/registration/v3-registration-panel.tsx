@@ -1,32 +1,53 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { formatUnits, zeroAddress, type Address } from "viem";
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import { zeroAddress, type Address } from "viem";
 import type { V3ResolverInitialization } from "@sepbase/sdk";
 import {
   type V3RegistrationFlowController,
   type V3RegistrationStage,
 } from "@/lib/v3-registration-flow";
+import { formatSettlementAmount } from "@/lib/settlement";
 import { v3BrowserManifest } from "@/lib/v3-browser-runtime";
 import { useV3RegistrationFlow } from "./use-v3-registration-flow";
 import styles from "./v3-registration-panel.module.css";
 
+export type V3RegistrationDuration = 1 | 2 | 3 | 4 | 5;
+export type V3RegistrationQuoteStatus = "loading" | "ready" | "error";
+
+type RegistrationSummaryProps = {
+  action: ReactNode;
+  durationYears: V3RegistrationDuration;
+  fullName: string;
+  onDurationYearsChange: (years: V3RegistrationDuration) => void;
+  quoteAmount: bigint | null;
+  quoteStatus: V3RegistrationQuoteStatus;
+  status: string;
+  termDisabled?: boolean;
+};
+
 type V3RegistrationPanelProps = {
   controller: V3RegistrationFlowController;
+  durationYears: V3RegistrationDuration;
   payer: Address;
   recipient: Address;
   initialization: V3ResolverInitialization;
+  quoteAmount: bigint | null;
+  quoteStatus: V3RegistrationQuoteStatus;
   referrer?: Address | null;
-  initialName?: string;
+  initialName: string;
+  onDurationYearsChange: (years: V3RegistrationDuration) => void;
   onClearReferral?: () => void;
   onExport?: (serialized: string, warning: string) => void;
   onReferralConsumed?: () => void;
 };
 
+type V3RegistrationPreviewProps = Omit<RegistrationSummaryProps, "termDisabled">;
+
 const stageLabels: Record<V3RegistrationStage, string> = {
-  idle: "Enter a name and choose how long you want to keep it.",
-  review: "Review the final spelling before continuing.",
-  "attestation-required": "Your name is ready for a secure availability check.",
+  idle: "Choose a term, then review the exact name.",
+  review: "Confirm the final spelling before continuing.",
+  "attestation-required": "The name is ready for its secure availability check.",
   "attestation-ready": "Everything is ready. Start registration in your wallet.",
   committing: "Step 1 of 2 is waiting for wallet confirmation.",
   "too-early": "Step 1 is confirmed. The final step will be ready shortly.",
@@ -47,28 +68,93 @@ function timestamp(value: bigint | undefined) {
   }
 }
 
+function RegistrationSummary({
+  action,
+  durationYears,
+  fullName,
+  onDurationYearsChange,
+  quoteAmount,
+  quoteStatus,
+  status,
+  termDisabled = false,
+}: RegistrationSummaryProps) {
+  const payment = quoteStatus === "ready" && quoteAmount !== null
+    ? `${formatSettlementAmount(quoteAmount, v3BrowserManifest.settlement.decimals)} test ${v3BrowserManifest.settlement.symbol}`
+    : quoteStatus === "error" ? "Quote unavailable" : "Checking exact amount...";
+
+  return (
+    <div className={styles.registrationModule}>
+      <div className={styles.registrationHeading}>
+        <span>01 / REGISTRATION</span>
+        <h2>Configure before you confirm.</h2>
+      </div>
+      <div className={styles.registrationLayout}>
+        <div className={styles.registrationTerm}>
+          <div>
+            <p className={styles.fieldLabel}>REGISTRATION TERM</p>
+            <div className={styles.segments} role="group" aria-label="Registration years">
+              {durationOptions.map((years) => (
+                <button
+                  key={years}
+                  type="button"
+                  aria-pressed={durationYears === years}
+                  disabled={termDisabled}
+                  onClick={() => onDurationYearsChange(years)}
+                >
+                  {years}Y
+                </button>
+              ))}
+            </div>
+          </div>
+          <p>The term changes the exact test-token amount. Your wallet shows the separate Base Sepolia network fee.</p>
+        </div>
+        <div className={styles.registrationFacts}>
+          <div><span>FULL NAME</span><strong>{fullName}</strong></div>
+          <div>
+            <span>TEST PAYMENT / {durationYears} {durationYears === 1 ? "YEAR" : "YEARS"}</span>
+            <strong>{payment}</strong>
+            <small>Circle test USDC; no fiat value is implied.</small>
+          </div>
+          <div><span>NETWORK FEE</span><strong>Shown by wallet</strong><small>Paid separately in Base Sepolia ETH.</small></div>
+          <div><span>REGISTRATION</span><strong>Two wallet steps</strong><small>Commit-reveal protects the name before registration.</small></div>
+        </div>
+      </div>
+      {quoteStatus === "error" ? (
+        <div className={styles.registrationError} role="alert">The current registration quote could not be verified. No payment action is available.</div>
+      ) : null}
+      <div className={styles.registrationFooter}>
+        <div aria-live="polite"><span>STATUS</span><strong>{status}</strong></div>
+        {action}
+      </div>
+    </div>
+  );
+}
+
+export function V3RegistrationPreview(props: V3RegistrationPreviewProps) {
+  return <RegistrationSummary {...props} />;
+}
+
 export function V3RegistrationPanel({
   controller,
+  durationYears,
   payer,
   recipient,
   initialization,
+  quoteAmount,
+  quoteStatus,
   referrer,
-  initialName = "",
+  initialName,
+  onDurationYearsChange,
   onClearReferral,
   onExport,
   onReferralConsumed,
 }: V3RegistrationPanelProps) {
-  const inputId = useId();
-  const durationId = useId();
   const statusId = useId();
-  const [rawInput, setRawInput] = useState(initialName);
-  const [durationYears, setDurationYears] = useState<1 | 2 | 3 | 4 | 5>(1);
   const state = useV3RegistrationFlow(controller);
   const consumedReferral = useRef(false);
   const busy = state.stage === "committing" || state.stage === "revealing";
-  const registrationPrice = state.session
-    ? `${formatUnits(BigInt(state.session.expectedAmount), v3BrowserManifest.settlement.decimals)} ${v3BrowserManifest.settlement.symbol}`
-    : null;
+  const flowStarted = state.stage !== "idle";
+  const sessionPrice = state.session ? BigInt(state.session.expectedAmount) : null;
   const selfReferral = Boolean(
     referrer
     && (referrer.toLowerCase() === payer.toLowerCase() || referrer.toLowerCase() === recipient.toLowerCase()),
@@ -81,11 +167,10 @@ export function V3RegistrationPanel({
     onReferralConsumed?.();
   }, [onReferralConsumed, referrer, state.stage]);
 
-  function review(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function review() {
     try {
       controller.review({
-        rawInput,
+        rawInput: initialName,
         payer,
         recipient,
         durationYears,
@@ -122,104 +207,59 @@ export function V3RegistrationPanel({
     }
   }
 
+  const primaryAction = state.stage === "idle" ? (
+    <button type="button" disabled={quoteStatus !== "ready" || quoteAmount === null} onClick={review}>Review name</button>
+  ) : state.stage === "review" && state.normalized ? (
+    <button type="button" onClick={() => controller.confirmCanonical(state.normalized!.normalizedLabel)}>
+      Use &quot;{state.normalized.normalizedLabel}&quot;
+    </button>
+  ) : state.stage === "attestation-required" ? (
+    <button type="button" onClick={() => void run(() => controller.requestAttestation())}>Prepare registration</button>
+  ) : state.stage === "attestation-ready" ? (
+    <button type="button" onClick={() => void run(() => controller.commit())}>Start registration</button>
+  ) : state.stage === "ready" ? (
+    <button type="button" onClick={() => void run(() => controller.reveal())}>Complete registration</button>
+  ) : null;
+
   return (
-    <section className={styles.panel} aria-labelledby={`${statusId}-title`}>
-      <header className={styles.header}>
-        <span>REGISTER / {v3BrowserManifest.chainName.toUpperCase()}</span>
-        <h2 id={`${statusId}-title`}>Register your .{v3BrowserManifest.suffix} name.</h2>
-        <p>Registration uses two protected wallet confirmations. The page will guide you through each step.</p>
-      </header>
-
-      <div className={styles.payment}>
-        <span>PAYMENT</span>
-        <strong>{registrationPrice ?? `Confirmed before signing · ${v3BrowserManifest.settlement.symbol}`}</strong>
-        <p>Registration is paid with test {v3BrowserManifest.settlement.symbol}. Network fees use Base Sepolia ETH.</p>
-      </div>
-
-      <form className={styles.form} onSubmit={review}>
-        <fieldset disabled={busy}>
-          <legend>NAME AND TERM</legend>
-          <label htmlFor={inputId}>Name</label>
-          <input
-            id={inputId}
-            value={rawInput}
-            onChange={(event) => setRawInput(event.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-            aria-describedby={statusId}
-            required
-          />
-          <label htmlFor={durationId}>Registration term</label>
-          <select
-            id={durationId}
-            value={durationYears}
-            onChange={(event) => setDurationYears(Number(event.target.value) as 1 | 2 | 3 | 4 | 5)}
-          >
-            {durationOptions.map((years) => (
-              <option key={years} value={years}>{years} {years === 1 ? "year" : "years"}</option>
-            ))}
-          </select>
-          <button type="submit">Review name</button>
-        </fieldset>
-      </form>
+    <section className={styles.panel} aria-labelledby={statusId}>
+      <RegistrationSummary
+        action={primaryAction}
+        durationYears={durationYears}
+        fullName={`${initialName}.${v3BrowserManifest.suffix}`}
+        onDurationYearsChange={onDurationYearsChange}
+        quoteAmount={sessionPrice ?? quoteAmount}
+        quoteStatus={sessionPrice !== null ? "ready" : quoteStatus}
+        status={stageLabels[state.stage]}
+        termDisabled={flowStarted || busy}
+      />
 
       {referrer ? (
-        <div className={styles.referral} role={selfReferral ? "alert" : "status"}>
+        <div className={styles.registrationNotice} role={selfReferral ? "alert" : "status"}>
           <span>{selfReferral ? "REFERRAL REMOVED" : "REFERRAL ATTRIBUTION"}</span>
-          <strong>{selfReferral
-            ? "The connected payer or recipient cannot refer itself."
-            : referrer}</strong>
-          <p>The referrer receives a reward after registration. Your registration price does not change.</p>
-          {onClearReferral && !state.session && !state.journal ? (
-            <button type="button" onClick={clearReferral}>Clear referral</button>
-          ) : null}
+          <strong>{selfReferral ? "The payer or recipient cannot refer itself." : referrer}</strong>
+          {onClearReferral && !state.session && !state.journal ? <button type="button" onClick={clearReferral}>Clear</button> : null}
         </div>
       ) : null}
 
-      <div className={styles.status} id={statusId} role="status" aria-live="polite">
-        <span>REGISTRATION STATUS</span>
-        <strong>{stageLabels[state.stage]}</strong>
+      <div className={styles.srStatus} id={statusId} role="status" aria-live="polite">
+        {stageLabels[state.stage]}
         {state.readiness ? (
-          <p>
-            {state.readiness.kind === "too-early"
-              ? `${state.readiness.secondsRemaining.toString()} seconds until reveal.`
-              : `${state.readiness.secondsRemaining.toString()} seconds remain in the safe reveal window.`}
-          </p>
+          <span>{state.readiness.kind === "too-early"
+            ? `${state.readiness.secondsRemaining.toString()} seconds until reveal.`
+            : `${state.readiness.secondsRemaining.toString()} seconds remain in the safe reveal window.`}</span>
         ) : null}
       </div>
 
       {state.error ? (
-        <div className={styles.error} role="alert">
-          <strong>{state.error.code}</strong>
-          <p>{state.error.message}</p>
-        </div>
+        <div className={styles.registrationError} role="alert"><strong>{state.error.message}</strong></div>
       ) : null}
 
-      <div className={styles.actions} aria-label="Registration actions">
-        {state.stage === "review" && state.normalized ? (
-          <button type="button" onClick={() => controller.confirmCanonical(state.normalized!.normalizedLabel)}>
-            Use &quot;{state.normalized.normalizedLabel}&quot;
-          </button>
-        ) : null}
-        {state.stage === "attestation-required" ? (
-          <button type="button" onClick={() => void run(() => controller.requestAttestation())}>
-            Prepare registration
-          </button>
-        ) : null}
-        {state.stage === "attestation-ready" ? (
-          <button type="button" onClick={() => void run(() => controller.commit())}>
-            Start registration
-          </button>
-        ) : null}
-        {state.stage === "ready" ? (
-          <button type="button" onClick={() => void run(() => controller.reveal())}>
-            Complete registration
-          </button>
-        ) : null}
-        {(state.session || state.journal) && onExport ? (
+      {(state.session || state.journal) && onExport ? (
+        <div className={styles.recovery}>
+          <div><span>RECOVERY</span><strong>Keep a private recovery copy until registration completes.</strong></div>
           <button
             type="button"
-            className={styles.secondary}
             onClick={() => {
               const exported = controller.exportPendingSession();
               onExport(exported.serialized, exported.warning);
@@ -227,8 +267,8 @@ export function V3RegistrationPanel({
           >
             Download recovery file
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {state.normalized || state.session ? (
         <details className={styles.advanced}>
@@ -252,9 +292,9 @@ export function V3RegistrationPanel({
                 <div><dt>AUTHORIZATION VALID UNTIL</dt><dd><time dateTime={timestamp(BigInt(state.session.attestation.validUntil)) ?? undefined}>{state.session.attestation.validUntil}</time></dd></div>
               </dl>
             ) : null}
-            <footer className={styles.footer}>
-              <strong>RECOVERY FILE</strong>
-              <p>The optional recovery file contains sensitive registration material. Keep it private and delete it after registration completes.</p>
+            <footer className={styles.advancedFooter}>
+              <strong>PRIVATE RECOVERY DATA</strong>
+              <p>Keep recovery material private and delete it after registration completes.</p>
             </footer>
           </div>
         </details>
