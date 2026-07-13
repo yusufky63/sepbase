@@ -1,0 +1,275 @@
+.panel {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  border: 1px solid var(--foreground);
+  background: var(--background);
+}
+
+.header,
+.form,
+.status,
+.error,
+.referral,
+.evidence,
+.actions,
+.timeline,
+.footer {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.header {
+  min-height: 240px;
+  padding: var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.header > span,
+.status > span,
+.evidence dt,
+.timeline dt,
+.footer strong,
+.form legend,
+.form label {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: .02em;
+}
+
+.header h2 {
+  max-width: 17ch;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+
+.header p,
+.status p,
+.error p,
+.footer p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.form {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.form fieldset {
+  margin: 0;
+  padding: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-3);
+  border: 0;
+}
+
+.form legend {
+  padding: 0 0 var(--space-4);
+}
+
+.form label {
+  grid-column: span 3;
+  align-self: center;
+}
+
+.form input,
+.form select {
+  grid-column: span 9;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+}
+
+.form input {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-xl);
+}
+
+.form button,
+.actions button {
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+}
+
+.form button {
+  grid-column: 4 / -1;
+}
+
+.form input:focus-visible,
+.form select:focus-visible,
+.form button:focus-visible,
+.actions button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.status,
+.error,
+.referral,
+.footer {
+  min-height: 124px;
+  padding: var(--space-5) var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.status strong,
+.error strong,
+.footer strong {
+  font-family: var(--font-mono), monospace;
+}
+
+.error {
+  border-left: 6px solid var(--accent);
+}
+
+.referral {
+  min-height: 148px;
+}
+
+.referral > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.referral p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.referral button {
+  width: fit-content;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.evidence,
+.timeline {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid var(--foreground);
+}
+
+.evidence > div,
+.timeline > div {
+  min-width: 0;
+  min-height: 112px;
+  padding: var(--space-4) var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.evidence > div:nth-child(2n),
+.timeline > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.evidence dd,
+.timeline dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.evidence code,
+.timeline code,
+.timeline time {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.actions {
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.actions .secondary {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.actions button:disabled,
+.form button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.footer {
+  border-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .header,
+  .form fieldset,
+  .status,
+  .error,
+  .referral,
+  .evidence > div,
+  .timeline > div,
+  .actions,
+  .footer {
+    padding-inline: var(--space-4);
+  }
+
+  .form label,
+  .form input,
+  .form select,
+  .form button {
+    grid-column: 1 / -1;
+  }
+
+  .evidence,
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence > div,
+  .timeline > div {
+    border-right: 0;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel * {
+    scroll-behavior: auto;
+  }
+}

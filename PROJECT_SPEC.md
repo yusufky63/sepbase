@@ -1,8 +1,258 @@
 # Chain Name DApp - Teknik Ürün ve Uygulama Şartnamesi
 
-**Belge sürümü:** 2.0
-**Tarih:** 11 Temmuz 2026
-**Amaç:** İlk olarak Base Sepolia üzerinde doğrulanacak, daha sonra başka EVM chain'lerine klonlanabilecek bağımsız bir Web3 name dApp'i geliştirmek.
+**Belge sürümü:** 3.0 hedefi / v2 historical baseline
+**Tarih:** 12 Temmuz 2026
+**Amaç:** Canlı v2 Base Sepolia sistemini tarihsel olarak korurken, Base Sepolia üzerinde mainnet disipliniyle doğrulanacak ENS-uyumlu, Unicode-normalize, commit-reveal kayıtlı, gelişmiş marketplace ve production agent-payment yüzeyli v3 sürümünü tanımlamak.
+
+---
+
+# V3 bağlayıcı hedef ve öncelik kuralı
+
+Bu bölüm 12 Temmuz 2026 tarihli ürün kararıdır ve aşağıdaki v2/V1 metninde onunla çelişen bütün kapsam dışı bırakma, tek-kontrat, ASCII-only, doğrudan registration, fixed-price-only ve quote-only hükümlerini **v3 hedefi için geçersiz kılar**. Aşağıdaki eski bölümler yalnız canlı v2 davranışını, taşınması gereken invariant'ları ve tarihsel uygulama kanıtını açıklar. Bir özellik bu v3 bölümünde yer alıyor fakat `docs/IMPLEMENTATION_STATUS.md` içinde tamamlanmış olarak işaretlenmiyorsa henüz uygulanmış, deploy edilmiş veya hosted sayılmaz.
+
+## V3.1 Bugünkü gerçek durum
+
+- Canlı ve source-verified kontrat `ChainNameService` v2.0.0'dır; Base Sepolia adresi deployment manifestinde yayımlanır.
+- V2 yalnız ASCII `a-z0-9-`, doğrudan registration, tek native/ERC-20 settlement asset ve fixed-price listing destekler.
+- V2 ENS registry/resolver/Universal Resolver uyumluluğu, ENSIP-15 Unicode, commit-reveal, offer/bid/auction veya paid x402 execution sağlamaz.
+- SDK/React/MCP package kaynakları workspace içinde bulunur; public npm release'i ayrıca doğrulanmadan kurulabilir diye belgelenmez.
+- Agent manifesti, MCP HTTP route'u, x402 quote route'u, security/privacy sayfaları ve bu v3 dokümanları hosted origin üzerinde ayrı deployment ve final-origin smoke olmadan live sayılmaz.
+- V2 metadata base URI hâlen localhost ise NFT metadata production cutover tamamlanmış değildir.
+- V3 yeni bir contract suite ve yeni deployment'tır; v2 adresini veya token state'ini yerinde upgrade etmez.
+
+## V3.2 Production-target ilkeleri
+
+İlk v3 release adayı Base Sepolia (`84532`) üzerinde çalışır fakat mainnet standardında tasarlanır:
+
+- threat model, bağımsız audit, fuzz/invariant, testnet soak, incident runbook ve multisig olmadan production-ready denmez;
+- bütün contract, API, SDK, MCP ve x402 sonuçları chain ID, contract/suite ID, normalized name, settlement asset ve block/confirmation bağlamı taşır;
+- ekonomik state optimistic UI veya in-memory server state'e emanet edilmez;
+- bütün public package ve artifact'lar exact version, checksum, provenance ve compatibility matrix yayımlar;
+- final HTTPS origin, on-chain metadata URI, manifest, OpenAPI, agent discovery ve `llms.txt` aynı release'i göstermeden hosted cutover yapılmaz;
+- Base Sepolia test varlıklarına garantili fiat değeri atfedilmez.
+
+## V3.3 Contract suite ve upgrade sınırı
+
+V2 runtime EIP-170 sınırına çok yakındır. ENS, commit-reveal ve marketplace genişlemesi `ChainNameService.sol` içine eklenmez. İlk v3 release adayı, her biri ayrı adres/ABI checksum ve `VERSION = 3.0.0` yayımlayan **altı authority/state kontratı ile bir bounded read-only MarketLens** olmak üzere toplam yedi no-proxy on-chain adrese ayrılır:
+
+1. `ChainNameRegistryV3`: ENS-compatible registry/base-registrar ownership, lifecycle, node ve token kimliği.
+2. `ChainNameControllerV3`: EIP-712 normalization attestation verification, commit-reveal, pricing, settlement ve referral accounting.
+3. `ChainNameResolverV3`: address/multicoin/text/name records ve ENSIP-10 `IExtendedResolver` dispatch.
+4. `ChainNameUniversalResolverV3`: registry discovery ile desteklenen on-chain kayıtlar için ayrı ENSIP-23 simple `resolve`/`reverse` helper'ı.
+5. `ChainNameMarketplaceV3`: fixed listing, escrowed offer ve English auction state machine'leri.
+6. `ChainNameMigrationV3`: yalnız ilan edilmiş v2→v3 claim politikası.
+7. `ChainNameMarketLensV3`: marketplace enumerable storage üzerinde bounded, indexer-free listing/offer/auction pagination ve stale/terminal offer görünümü; state yazamaz, custody/approval tutamaz ve authority değildir.
+
+Universal resolver adresi public resolver adresi değildir. İlk profil CCIP-Read veya smart multicall sağlamaz ve tam resmi ENS Universal Resolver eşdeğeri diye belgelenemez; manifest yalnız gerçekten uygulanan simple resolve/reverse capability'lerini yayınlar.
+
+Registry'nin immutable `suiteConfigurator` adresi controller, public resolver, migration ve marketplace adreslerini `configureSuite(controller,resolver,migration,marketplace)` ile **tek kez** bağlar; sonra wiring kilitlenir. `suiteConfigurator` protocol owner/multisig rolünden ayrıdır ve kalıcı admin yetkisi değildir. Universal Resolver ayrı immutable registry referansı kullanır; MarketLens immutable marketplace referansından registry'yi türetir. Yedi adresin tamamı manifestte ayrı doğrulanır, fakat `suiteConfigured` yalnız dört stateful registry bağlantısını kanıtlar; Universal Resolver ve MarketLens binding'leri ayrıca okunup doğrulanır.
+
+V3 implementation'ları immutable ve no-proxy'dir. Admin yetkileri reviewed multisig'e aittir; tek EOA production owner olamaz. İlk V3 profili için `owner` ve `treasury`, iki ayrı authority değil aynı reviewed 2-of-2 Safe adresidir; Safe'in imzacıları deploy/configurator EOA ile bağımsız normalization-attestor EOA'dır. Safe, attestor ve one-time suite configurator birbirinden farklı adreslerdir. Emergency pause claim/refund/withdraw yollarını kilitleyemez. Normalization attestor bir sekizinci ownership modülü değildir: controller'a constructor'da bağlanan immutable signer adresidir ve owner tarafından rotate edilemez. MarketLens de yedinci bir authority değildir; yalnız bounded view helper'dır.
+
+## V3.4 ENS, text records ve Unicode canonicalization
+
+V3 bir isim için tek canonical pipeline kullanır:
+
+1. Kullanıcı girdisi UTF-8 olarak alınır.
+2. Configured suffix bir kez ayrılır.
+3. ENSIP-15 uyumlu normalizer ile normalize edilir; disallowed, mixed-script/confusable ve invalid sequence sonuçları typed hata üretir.
+4. UI normalized sonucu kullanıcıya gösterir; raw input sessizce dönüştürülerek imzalanmaz.
+5. `labelhash`, `namehash`, commitment, token ID ve resolver node yalnız normalized bytes üzerinden üretilir.
+
+Exact profil `@adraffy/ens-normalize@1.11.1`, Unicode `17.0.0`, CLDR `47`, identifier `ensip15:@adraffy/ens-normalize@1.11.1:unicode-17.0.0:cldr-47` ve profile hash `0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638` olarak pinlenir. Başlangıç corpus'u `fixtures/name-normalization.json` dosyasıdır; release manifesti library/profile ve exact fixture byte SHA-256 değerini yayımlar.
+
+Frontend, SDK, MCP, API ve attestation service bu exact profile/corpus ile canonicalize eder. Kontrat büyük Unicode/confusable tablolarını uyguladığını iddia etmez; bounded UTF-8/code-point kontrollerine ek olarak immutable normalization attestor'ın EIP-712 imzasını doğrular. Direct contract caller kendi label'ını canonical diye self-assert edemez.
+
+EIP-712 domain controller address/chain'e scope edilir ve signed struct tam olarak şunları bağlar:
+
+```text
+NormalizationAttestation(
+  chainId,
+  controller,
+  normalizationProfileHash,
+  labelHash,
+  recipient,
+  validUntil
+)
+```
+
+Controller; registry'deki immutable profile hash'i, `keccak256(normalizedLabelBytes)`, recipient ve kısa ömürlü `validUntil` değerini yeniden kurup immutable attestor adresine karşı doğrular. Forged, expired, aşırı ileri expiry, wrong-profile, wrong-chain, wrong-controller, wrong-label veya wrong-recipient attestation ödeme/state öncesinde revert eder. Attestation tek başına single-use token değildir; **commitment** exact attestation hash'ini bağlar ve commitment single-use'dır. Attestor kaybı/compromise'ı owner setter ile çözülemez; yeni reviewed controller/suite release'i ve versioned manifest cutover gerektirir.
+
+Canonicalization version'ı manifestte yayımlanır; normalization library/profile değişikliği migration/release review gerektirir. Görsel olarak farklı raw input'lar aynı normalized isme gidiyorsa tek labelhash/node/name üretir.
+
+ENS hedefi en az şunları kapsar:
+
+- ERC-165 interface keşfi ve hedeflenen ENS registry/resolver interface ID'leri;
+- `addr(bytes32)` ve gerekli coin-type address record davranışı;
+- forward resolve ve forward-confirmed reverse/primary resolve;
+- text records için `text(node,key)`/`setText`, bounded key/value bytes ve metadata events;
+- public resolver üzerinde ENSIP-10 extended resolution ve ayrı Universal Resolver helper üzerinde desteklenen ENSIP-23 simple name→address/reverse→verified-name conformance;
+- unsupported CCIP-Read/smart-multicall profillerinin açık capability/error davranışı; tam resmi ENS Universal Resolver iddiası yoktur;
+- ilk v3 profile contenthash dahil değildir; ancak ayrı güvenlik/UX kapsamı, interface ve acceptance kararıyla sonraki release'te eklenebilir;
+- “ENS-compatible” iddiası ancak conformance matrix tamamlanınca kullanılır.
+
+Text değerleri public ve untrusted veridir. En az `avatar`, `url`, `description`, `com.twitter` ve `com.github` örneklenir; arbitrary key desteği varsa byte limit, gas ve unsafe URL rendering kuralları test edilir. Transfer/migration politikasında eski sahibin identity text'i yeni sahibin kimliği gibi kalamaz.
+
+## V3.5 Commit-reveal registration
+
+Public registration yalnız commit-reveal ile yapılır. Commitment en az şunları bağlar:
+
+```text
+chainId + controller + normalized name/node + owner/recipient + duration
++ resolver initialization hash + referrer + settlement asset
++ normalization attestation hash + max/expected registration amount
++ expected referral BPS + secret
+```
+
+- Minimum ve maksimum commitment age immutable veya timelocked bounded config'tir; ilk hedef profile `60 seconds <= age <= 24 hours` kullanır.
+- Aynı commitment yalnız bir kez tüketilir; expired commitment yeniden kullanılamaz.
+- Reveal'da attestation hâlâ geçerli olmalıdır. Attestation değişirse hash değişir ve yeni commitment gerekir; UI/SDK bunu sessiz retry olarak gizlemez.
+- Reveal öncesi name/price/pause/solvency yeniden okunur ve expected-value guards tahsilattan önce doğrulanır.
+- Secret browser URL, analytics, log, MCP result veya payment payload içine yazılmaz.
+- Front-run, copied reveal, wrong owner, wrong duration, wrong referrer, cross-chain/cross-controller replay, early reveal ve expired reveal testleri zorunludur.
+- Commit transaction'ı başarılı fakat reveal başarısızsa UI/MCP açık retry/expiry durumu gösterir; kullanıcıya registration tamamlandı denmez.
+
+## V3.6 Marketplace state machines
+
+V3 aynı configured settlement asset içinde üç ayrı satış mekanizması sağlar. Auction ve offer eklemek fixed-price guard'larını kaldırmaz.
+
+### Fixed listing
+
+- Owner ACTIVE ismi exact price, expiry ve current fee/ownership nonce snapshot'ıyla listeler.
+- Update/cancel idempotent olmayan açık işlemlerdir; `expectedPrice`, `expectedFeeBps` ve listing nonce korunur.
+- Buy öncesi owner, lifecycle, listing nonce, fee snapshot ve exact price yeniden okunur.
+- Transfer/re-registration/migration listing'i invalid eder.
+
+### Escrowed offer/bid
+
+- Buyer token/name, intended recipient, amount, expiry, settlement asset ve ownership nonce'a bağlı offer açar.
+- Tutar creation sırasında exact-delta ile escrow edilir; seller'a external call yapılmaz.
+- Buyer offer'ı kabulden önce iptal edebilir; expiry sonrası herkes finalize/expire edebilir ve buyer refund liability kazanır.
+- Seller accept ettiğinde fee snapshot uygulanır, seller proceeds pull balance'a yazılır ve NFT intended recipient'a geçer.
+- Ownership/lifecycle değişimi stale offer'ı kabul edilemez yapar; escrow buyer için claimable refund olur.
+- Bir buyer'ın aynı offer'ı iki kez cancel/accept/refund etmesi engellenir.
+
+### English auction
+
+- Seller ACTIVE isim için reserve, start/end, minimum increment ve optional anti-sniping extension ile auction açar.
+- NFT auction süresince audited escrow/custody modeline girer; doğrudan transfer ile settlement atlanamaz.
+- İlk bid'den önce seller cancel edebilir; ilk valid bid'den sonra keyfi cancel edemez.
+- Yeni highest bid exact escrow edilir; önceki highest bidder'a doğrudan transfer yerine pull refund liability yazılır.
+- End'e yakın bid yalnız bounded extension policy'ye göre süreyi uzatır; sonsuz extension ve timestamp overflow engellenir.
+- Finalize permissionless ve tek-seferliktir; reserve sağlanmadıysa NFT seller'a, sağlandıysa winner recipient'a gider ve seller proceeds/fee liability yazılır.
+- Auction end'i name expiry safety window'unu aşamaz; GRACE/RELEASED name finalize edilip aktif kimlik gibi satılamaz.
+
+### Bounded MarketLens reads
+
+- `ChainNameMarketLensV3` yalnız marketplace enumerable storage'ını okur; marketplace veya registry state'inin source of truth'u değildir ve indexer garantisi vermez.
+- Listing, per-token offer ve auction sayfaları yalnız o pinned block'ta aktif/doğrulanmış kayıtları döndürür. Global, buyer ve owner offer history sayfaları `ACTIVE`, `REFUNDED` ve `ACCEPTED` state'lerini `includeTerminal` ile gösterebilir; aktif fakat lifecycle/owner/nonce nedeniyle geçersiz kayıt `stale=true` taşır.
+- `limit` 1-50, tek çağrıda raw scan üst sınırı 100'dür. `nextCursor` raw enumerable index'tir; filtrelenen kayıtlar olsa bile ilerler.
+- Marketplace swap-pop cleanup nedeniyle cursor snapshot değildir. Consumer bütün sayfaları aynı block'a pinler, object ID ile dedupe eder ve write öncesi marketplace/registry state'ini yeniden doğrular.
+
+## V3.7 Unified liabilities, settlement ve güvenlik
+
+Korunan toplam en az şunları içerir:
+
+```text
+referral rewards
++ fixed-sale seller proceeds
++ accepted-offer seller proceeds
++ cancelled/expired offer refunds
++ outbid/failed-auction refunds
++ auction seller proceeds
++ x402 refund/reconciliation liabilities
+```
+
+`settlementBalance >= totalProtectedLiability` supported asset davranışında invariant'tır. Treasury yalnız surplus çeker. Claim/refund recipient sıfır veya protocol contract olamaz; state external call'dan önce azaltılır; başarısız payout tüm state'i revert eder. Native ve 6-decimal standard ERC-20 fixture'ları zorunludur; fee-on-transfer/rebasing/exact delta bozan token reddedilir. Pause, insolvency veya incident mode yeni commit/reveal/list/offer/bid/buy/finalize aksiyonlarını ayrı policy ile durdurabilir fakat cancel, expiry cleanup, refund ve mevcut claim'leri kilitlemez.
+
+## V3.8 Referral ve proceeds kullanıcı sözleşmesi
+
+- İlk hedef reward oranı config-driven'dır; v2 historical profile `%10` referrer reward kullanır.
+- Referral yalnız başarılı registration reveal sonucu doğar; renewal, fixed sale, offer veya auction için ayrıca onaylanmadıkça reward yoktur.
+- Registrant indirimi yoksa UI bunu açık söyler; Hood veya başka ürünün discount modelini taklit etmez.
+- Reward ve bütün marketplace proceeds/refund'ları pull-payment'tır.
+- Account UI connected wallet'ı default recipient yapar fakat kullanıcı checksum-validated alternatif recipient seçebilir.
+- Loading, unavailable ve gerçek zero birbirinden ayrılır; RPC hatası `0` claimable gibi gösterilmez.
+
+## V3.9 SDK, npm, MCP ve runnable examples
+
+Public release şu package'ları semver, license, repository metadata, changelog, signed tag ve npm provenance ile yayımlar:
+
+```text
+@sepbase/sdk
+@sepbase/react
+@sepbase/mcp
+```
+
+SDK; normalize/namehash, commit hazırlama, reveal quote/plan, resolver text/addr, fixed listings, offers, auctions, liabilities, migration ve receipt reconciliation için typed API sağlar. MCP public reads ve unsigned plan üretir; private key tutmaz. Signing/broadcast ayrı wallet/keeper authority'sidir. Dokümandaki TypeScript/Viem/Wagmi/Cast/curl örnekleri gerçek fixture dosyalarından üretilir veya CI'da typecheck/smoke edilir; yayınlanmamış package için çalışan `npm install` komutu gösterilmez.
+
+## V3.10 Paid x402 V2 production boundary
+
+V2 quote-only davranışı tarihsel olarak korunur. V3 paid registration ancak aşağıdaki koşulların **tamamı** sağlanınca etkinleşebilir:
+
+İlk Base Sepolia paid-x402 deployment target'ı CAIP-2 `eip155:84532` üzerinde Circle'ın resmi standard 6-decimal test USDC'sidir: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`. Bu adres ve decimals deployment config/manifestinde yayımlanır ve on-chain token metadata/code ile release sırasında doğrulanır. Aynı asset controller'ın immutable ERC-20 settlement tokenı ve x402 payment asset'idir; conversion/oracle yoktur. Gas Base Sepolia test ETH ile ayrı ödenir. Test USDC ve test ETH'ye garantili fiat değer atanmaz. Canlı v2 native settlement deployment'ı değişmez ve paid route'u fail closed kalır.
+
+- official x402 V2 core/EVM adapter'ları exact pinli ve runtime'da aktif;
+- facilitator endpoint/auth policy'si reviewed ve health-monitored;
+- x402 payment asset, protocol'ün immutable standard ERC-20 settlement token'ıyla bire bir aynı; conversion/oracle varsayımı yok;
+- durable shared idempotency store ve unique `paymentIdentifier + requestFingerprint + quoteId` constraint'i;
+- managed/external signer kullanan, raw key içermeyen, allowlisted controller ve bounded daily/per-order limitli keeper;
+- commit→minimum-age wait→reveal→confirmation akışını crash-safe sürdüren durable workflow;
+- payment verification, on-chain submission, confirmation, settlement ve refund/reconciliation için kalıcı state machine;
+- replay, concurrent duplicate, stale quote, already-registered, partial failure ve response-loss E2E testleri;
+- rate limit, abuse protection, alerting, reconciliation dashboard ve operator runbook.
+
+Minimum order state'leri:
+
+```text
+quoted -> payment_verified -> commit_submitted -> reveal_ready
+-> reveal_submitted -> confirmed -> payment_settled
+                         \-> refund_pending -> refunded
+                         \-> manual_review
+```
+
+HTTP timeout sonrası istemci körlemesine tekrar ödeme yapmaz; payment/order status endpoint'i ile reconcile eder. Registration gerçekleşmeden payment capture edilmemesi tercih edilir. Facilitator semantics capture-before-confirm gerektiriyorsa başarısız registration için durable refund liability ve SLA zorunludur. Paid route production'da `402` negotiation, payment verification ve status/refund semantics yayımlar; config varlığı tek başına activation değildir.
+
+## V3.11 Hosted cutover, metadata ve observability
+
+Cutover öncesi:
+
+1. Final HTTPS origin kesinleşir.
+2. Altı authority/state kontratı ile bounded read-only MarketLens'ten oluşan yedi v3 adres source-verified deploy edilir; registry'nin dört-argümanlı one-time suite wiring'i kilitlenir, public/Universal Resolver ayrımı ve MarketLens→marketplace→registry binding'i ayrıca doğrulanır.
+3. On-chain metadata/resolver URL'leri final origin'e ayarlanır.
+4. Deployment manifest, ENS discovery, agent manifest, OpenAPI, ABI checksums, `llms.txt` ve docs yeniden üretilir.
+5. Browser-safe RPC ile server-only authenticated RPC ayrılır.
+6. Final origin üzerinde desktop/mobile wallet, REST, SDK, MCP ve x402 smoke tamamlanır.
+
+Observability; RPC/facilitator/keeper latency-error rate, commitment age queue, reveal failures, payment/order state, duplicate attempts, escrow/liability balance, solvency, refund age, auction finalization lag, admin changes ve manifest drift'i kapsar. Loglar secret, signed payload, raw profile content veya authenticated RPC URL içermez. Kritik alert'in owner multisig ve incident runbook karşılığı bulunur.
+
+## V3.12 V2→V3 migration
+
+- V2 kontratı ve bütün v2 referral/seller liabilities claim edilebilir kalır; treasury bunları taşıyamaz.
+- V3 migration otomatik ownership iddiası değildir. Active/grace v2 owner, ilan edilmiş migration window içinde live v2 owner/status kontrolü veya audited Merkle proof ile aynı canonical ASCII label'ı bir kez claim eder.
+- Eligible v2 label'lar public registration'a karşı migration window boyunca reserve edilir.
+- V3 expiry policy v2 expiry'yi azaltmaz; ücretsiz extension varsa süresi ve finansmanı açık governance/release kararıdır.
+- Profile/text/resolution yalnız kullanıcı review edip onaylarsa taşınır. Primary, listing, offer, auction, referral ve proceeds state'i otomatik taşınmaz.
+- Her migrated label `sourceChainId`, v2 contract, token ID, v2 owner, v3 owner, source block ve transaction hash evidence'i yayımlar.
+- Cutover öncesi resolver precedence ve v2 fallback süresi ilan edilir; iki registry aynı anda canonical diye sunulmaz.
+
+## V3.13 Release kabul kapıları
+
+V3 tamamlandı sayılmadan `docs/V3_ACCEPTANCE_MATRIX.md` içindeki bütün contract, browser, API/SDK/MCP, paid-x402, migration, security ve operations senaryoları kanıtlanır. En az şu kapılar zorunludur:
+
+- ENS forward/reverse/text, bounded Universal Resolver profile ve Unicode normalization/attestation conformance;
+- immutable attestor, EIP-712 domain/field binding, expiry, direct-call bypass rejection ve replacement-release drill'i;
+- yedi adres/ABI checksum/`VERSION` parity'si, dört-argümanlı one-time registry wiring lock ve bağımsız Universal Resolver/MarketLens binding doğrulaması;
+- commit-reveal timing, front-run/replay ve price/referral guard testleri;
+- fixed listing, offer escrow/refund ve auction bid/outbid/finalize/cancel testleri;
+- unified liability/solvency/reentrancy ve native/6-decimal ERC-20/FOT rejection invariant'ları;
+- v2 migration eligibility, duplicate claim, expiry ve liability isolation;
+- runnable package/examples ve final-origin parity;
+- paid x402 duplicate/payment-loss/refund/reconciliation E2E;
+- multisig, timelock/pause, monitoring, backup/restore ve incident drill;
+- bağımsız audit finding'lerinin kapatılması ve Base Sepolia soak süresi.
+
+V3 uygulama planı, threat model, web interaction contract, kullanıcı rehberi, migration, acceptance ve transaction kanıt formatı için sırasıyla `docs/V3_ARCHITECTURE.md`, `docs/THREAT_MODEL_V3.md`, `docs/V3_WEB_UX.md`, `docs/USER_MARKETPLACE_GUIDE.md`, `docs/MIGRATION_V2_TO_V3.md`, `docs/V3_ACCEPTANCE_MATRIX.md` ve `docs/TRANSACTION_EVIDENCE.md` bağlayıcı yardımcı belgelerdir. Hood karşılaştırması `docs/HOOD_COMPARISON.md` içinde evidence-qualified ürün referansıdır; release doğruluk kaynağı değildir.
 
 ---
 
@@ -3252,7 +3502,7 @@ Tüm repository'de eski proje adını global search/replace ile değiştirmek an
 
 ---
 
-# 18. Uygulama aşamaları
+# 18. V2 historical uygulama aşamaları
 
 IDE AI aşağıdaki sırayı takip etmelidir.
 
@@ -3479,7 +3729,7 @@ Yapılacaklar:
 
 ---
 
-# 19. Definition of Done
+# 19. V2 historical Definition of Done
 
 Proje ancak aşağıdaki koşulların tümü sağlandığında V1 tamamlanmış sayılır:
 
@@ -3549,9 +3799,9 @@ Proje ancak aşağıdaki koşulların tümü sağlandığında V1 tamamlanmış 
 
 ---
 
-# 20. V1 dışında bırakılan opsiyonlar
+# 20. V2 historical kapsam dışında bırakılan opsiyonlar
 
-Aşağıdakiler yalnızca gerçek ihtiyaç oluşursa V2 olarak düşünülür:
+Aşağıdaki liste ilk V1/V2 planlama kararının historical kaydıdır. Üstteki bağlayıcı v3 bölümü commit-reveal, offer/auction ve ENS uyumluluğunu artık onaylı v3 hedefi yapar; bu liste onları yeniden yasaklamaz:
 
 - commit-reveal,
 - subdomain,
@@ -3601,7 +3851,7 @@ IDE AI şu kurallara uymalıdır:
 
 # 22. Kaynaklar ve teknik dayanaklar
 
-Bu şartname başka name-service protokollerine entegrasyon hedeflemez. Aşağıdaki kaynaklar yalnızca kullanılan genel EVM geliştirme standartları ve araçları için referanstır:
+Canlı v2 başka name-service protokollerine entegrasyon hedeflemez. Bağlayıcı v3 bölümü ENSIP-15 ve resolver uyumluluğunu yeni major suite hedefi olarak ayrıca tanımlar. Aşağıdaki kaynaklar genel EVM geliştirme standartları, araçları ve ürün karşılaştırmaları için referanstır:
 
 1. Solidity Documentation - güncel released compiler kullanımı ve security considerations
    https://docs.soliditylang.org/en/latest/
@@ -3648,12 +3898,12 @@ Bu şartname başka name-service protokollerine entegrasyon hedeflemez. Aşağı
 14. TempoID - kısa arama akışı ve geliştirici dokümantasyonu ürün referansı
     https://tempoid.xyz/
 
-15. HoodDomains - chain'e özel domain kimliği ürün referansı
-    https://www.hood.domains/
+15. Hood - chain'e özel domain kimliği ve agent/payment entegrasyonu ürün referansı
+    https://www.hood.ag/docs
 
 ---
 
-# 23. Son karar özeti
+# 23. V2 historical son karar özeti
 
 ```text
 Proje tipi:        Bağımsız, tek-chain name dApp

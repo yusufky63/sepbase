@@ -314,6 +314,53 @@
   font-size: var(--text-xl);
 }
 
+.claimRecipient {
+  min-width: min(100%, 360px);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.claimRecipient label {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.claimRecipient input {
+  width: 100%;
+  min-height: 48px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-mono), monospace;
+}
+
+.claimRecipient input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.claimRecipient input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.fieldHint,
+.fieldError {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.fieldHint {
+  color: var(--muted);
+}
+
+.fieldError {
+  color: var(--danger);
+}
+
 .steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -345,11 +392,11 @@
 }
 
 .proceeds {
-  min-height: 112px;
+  min-height: 152px;
   padding: var(--space-4) 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(280px, 2fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-4);
   border-top: 1px solid var(--foreground);
   border-bottom: 1px solid var(--line);
@@ -391,7 +438,8 @@
 @media (max-width: 760px) {
   .titleRow,
   .panelHeading,
-  .referralGrid {
+  .referralGrid,
+  .proceeds {
     grid-template-columns: 1fr;
   }
 

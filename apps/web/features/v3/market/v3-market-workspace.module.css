@@ -1,0 +1,625 @@
+.workspace {
+  --market-pad: clamp(1rem, 3vw, 3rem);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.hero {
+  padding: var(--space-5) var(--market-pad) 0;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.kicker,
+.hero dt,
+.metrics span,
+.connection span,
+.section > header span,
+.row span,
+.empty strong,
+.accountGrid span,
+.ownedNames span,
+.composer header > span,
+.formGrid label > span,
+.formSummary span,
+.state > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: .04em;
+}
+
+.heroGrid {
+  min-height: 520px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gutter);
+  align-items: end;
+  padding-block: var(--space-7);
+}
+
+.heroGrid h1 {
+  grid-column: 1 / span 8;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(4rem, 9vw, 9.5rem);
+  font-weight: 800;
+  letter-spacing: -.075em;
+  line-height: .78;
+}
+
+.heroGrid h1 span {
+  color: var(--accent);
+}
+
+.heroCopy {
+  grid-column: 9 / -1;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.heroCopy > p {
+  max-width: 30ch;
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.25;
+}
+
+.heroCopy dl {
+  margin: 0;
+}
+
+.heroCopy dl > div {
+  padding-block: var(--space-3);
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.heroCopy dd {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-inline: calc(var(--market-pad) * -1);
+  border-top: 1px solid var(--foreground);
+}
+
+.metrics > div {
+  min-height: 112px;
+  padding: var(--space-4) var(--market-pad);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid var(--foreground);
+}
+
+.metrics > div:last-child {
+  border-right: 0;
+}
+
+.metrics strong {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-lg);
+}
+
+.connection {
+  display: grid;
+  grid-template-columns: 3fr 3fr 6fr;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.connection > div {
+  min-height: 80px;
+  padding: var(--space-3) var(--market-pad);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid var(--foreground);
+}
+
+.connection > div:last-child {
+  border-right: 0;
+}
+
+.connection strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.connectionAction button,
+.state button {
+  width: fit-content;
+  min-height: 42px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--foreground);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-sm) var(--font-mono), monospace;
+}
+
+.connectionAction button:hover:not(:disabled),
+.state button:hover:not(:disabled) {
+  background: var(--foreground);
+  color: var(--foreground-inverse);
+}
+
+.connectionAction button:focus-visible,
+.state button:focus-visible,
+.rowAction:focus-visible,
+.formGrid input:focus-visible,
+.formGrid select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.section {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.section > header,
+.composer > header {
+  min-height: 230px;
+  padding: var(--space-6) var(--market-pad);
+  display: grid;
+  grid-template-columns: 3fr 9fr;
+  gap: var(--grid-gutter);
+  align-items: end;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.section h2,
+.composer h2,
+.state h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.25rem, 5vw, 5.25rem);
+  letter-spacing: -.055em;
+  line-height: .9;
+}
+
+.rows {
+  display: grid;
+}
+
+.row {
+  min-height: 124px;
+  display: grid;
+  grid-template-columns: 1.25fr 2fr 1.5fr 1.5fr 2.75fr;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row > div {
+  min-width: 0;
+  padding: var(--space-4);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+}
+
+.row > div:first-child {
+  padding-left: var(--market-pad);
+}
+
+.row > div:last-child {
+  padding-right: var(--market-pad);
+  border-right: 0;
+}
+
+.row strong,
+.row code,
+.row time,
+.ownedNames code {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.rowActions {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-content: center !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2) !important;
+}
+
+.rowAction {
+  min-height: 38px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--foreground);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-xs) var(--font-mono), monospace;
+}
+
+.rowAction:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.rowAction:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface-muted);
+}
+
+.row small {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.pagination {
+  min-height: 72px;
+  padding-inline: var(--market-pad);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  border-top: 1px solid var(--foreground);
+}
+
+.pagination span,
+.pagination strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.pagination strong {
+  grid-column: 1 / -1;
+  padding-bottom: var(--space-3);
+  color: var(--accent);
+}
+
+.pagination button {
+  min-height: 38px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--foreground);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font: 700 var(--text-xs) var(--font-mono), monospace;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--foreground);
+  color: var(--foreground-inverse);
+}
+
+.pagination button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.empty,
+.state {
+  min-height: 220px;
+  padding: var(--space-6) var(--market-pad);
+  display: grid;
+  align-content: center;
+  gap: var(--space-4);
+}
+
+.empty p,
+.state p {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.state {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.state[data-error="true"] {
+  border-left: 8px solid var(--accent);
+}
+
+.accountGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid var(--foreground);
+}
+
+.accountGrid > div {
+  min-height: 180px;
+  padding: var(--space-5) var(--market-pad);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-4);
+  border-right: 1px solid var(--foreground);
+}
+
+.accountGrid > div:last-child {
+  border-right: 0;
+}
+
+.accountGrid strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xl);
+}
+
+.ownedNames {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ownedNames article {
+  min-height: 180px;
+  padding: var(--space-5) var(--market-pad);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.ownedNames article:nth-child(2n) {
+  border-right: 0;
+}
+
+.ownedNames article > div:first-child {
+  min-width: 0;
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+}
+
+.ownedNames strong {
+  overflow-wrap: anywhere;
+  font-size: var(--text-xl);
+}
+
+.composer {
+  scroll-margin-top: 90px;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.composer > header {
+  grid-template-columns: 3fr 5fr 4fr;
+}
+
+.composer header p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  border-bottom: 1px solid var(--foreground);
+}
+
+.formGrid label {
+  min-width: 0;
+  min-height: 118px;
+  padding: var(--space-3) var(--space-4);
+  grid-column: span 4;
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.formGrid label:nth-child(3n) {
+  border-right: 0;
+}
+
+.formGrid .actionSelect {
+  grid-column: span 8;
+}
+
+.formGrid input,
+.formGrid select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-2);
+  border: 1px solid var(--foreground);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--foreground);
+  font: var(--text-sm) var(--font-mono), monospace;
+}
+
+.formGrid input:disabled,
+.formGrid select:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface-muted);
+}
+
+.inputWithSuffix {
+  position: relative;
+}
+
+.inputWithSuffix small {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  pointer-events: none;
+}
+
+.inputWithSuffix:has(small) input {
+  padding-right: 5rem;
+}
+
+.formSummary {
+  min-height: 150px;
+  padding: var(--space-5) var(--market-pad);
+  display: grid;
+  grid-template-columns: 3fr 9fr;
+  gap: var(--space-4) var(--grid-gutter);
+  align-content: center;
+}
+
+.formSummary strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-sm);
+}
+
+.formSummary p {
+  grid-column: 4 / -1;
+  max-width: 72ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 980px) {
+  .heroGrid {
+    min-height: 440px;
+  }
+
+  .heroGrid h1 {
+    grid-column: 1 / span 7;
+    font-size: clamp(3.5rem, 10vw, 7rem);
+  }
+
+  .heroCopy {
+    grid-column: 8 / -1;
+  }
+
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .row > div,
+  .row > div:first-child,
+  .row > div:last-child {
+    padding-inline: var(--market-pad);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .row > .rowActions {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  .composer > header {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .composer header p {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 720px) {
+  .heroGrid {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .heroGrid h1,
+  .heroCopy {
+    grid-column: 1;
+  }
+
+  .heroGrid h1 {
+    font-size: clamp(3.3rem, 17vw, 6rem);
+  }
+
+  .metrics,
+  .connection,
+  .accountGrid,
+  .ownedNames {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics > div,
+  .connection > div,
+  .accountGrid > div,
+  .ownedNames article {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section > header,
+  .composer > header,
+  .formSummary {
+    min-height: 180px;
+    grid-template-columns: 1fr;
+  }
+
+  .composer header p,
+  .formSummary p {
+    grid-column: 1;
+  }
+
+  .formGrid label,
+  .formGrid .actionSelect {
+    grid-column: span 6;
+  }
+
+  .formGrid label:nth-child(3n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .formGrid label:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .heroCopy dl > div,
+  .row,
+  .ownedNames article {
+    grid-template-columns: 1fr;
+  }
+
+  .row > div,
+  .row > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .row > .rowActions {
+    grid-column: 1;
+  }
+
+  .formGrid label,
+  .formGrid .actionSelect {
+    grid-column: 1 / -1;
+    border-right: 0 !important;
+  }
+
+  .pagination {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-block: var(--space-3);
+  }
+
+  .pagination span {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}

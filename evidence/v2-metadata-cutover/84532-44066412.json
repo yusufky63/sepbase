@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "contractAddress": "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945",
+  "previousMetadataBaseURI": "http://localhost:3000/api/metadata/",
+  "metadataBaseURI": "https://sepbase.vercel.app/api/metadata/",
+  "transactionHash": "0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b",
+  "blockNumber": "44066412",
+  "blockTimestamp": "1783901112",
+  "confirmationFloor": 5,
+  "explorerUrl": "https://sepolia.basescan.org/tx/0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b"
+}

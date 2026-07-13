@@ -1,0 +1,21 @@
+{
+  "name": "@sepbase/example-v3-integrations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sepbase/mcp": "workspace:*",
+    "@sepbase/react": "workspace:*",
+    "@sepbase/sdk": "workspace:*",
+    "react": "19.2.7",
+    "viem": "2.55.0",
+    "wagmi": "3.7.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "typescript": "6.0.3"
+  }
+}

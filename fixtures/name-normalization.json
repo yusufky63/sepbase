@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "profile": {
+    "standard": "ENSIP-15",
+    "implementation": "@adraffy/ens-normalize",
+    "implementationVersion": "1.11.1",
+    "unicodeVersion": "17.0.0",
+    "cldrVersion": "47",
+    "profileIdentifier": "ensip15:@adraffy/ens-normalize@1.11.1:unicode-17.0.0:cldr-47",
+    "profileHash": "0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638",
+    "suffix": "sepbase",
+    "minCodePoints": 1,
+    "maxCodePoints": 32,
+    "maxUtf8Bytes": 96
+  },
+  "valid": [
+    { "id": "ascii-case", "input": "ALICE", "normalizedLabel": "alice" },
+    { "id": "qualified-case", "input": "Alice.SEPBASE", "normalizedLabel": "alice" },
+    { "id": "composed", "input": "é", "normalizedLabel": "é" },
+    { "id": "decomposed", "input": "é", "normalizedLabel": "é" },
+    { "id": "german-sharp-s", "input": "ß", "normalizedLabel": "ß" },
+    { "id": "emoji-single", "input": "💩", "normalizedLabel": "💩" },
+    { "id": "emoji-zwj", "input": "👩‍💻", "normalizedLabel": "👩‍💻" },
+    { "id": "emoji-variation", "input": "☕️", "normalizedLabel": "☕" }
+  ],
+  "invalid": [
+    { "id": "empty", "input": "", "errorCode": "EMPTY_NAME" },
+    { "id": "mixed-script", "input": "раypal", "errorCode": "INVALID_NAME" },
+    { "id": "subdomain", "input": "sub.alice.sepbase", "errorCode": "SUBDOMAIN_NOT_SUPPORTED" },
+    { "id": "wrong-suffix", "input": "alice.example", "errorCode": "INVALID_SUFFIX" },
+    { "id": "too-long", "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "errorCode": "LABEL_LENGTH" },
+    { "id": "too-many-bytes", "input": "💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩💩", "errorCode": "LABEL_BYTES" }
+  ]
+}

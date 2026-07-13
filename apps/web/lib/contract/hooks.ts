@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { type Address, erc20Abi, keccak256, toBytes, zeroAddress } from "viem";
+import { type Address, erc20Abi, isAddress, keccak256, toBytes, zeroAddress } from "viem";
 import {
   useAccount,
   useReadContract,
@@ -32,12 +32,89 @@ const address = (protocolAddress ?? zeroAddress) as Address;
 const contract = { address, abi: chainNameServiceAbi } as const;
 const enabled = protocolDeployed;
 
-function successful<T>(result: { status: "success"; result: unknown } | { status: "failure" } | undefined): T | undefined {
+type MulticallResult =
+  | { status: "success"; result: unknown }
+  | { status: "failure"; error?: Error };
+
+function successful<T>(result: MulticallResult | undefined): T | undefined {
   return result?.status === "success" ? (result.result as T) : undefined;
 }
 
-function normalizeProfile(value: NameProfile | undefined): NameProfile {
-  return value ?? emptyProfile;
+function isNameStatusValue(value: unknown): value is NameStatusValue {
+  return value === NAME_STATUS.UNREGISTERED
+    || value === NAME_STATUS.ACTIVE
+    || value === NAME_STATUS.GRACE
+    || value === NAME_STATUS.RELEASED;
+}
+
+function isListingRead(value: unknown): value is NameListing | readonly unknown[] {
+  if (value === null || value === undefined || typeof value !== "object") return false;
+  const fields = Array.isArray(value)
+    ? value
+    : [
+        (value as NameListing).tokenId,
+        (value as NameListing).seller,
+        (value as NameListing).price,
+        (value as NameListing).listedAt,
+        (value as NameListing).feeBps,
+      ];
+  return typeof fields[0] === "bigint"
+    && typeof fields[1] === "string"
+    && isAddress(fields[1])
+    && typeof fields[2] === "bigint"
+    && typeof fields[3] === "bigint"
+    && typeof fields[4] === "number";
+}
+
+/**
+ * Decodes one complete owned-name page. A transient or malformed multicall
+ * result is rejected as a whole so partial values never reach the account UI.
+ */
+export function decodeOwnedNames(
+  tokenIds: readonly bigint[],
+  results: readonly MulticallResult[] | undefined,
+): OwnedName[] | null {
+  if (tokenIds.length === 0) return [];
+  if (!results || results.length !== tokenIds.length * 4) return null;
+
+  const names: OwnedName[] = [];
+  for (const [index, tokenId] of tokenIds.entries()) {
+    const detailOffset = index * 4;
+    const fullName = successful<unknown>(results[detailOffset]);
+    const status = successful<unknown>(results[detailOffset + 1]);
+    const expiresAt = successful<unknown>(results[detailOffset + 2]);
+    const listing = successful<unknown>(results[detailOffset + 3]);
+    if (
+      typeof fullName !== "string"
+      || fullName.length === 0
+      || !isNameStatusValue(status)
+      || typeof expiresAt !== "bigint"
+      || expiresAt < 0n
+      || !isListingRead(listing)
+    ) return null;
+
+    names.push({
+      tokenId,
+      fullName,
+      status,
+      expiresAt,
+      listing: normalizeListing(listing),
+    });
+  }
+  return names;
+}
+
+export function multicallReadError(
+  scope: string,
+  results: readonly MulticallResult[] | undefined,
+  requiredIndexes: readonly number[],
+  readyToEvaluate: boolean,
+): Error | null {
+  if (!readyToEvaluate) return null;
+  if (!results) return new Error(`${scope} did not return contract data.`);
+  const failedIndexes = requiredIndexes.filter((index) => results[index]?.status !== "success");
+  if (failedIndexes.length === 0) return null;
+  return new Error(`${scope} contract reads failed at indexes ${failedIndexes.join(", ")}.`);
 }
 
 export function tokenIdForLabel(label: string): bigint {
@@ -63,28 +140,64 @@ export function useNameRecord(label: string) {
   });
 
   const data = query.data;
-  const record: NameRecord = {
+  const readStatus = successful<number>(data?.[2]);
+  const requiredIndexes = readStatus !== undefined && readStatus !== NAME_STATUS.UNREGISTERED
+    ? [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    : [0, 1, 2, 8];
+  const partialError = multicallReadError(
+    "Name record",
+    data,
+    requiredIndexes,
+    enabled && !query.isLoading && !query.isError,
+  );
+  const previewRecord: NameRecord = {
     label,
     tokenId,
-    available: successful<boolean>(data?.[0]) ?? !protocolDeployed,
-    reserved: successful<boolean>(data?.[1]) ?? false,
-    status: (successful<number>(data?.[2]) ?? NAME_STATUS.UNREGISTERED) as NameStatusValue,
-    owner: successful<Address>(data?.[3]) ?? null,
-    resolvedAddress: (() => {
-      const value = successful<Address>(data?.[4]);
-      return value && value !== zeroAddress ? value : null;
-    })(),
-    expiresAt: successful<bigint>(data?.[5]) ?? null,
-    profile: normalizeProfile(successful<NameProfile>(data?.[6])),
-    listing: normalizeListing(successful<NameListing | readonly unknown[]>(data?.[7])),
-    oneYearQuote: successful<bigint>(data?.[8]) ?? annualPriceForLength(
+    available: true,
+    reserved: false,
+    status: NAME_STATUS.UNREGISTERED,
+    owner: null,
+    resolvedAddress: null,
+    expiresAt: null,
+    profile: emptyProfile,
+    listing: null,
+    oneYearQuote: annualPriceForLength(
       BigInt(deploymentManifest.annualPriceBaseUnits),
       label.length,
       deploymentManifest.shortNamePriceMultipliers,
     ),
   };
+  const record: NameRecord | null = !protocolDeployed
+    ? previewRecord
+    : partialError || query.isError || query.isLoading || readStatus === undefined
+      ? null
+      : {
+          label,
+          tokenId,
+          available: successful<boolean>(data?.[0])!,
+          reserved: successful<boolean>(data?.[1])!,
+          status: readStatus as NameStatusValue,
+          owner: readStatus === NAME_STATUS.UNREGISTERED ? null : successful<Address>(data?.[3])!,
+          resolvedAddress: (() => {
+            if (readStatus === NAME_STATUS.UNREGISTERED) return null;
+            const value = successful<Address>(data?.[4])!;
+            return value !== zeroAddress ? value : null;
+          })(),
+          expiresAt: readStatus === NAME_STATUS.UNREGISTERED ? null : successful<bigint>(data?.[5])!,
+          profile: readStatus === NAME_STATUS.UNREGISTERED ? emptyProfile : successful<NameProfile>(data?.[6])!,
+          listing: readStatus === NAME_STATUS.UNREGISTERED
+            ? null
+            : normalizeListing(successful<NameListing | readonly unknown[]>(data?.[7])),
+          oneYearQuote: successful<bigint>(data?.[8])!,
+        };
 
-  return { record, ...query, isPreview: !protocolDeployed };
+  return {
+    ...query,
+    record,
+    error: query.error ?? partialError,
+    isError: query.isError || partialError !== null,
+    isPreview: !protocolDeployed,
+  };
 }
 
 export function useNameAvailability(label: string, valid: boolean) {
@@ -114,7 +227,19 @@ export function useRecentNames(limit = 8) {
     ]),
     query: { enabled: enabled && recent.length > 0 },
   });
-  const names = recent.flatMap((item, index): RecentRegistration[] => {
+  const requiredDetailIndexes = recent.flatMap((_, index) => {
+    const statusIndex = index * 2;
+    return successful<number>(detailsQuery.data?.[statusIndex]) === NAME_STATUS.ACTIVE
+      ? [statusIndex, statusIndex + 1]
+      : [statusIndex];
+  });
+  const partialError = multicallReadError(
+    "Recent name details",
+    detailsQuery.data,
+    requiredDetailIndexes,
+    enabled && recent.length > 0 && !detailsQuery.isLoading && !detailsQuery.isError,
+  );
+  const names = query.isError || detailsQuery.isError || partialError ? [] : recent.flatMap((item, index): RecentRegistration[] => {
     const status = successful<number>(detailsQuery.data?.[index * 2]);
     const owner = successful<Address>(detailsQuery.data?.[index * 2 + 1]);
     if (status !== NAME_STATUS.ACTIVE || !owner) return [];
@@ -124,8 +249,8 @@ export function useRecentNames(limit = 8) {
     ...query,
     names,
     isLoading: query.isLoading || detailsQuery.isLoading,
-    error: query.error ?? detailsQuery.error,
-    isError: query.isError || detailsQuery.isError,
+    error: query.error ?? detailsQuery.error ?? partialError,
+    isError: query.isError || detailsQuery.isError || partialError !== null,
   };
 }
 
@@ -148,7 +273,19 @@ export function useMarketListings(offset = 0) {
     ]),
     query: { enabled: enabled && storedListings.length > 0 },
   });
-  const listings = storedListings.flatMap((listing, index): MarketNameListing[] => {
+  const requiredDetailIndexes = storedListings.flatMap((_, index) => {
+    const detailOffset = index * 4;
+    return successful<number>(detailsQuery.data?.[detailOffset + 1]) === NAME_STATUS.ACTIVE
+      ? [detailOffset, detailOffset + 1, detailOffset + 2, detailOffset + 3]
+      : [detailOffset + 1];
+  });
+  const partialError = multicallReadError(
+    "Market listing details",
+    detailsQuery.data,
+    requiredDetailIndexes,
+    enabled && storedListings.length > 0 && !detailsQuery.isLoading && !detailsQuery.isError,
+  );
+  const listings = query.isError || detailsQuery.isError || partialError ? [] : storedListings.flatMap((listing, index): MarketNameListing[] => {
     const detailOffset = index * 4;
     const fullName = successful<string>(detailsQuery.data?.[detailOffset]);
     const status = successful<number>(detailsQuery.data?.[detailOffset + 1]);
@@ -159,14 +296,64 @@ export function useMarketListings(offset = 0) {
       || status !== NAME_STATUS.ACTIVE
       || owner?.toLowerCase() !== listing.seller.toLowerCase()
     ) return [];
-    return [{ ...listing, fullName, status: NAME_STATUS.ACTIVE, expiresAt: expiresAt ?? 0n }];
+    return [{ ...listing, fullName, status: NAME_STATUS.ACTIVE, expiresAt: expiresAt! }];
   });
   return {
     ...query,
     listings,
-    total: tuple?.[1] ?? 0n,
+    total: query.isError ? null : tuple?.[1] ?? null,
     isLoading: query.isLoading || detailsQuery.isLoading,
-    error: query.error ?? detailsQuery.error,
+    error: query.error ?? detailsQuery.error ?? partialError,
+    isError: query.isError || detailsQuery.isError || partialError !== null,
+  };
+}
+
+export function useVerifiedListing(tokenId: bigint | undefined, queryEnabled = true) {
+  const listingQueryEnabled = enabled && tokenId !== undefined && queryEnabled;
+  const query = useReadContracts({
+    allowFailure: true,
+    contracts: [
+      { ...contract, functionName: "listings", args: [tokenId ?? 0n] },
+      { ...contract, functionName: "statusOf", args: [tokenId ?? 0n] },
+      { ...contract, functionName: "ownerOf", args: [tokenId ?? 0n] },
+      { ...contract, functionName: "fullName", args: [tokenId ?? 0n] },
+      { ...contract, functionName: "expiresAt", args: [tokenId ?? 0n] },
+    ],
+    query: { enabled: listingQueryEnabled, staleTime: 0 },
+  });
+  const rawListing = normalizeListing(successful<NameListing | readonly unknown[]>(query.data?.[0]));
+  const status = successful<number>(query.data?.[1]);
+  const requiredIndexes = rawListing && status === NAME_STATUS.ACTIVE ? [0, 1, 2, 3, 4] : [0, 1];
+  const partialError = multicallReadError(
+    "Listing verification",
+    query.data,
+    requiredIndexes,
+    listingQueryEnabled && !query.isLoading && !query.isError,
+  );
+  const owner = successful<Address>(query.data?.[2]);
+  const fullName = successful<string>(query.data?.[3]);
+  const expiresAt = successful<bigint>(query.data?.[4]);
+  const listing: MarketNameListing | null = !query.isError
+    && !partialError
+    && rawListing !== null
+    && status === NAME_STATUS.ACTIVE
+    && owner?.toLowerCase() === rawListing.seller.toLowerCase()
+    && fullName !== undefined
+    && expiresAt !== undefined
+      ? { ...rawListing, fullName, status: NAME_STATUS.ACTIVE, expiresAt }
+      : null;
+
+  return {
+    ...query,
+    listing,
+    error: query.error ?? partialError,
+    isError: query.isError || partialError !== null,
+    isStale: listingQueryEnabled
+      && !query.isLoading
+      && !query.isFetching
+      && !query.isError
+      && partialError === null
+      && listing === null,
   };
 }
 
@@ -183,14 +370,23 @@ export function useProtocolHealth() {
     ],
     query: { enabled, staleTime: 20_000 },
   });
+  const partialError = multicallReadError(
+    "Protocol health",
+    query.data,
+    [0, 1, 2, 3, 4, 5],
+    enabled && !query.isLoading && !query.isError,
+  );
+  const unavailable = query.isError || partialError !== null;
   return {
     ...query,
-    solvent: successful<boolean>(query.data?.[0]) ?? !protocolDeployed,
-    registrationsPaused: successful<boolean>(query.data?.[1]) ?? protocolDeployed,
-    marketplacePaused: successful<boolean>(query.data?.[2]) ?? protocolDeployed,
-    referralRewardBps: successful<number>(query.data?.[3]) ?? deploymentManifest.referralRewardBps,
-    marketplaceFeeBps: successful<number>(query.data?.[4]) ?? deploymentManifest.marketplaceFeeBps,
-    nameCount: successful<bigint>(query.data?.[5]) ?? null,
+    error: query.error ?? partialError,
+    isError: query.isError || partialError !== null,
+    solvent: unavailable ? null : successful<boolean>(query.data?.[0]) ?? null,
+    registrationsPaused: unavailable ? null : successful<boolean>(query.data?.[1]) ?? null,
+    marketplacePaused: unavailable ? null : successful<boolean>(query.data?.[2]) ?? null,
+    referralRewardBps: unavailable ? null : successful<number>(query.data?.[3]) ?? null,
+    marketplaceFeeBps: unavailable ? null : successful<number>(query.data?.[4]) ?? null,
+    nameCount: unavailable ? null : successful<bigint>(query.data?.[5]) ?? null,
   };
 }
 
@@ -279,14 +475,20 @@ export function useOwnedNames(
   offset = 0,
   limit = projectConfig.marketplace.listingsPerPage,
 ) {
+  const readEnabled = enabled && account !== undefined;
   const balanceQuery = useReadContract({
     ...contract,
     functionName: "balanceOf",
     args: [account ?? zeroAddress],
-    query: { enabled: enabled && account !== undefined },
+    query: { enabled: readEnabled },
   });
-  const total = Number(balanceQuery.data ?? 0n);
-  const count = Math.max(0, Math.min(limit, total - offset));
+  const rawTotal = balanceQuery.data;
+  const resolvedTotal = balanceQuery.isError
+    || typeof rawTotal !== "bigint"
+    || rawTotal > BigInt(Number.MAX_SAFE_INTEGER)
+      ? null
+      : Number(rawTotal);
+  const count = resolvedTotal === null ? 0 : Math.max(0, Math.min(limit, resolvedTotal - offset));
   const idQuery = useReadContracts({
     allowFailure: true,
     contracts: Array.from({ length: count }, (_, index) => ({
@@ -294,7 +496,7 @@ export function useOwnedNames(
       functionName: "tokenOfOwnerByIndex" as const,
       args: [account ?? zeroAddress, BigInt(offset + index)] as const,
     })),
-    query: { enabled: enabled && account !== undefined && count > 0 },
+    query: { enabled: readEnabled && count > 0 },
   });
   const tokenIds = (idQuery.data ?? [])
     .map((item) => successful<bigint>(item))
@@ -307,25 +509,81 @@ export function useOwnedNames(
       { ...contract, functionName: "expiresAt" as const, args: [tokenId] as const },
       { ...contract, functionName: "listings" as const, args: [tokenId] as const },
     ]),
-    query: { enabled: enabled && tokenIds.length > 0 },
+    query: { enabled: readEnabled && tokenIds.length > 0 },
   });
-
-  const names: OwnedName[] = tokenIds.map((tokenId, index) => {
-    const offset = index * 4;
-    return {
-      tokenId,
-      fullName: successful<string>(detailsQuery.data?.[offset]) ?? `#${tokenId}`,
-      status: (successful<number>(detailsQuery.data?.[offset + 1]) ?? NAME_STATUS.UNREGISTERED) as NameStatusValue,
-      expiresAt: successful<bigint>(detailsQuery.data?.[offset + 2]) ?? 0n,
-      listing: normalizeListing(successful<NameListing | readonly unknown[]>(detailsQuery.data?.[offset + 3])),
-    };
-  });
+  const balanceValuePending = readEnabled
+    && resolvedTotal === null
+    && (balanceQuery.isLoading || balanceQuery.isFetching);
+  const idValuesComplete = tokenIds.length === count;
+  const idValuesPending = readEnabled
+    && count > 0
+    && !idValuesComplete
+    && (idQuery.isLoading || idQuery.isFetching);
+  const decodedNames = idValuesComplete ? decodeOwnedNames(tokenIds, detailsQuery.data) : null;
+  const detailValuesPending = readEnabled
+    && tokenIds.length > 0
+    && decodedNames === null
+    && (detailsQuery.isLoading || detailsQuery.isFetching);
+  const idError = multicallReadError(
+    "Owned name enumeration",
+    idQuery.data,
+    Array.from({ length: count }, (_, index) => index),
+    readEnabled && count > 0 && !idQuery.isLoading && !idQuery.isFetching && !idQuery.isError,
+  );
+  const detailError = multicallReadError(
+    "Owned name details",
+    detailsQuery.data,
+    Array.from({ length: tokenIds.length * 4 }, (_, index) => index),
+    readEnabled
+      && tokenIds.length > 0
+      && !detailsQuery.isLoading
+      && !detailsQuery.isFetching
+      && !detailsQuery.isError,
+  );
+  const balanceValueError = readEnabled
+    && !balanceQuery.isLoading
+    && !balanceQuery.isFetching
+    && !balanceQuery.isError
+    && resolvedTotal === null
+      ? new Error("Owned name balance did not return a safe integer value.")
+      : null;
+  const idValueError = readEnabled
+    && count > 0
+    && !idQuery.isLoading
+    && !idQuery.isFetching
+    && !idQuery.isError
+    && !idValuesComplete
+      ? new Error("Owned name enumeration returned an incomplete token page.")
+      : null;
+  const detailValueError = readEnabled
+    && tokenIds.length > 0
+    && !detailsQuery.isLoading
+    && !detailsQuery.isFetching
+    && !detailsQuery.isError
+    && decodedNames === null
+      ? new Error("Owned name details returned incomplete or invalid values.")
+      : null;
+  const partialError = balanceValueError ?? idError ?? idValueError ?? detailError ?? detailValueError;
+  const isLoading = balanceQuery.isLoading
+    || idQuery.isLoading
+    || detailsQuery.isLoading
+    || balanceValuePending
+    || idValuesPending
+    || detailValuesPending;
+  const names = balanceQuery.isError
+    || idQuery.isError
+    || detailsQuery.isError
+    || partialError
+    || isLoading
+      ? []
+      : decodedNames ?? [];
 
   return {
     names,
-    isLoading: balanceQuery.isLoading || idQuery.isLoading || detailsQuery.isLoading,
-    error: balanceQuery.error ?? idQuery.error ?? detailsQuery.error,
-    total,
+    isLoading,
+    error: balanceQuery.error ?? idQuery.error ?? detailsQuery.error ?? partialError,
+    isError: balanceQuery.isError || idQuery.isError || detailsQuery.isError || partialError !== null,
+    total: resolvedTotal,
     offset,
     limit,
   };
@@ -341,11 +599,20 @@ export function useAccountBalances(account: Address | undefined) {
     ],
     query: { enabled: enabled && account !== undefined },
   });
+  const partialError = multicallReadError(
+    "Account balances",
+    query.data,
+    [0, 1, 2],
+    enabled && account !== undefined && !query.isLoading && !query.isError,
+  );
+  const unavailable = query.isError || partialError !== null;
   return {
     ...query,
-    referralBalance: successful<bigint>(query.data?.[0]) ?? 0n,
-    sellerBalance: successful<bigint>(query.data?.[1]) ?? 0n,
-    primaryName: successful<string>(query.data?.[2]) ?? "",
+    error: query.error ?? partialError,
+    isError: query.isError || partialError !== null,
+    referralBalance: unavailable ? null : successful<bigint>(query.data?.[0]) ?? null,
+    sellerBalance: unavailable ? null : successful<bigint>(query.data?.[1]) ?? null,
+    primaryName: unavailable ? null : successful<string>(query.data?.[2]) ?? null,
   };
 }
 

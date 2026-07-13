@@ -72,6 +72,7 @@ export type ProtocolHealth = {
   settlementBalance: bigint;
   protectedLiability: bigint;
   solvent: boolean;
+  blockNumber: bigint;
 };
 
 export type ActiveMarketListing = {

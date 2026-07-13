@@ -43,6 +43,12 @@ export function SiteFooter() {
           <a href="/llms.txt">
             <span>llms.txt</span><ArrowUpRight size={15} aria-hidden="true" />
           </a>
+          <Link href="/security">
+            <span>Security</span><ArrowUpRight size={15} aria-hidden="true" />
+          </Link>
+          <Link href="/privacy">
+            <span>Privacy</span><ArrowUpRight size={15} aria-hidden="true" />
+          </Link>
         </nav>
       </div>
       <div className={styles.disclaimer}>

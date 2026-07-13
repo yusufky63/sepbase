@@ -1,0 +1,103 @@
+.boundary {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--grid-gutter);
+  border-block: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.boundary span,
+.boundary p {
+  max-width: 64ch;
+}
+
+.boundary button {
+  width: fit-content;
+}
+
+.record {
+  width: min(100%, var(--content-max));
+  margin-inline: auto;
+}
+
+.record h1 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: .9;
+}
+
+.record a {
+  width: fit-content;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.recordGrid,
+.textRecords dl {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+  border-left: 1px solid var(--line);
+}
+
+.recordGrid > div,
+.textRecords dl > div {
+  min-width: 0;
+  min-height: 88px;
+  padding: var(--space-3);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.recordGrid dt,
+.textRecords dt,
+.textRecords > strong {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.recordGrid dd,
+.textRecords dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.recordGrid code {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.textRecords {
+  width: 100%;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.textRecords dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.textRecords p {
+  margin: 0;
+  color: var(--muted);
+}
+
+@media (max-width: 720px) {
+  .recordGrid,
+  .textRecords dl {
+    grid-template-columns: 1fr;
+  }
+
+  .record h1 {
+    font-size: var(--text-2xl);
+  }
+}

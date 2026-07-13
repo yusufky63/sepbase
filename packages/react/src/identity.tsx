@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { getAddress, isAddress } from "viem";
-import { useSepbaseIdentity } from "./provider";
+import { useSepbaseIdentity } from "./provider.js";
 
 export type SepbaseIdentityProps = {
   address: string;

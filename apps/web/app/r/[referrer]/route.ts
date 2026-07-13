@@ -1,7 +1,7 @@
 import { getAddress, isAddress, zeroAddress } from "viem";
 import { NextResponse } from "next/server";
 import { projectConfig } from "@/config/project.config";
-import { referralCookieName } from "@/lib/referrals";
+import { referralAttributionCookieName } from "@/lib/referrals";
 
 export async function GET(request: Request, context: { params: Promise<{ referrer: string }> }) {
   const { referrer } = await context.params;
@@ -9,7 +9,7 @@ export async function GET(request: Request, context: { params: Promise<{ referre
     return new NextResponse("Invalid referral address.", { status: 400 });
   }
   const response = NextResponse.redirect(new URL("/", request.url), 307);
-  response.cookies.set(referralCookieName, getAddress(referrer), {
+  response.cookies.set(referralAttributionCookieName, getAddress(referrer), {
     maxAge: projectConfig.referrals.attributionDays * 86_400,
     path: "/",
     sameSite: "lax",

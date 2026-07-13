@@ -96,6 +96,10 @@ export const projectConfig = projectConfigSchema.parse({
     wellKnownPath: "/.well-known/chain-name-service.json",
     marketApiPath: "/api/market",
     openApiPath: "/api/openapi.json",
+    agentManifestPath: "/.well-known/chain-name-agent.json",
+    mcpPath: "/api/mcp",
+    x402QuotePath: "/api/x402/registration/quote",
+    x402RegisterPath: "/api/x402/registration",
   },
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   links: {

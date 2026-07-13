@@ -1,0 +1,95 @@
+{
+  "schema": "sepbase.v3-migration-dry-run.v1",
+  "proofModel": "live-onchain-read",
+  "source": {
+    "chainId": 84532,
+    "contract": "0xe000de3efe798Aa4F834fd952Bef35BAE1B16945",
+    "contractVersion": "2.0.0",
+    "blockNumber": "44054186",
+    "blockHash": "0xa52c53af4281caf1413a34037cc5bfad47f743872e751a6180c119268d104833",
+    "blockTimestamp": "1783876660"
+  },
+  "target": {
+    "suiteVersion": "3.0.0",
+    "suffix": "sepbase",
+    "normalizationProfileId": "ensip15:@adraffy/ens-normalize@1.11.1:unicode-17.0.0:cldr-47",
+    "normalizationProfileHash": "0xdce87d511a5ad02a3ee50057259547c744098a0da6207c4dcea41f2a7cbea638",
+    "normalizationFixtureSha256": "d912fe8e376a22b9e67483afc2fa8fac2cc42244ca4993046843d6693d8c7e49"
+  },
+  "summary": {
+    "totalEnumerated": 6,
+    "eligible": 6,
+    "active": 6,
+    "grace": 0,
+    "released": 0
+  },
+  "records": [
+    {
+      "label": "a",
+      "fullName": "a.sepbase",
+      "tokenId": "26577169521080041468048461869858263792019104904445492498349147139819994214859",
+      "labelHash": "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb",
+      "v3Node": "0x267fe2ce273e2b50e068ff1227690148cce7a71f5f8727642d983810875c33cb",
+      "owner": "0x78de409a6306550882328E2a67160471368387FF",
+      "resolvedAddress": "0x78de409a6306550882328E2a67160471368387FF",
+      "status": "active",
+      "expiresAt": "1878402108"
+    },
+    {
+      "label": "codexsha",
+      "fullName": "codexsha.sepbase",
+      "tokenId": "84504946328386188611723152296365532549263112097188551907126558920025824285248",
+      "labelHash": "0xbad41acad8fca06c4913952874e8e2f93a6ce9cdddd7173ce1dc5b87a833d240",
+      "v3Node": "0x8a36a666706759fe6a9379e627a9a6e24a9a009d293afd801e09657ee5bd7a14",
+      "owner": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
+      "resolvedAddress": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
+      "status": "active",
+      "expiresAt": "1878417750"
+    },
+    {
+      "label": "refer-e8edf057",
+      "fullName": "refer-e8edf057.sepbase",
+      "tokenId": "98950136699718723831999592374114903042708005881558805219465473820876023048490",
+      "labelHash": "0xdac3caec945f3ef70512f1a13d40a907f1969a86e8442040bb2ee9c13f08a92a",
+      "v3Node": "0x9c28178abe4d0da3d68a4ba6ce6d2fedbad3caf325da656828239e6251d2ad29",
+      "owner": "0x2626B1dd061a4D18838575FD0832b73347712c24",
+      "resolvedAddress": "0x2626B1dd061a4D18838575FD0832b73347712c24",
+      "status": "active",
+      "expiresAt": "1815328632"
+    },
+    {
+      "label": "smoke-e8edf057",
+      "fullName": "smoke-e8edf057.sepbase",
+      "tokenId": "73003449765358929671356647647208753075992746062623788308072407923707605957833",
+      "labelHash": "0xa1667d00e92354025819cf84a7498d02d662ca4f43a66f56b59ed415fff03cc9",
+      "v3Node": "0x0c64457ea08731478cca8a5aabc94bcbbc134f74f51a3b560da180df3d3b3c72",
+      "owner": "0x2626B1dd061a4D18838575FD0832b73347712c24",
+      "resolvedAddress": "0x2626B1dd061a4D18838575FD0832b73347712c24",
+      "status": "active",
+      "expiresAt": "1846864602"
+    },
+    {
+      "label": "smoke-f5ab9b34",
+      "fullName": "smoke-f5ab9b34.sepbase",
+      "tokenId": "93428934334932272578415126397845864945784672430321222726078753490180788415397",
+      "labelHash": "0xce8ee722df7e3be70e6ec32a042abe50429831e8ca6b26d8ebb094de27db6ba5",
+      "v3Node": "0x363b3eb6618600b8ce90cd207b7f4e19b37024713aa7b4bfce717c4358894d4b",
+      "owner": "0x78de409a6306550882328E2a67160471368387FF",
+      "resolvedAddress": "0x78de409a6306550882328E2a67160471368387FF",
+      "status": "active",
+      "expiresAt": "1815328266"
+    },
+    {
+      "label": "zdfg",
+      "fullName": "zdfg.sepbase",
+      "tokenId": "3885535082308229306000640601334980847637196504399240831395960541854853822582",
+      "labelHash": "0x0897228a42958bf88666f92e9d1dfd12f54423f219db577833262715cb20f876",
+      "v3Node": "0xfbaf4b993c746f24e7c79467f79d6d64427fc1b10a153e76809424c378806716",
+      "owner": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
+      "resolvedAddress": "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac",
+      "status": "active",
+      "expiresAt": "1815355150"
+    }
+  ],
+  "reportSha256": "492ab72338895dc101b3ce4b0b4bb1971d7521fd9797c28ddb20882ded5b4551"
+}

@@ -1,70 +1,103 @@
 # Production Readiness Report
 
-Tarih: 2026-07-12
+Tarih: 2026-07-13
 
-## Sonuc
+## V3 production target kararı
 
-SEPBASE, Base Sepolia test release'i icin hazirdir. V2 kontrati canli, source-verified ve gercek coklu hesap write smoke'undan gecmistir. HTTPS web release'i `https://sepbase.vercel.app` adresinde canlidir; web, SDK source, ABI, manifest, OpenAPI ve read-only API ayni deployment'i kullanir.
+V3; immutable EIP-712 attestor'lı ENSIP-15 canonicalization, altı authority/state kontratı + bounded read-only MarketLens'ten oluşan yedi-adres no-proxy release, commit-reveal, fixed+offer+auction marketplace, unified refund liabilities, public npm packages, paid x402 V2, migration, multisig/audit ve observability hedefler. **Source veya belge varlığı bunları acceptance-complete, deploy edilmiş ya da live yapmaz.** `docs/V3_ACCEPTANCE_MATRIX.md` içinde seçili local contract satırları artık `PASS` kanıtı taşır; browser, Base Sepolia, hosted, package-publication, audit/soak ve paid-execution runtime kapıları hâlâ `NOT RUN` durumundadır.
 
-Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uygulama veya test hatasi degil; metadata URI cutover, authenticated RPC, WalletConnect, SDK package release, multisig operasyonu ve bagimsiz audit gibi release gate'lerinin tamamlanmamis olmasidir.
+| V3 gate | Bugünkü durum |
+|---|---|
+| ENSIP-15/ENS conformance corpus | Source PASS; deployment/cross-service runtime pending |
+| Immutable EIP-712 attestor/domain/expiry/replacement drill | Contract/source PASS; immutable signer provisioning and incident drill pending |
+| Seven addresses: six authority/state contracts + bounded read-only MarketLens | Source/size/tests PASS; Base Sepolia deployment pending |
+| One-time registry suite wiring | Source/tests PASS; deployed binding pending |
+| Commit-reveal | Source/tests PASS; funded browser/Base Sepolia E2E pending |
+| Offers/auctions/unified refund liabilities | Source/fuzz/invariant tests PASS; funded deployed E2E pending |
+| Migration controller/dry run | Source and fixed-block 6/6 eligibility dry run PASS; deployed claim pending |
+| Public npm SDK/React/MCP | Packed clean-consumer smoke PASS; `@sepbase` scope/publication pending |
+| Official durable paid x402 V2 | Activation-gated source PASS; external services/funded E2E pending |
+| Multisig + independent audit | Pending |
+| Observability/incident drill | Pending |
+| Final metadata/discovery cutover | Pending |
 
-## Hazir olanlar
+Canlı v2'nin test/smoke kanıtı bu v3 gate'lerini kapatmaz.
 
-| Alan | Durum | Kanit |
+## Sonuç
+
+Bu bölüm v2 historical/current durumu anlatır: SEPBASE v2 kontratı Base Sepolia üzerinde canlı, source-verified ve gerçek çoklu hesap write smoke'undan geçmiştir. Mevcut HTTPS web release'i `https://sepbase.vercel.app` adresinde çalışır; mevcut web, ABI, deployment manifesti ve read-only API aynı v2 registry'yi kullanır.
+
+Repository'deki yeni agent entegrasyonu **source-ready ve protected Preview üzerinde doğrulanmış, fakat production-pending** durumundadır. 13 Temmuz 2026 denetiminde production alias aşağıdaki yeni URL'lerde hâlâ `404` döndürmüştür:
+
+```text
+/.well-known/chain-name-agent.json
+/api/mcp
+/api/x402/registration/quote
+```
+
+Bu nedenle agent discovery, MCP veya x402 quote production alias'a yeniden deploy edilip final-origin smoke tamamlanmadan "live" olarak tanımlanamaz.
+
+Yeni kaynak `dpl_2pEWFeWsqSestVf7n4xkZwLicAci` Preview adayında `Ready` durumuna gelmiştir. Bu exact artifact migration-aware SDK/MCP/account UI değişikliklerini içerir. Deployment Protection normal anonim smoke'u `302` ile durdururken, Vercel-authenticated istekler `/me`, schema-4 discovery, OpenAPI `1.7.0`, `llms.txt`, origin-less server-client üzerinden 39-tool V3 MCP (account-scoped migration eligibility dahil), V3 draft ve beklenen V3/x402 fail-closed yanıtlarını doğrulamıştır; deployment error log sorgusu sıfır kayıt döndürmüştür. Preview `NEXT_PUBLIC_SITE_URL`, server-only authenticated `RPC_URL` ve quote HMAC taşımadığı için canonical/OpenAPI origin `http://localhost:3000` değerine düşer ve ücretsiz quote `QUOTE_AUTHENTICATION_NOT_CONFIGURED` döner. Bu nedenle aday production'a terfi ettirilmemiş; metadata origin, V3 deployment ve paid runtime kapıları açık bırakılmamıştır. `pnpm hosted:check` final-origin koşullarını tek komutta zorunlu kılar.
+
+x402 kaynak durumu **activation-gated**'dir. Official x402 `2.18.0` adapter, encrypted external CAS, payment/authorization uniqueness, server-side secret plan persistence, managed signer, on-chain calldata/receipt/post-state doğrulaması ve Workflow `4.6.0` continuation route'a bağlanmıştır. Buna rağmen mevcut V3 manifest address-free draft olduğu ve gerçek facilitator/store/signer/attestor/keeper altyapısı ile funded E2E bulunmadığı için hosted paid availability hâlâ `false` ve route `503` kalır. Environment değerlerinin varlığı tek başına readiness sağlamaz.
+
+V3 Base Sepolia target settlement/payment profile `eip155:84532`, Circle test USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`, 6 decimals'dır. Aynı asset immutable protocol settlement ve x402 payment tarafında kullanılmadan paid execution açılamaz. Gas test ETH ile ayrı kalır; test USDC/test ETH'ye fiat değeri atanmaz. Canlı V2 native profile değişmez.
+
+Değer taşıyan production/mainnet release'i hazır değildir. Metadata URI cutover, authenticated RPC, WalletConnect, package publication, multisig operasyonu, hosted rate limiting/monitoring ve bağımsız audit tamamlanmalıdır.
+
+## Durum matrisi
+
+| Alan | Durum | Kanıt / sınır |
 |---|---|---|
-| Contract v2 | Hazir | Base Sepolia `0xe000de3efe798Aa4F834fd952Bef35BAE1B16945`, verified source |
-| Name lifecycle | Hazir | 1-32 karakter, premium tiers, register/renew/release/grace testleri |
-| Referral | Hazir | On-chain attribution, expected BPS guard, pull-payment claim smoke |
-| Marketplace | Hazir | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
-| Solvency | Hazir | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
-| UI | Hazir | Bes route, responsive, transaction completion, account tabs, wallet-in-modal |
-| Hosted testnet web | Hazir | Private GitHub `main` + Vercel production alias `sepbase.vercel.app` |
-| Home platform ozeti | Hazir | `totalSupply` + registration/market/payment state; global Multicall cache'ini paylasir, polling eklemez |
-| Fiat display mimarisi | Hazir | Protocol `referenceFiat` testnette kapali; UI market reference cache'li ve settlement guard'larindan ayri |
-| Entegrasyon | Hazir | CORS-enabled manifest/ABI/API, OpenAPI, `llms.txt`, SDK source |
-| HTTP/SEO hardening | Hazir | Hata yanitlari `no-store`, public artifact cache/CORS, gercek 404, robots, sitemap ve guvenlik header'lari |
-| Release gate | Hazir | `pnpm release:check` final HTTPS, server RPC, WalletConnect ve metadata-origin tutarliligini zorunlu kilar |
-| Testnet operasyonu | Hazir | Deployment check ve Base Sepolia multi-account smoke |
+| Contract v2 | Hazır ve canlı | Base Sepolia `0xe000de3efe798Aa4F834fd952Bef35BAE1B16945`, verified source |
+| Name lifecycle | Hazır | 1-32 karakter, premium tiers, register/renew/release/grace testleri |
+| Referral | Hazır | On-chain attribution, expected BPS guard, pull-payment claim smoke |
+| Marketplace | Hazır | Fixed price, expected price/fee guard, list/cancel/buy/seller claim smoke |
+| Solvency | Hazır | Native + 6-decimal ERC-20, fee-on-transfer reject, invariant testleri |
+| Existing hosted web | Preview current / production stale | Current source is `Ready` on protected Preview `dpl_2pEWFeWsqSestVf7n4xkZwLicAci`; Preview canonical origin env is missing and production was not promoted |
+| Agent discovery + MCP | Preview-verified / production-pending | Preview exposes schema-4 discovery, OpenAPI `1.7.0`, `llms.txt`, origin-less 39-tool V3 MCP and fail-closed V3/x402 routes; canonical-origin full smoke and production cutover remain |
+| x402 quote | Activation-config pending | Preview paid/status routes fail closed correctly, but the free quote is `503 QUOTE_AUTHENTICATION_NOT_CONFIGURED` until server-only quote authentication and authenticated `RPC_URL` are provisioned |
+| x402 paid execution | Source-ready / activation-gated | Runtime wiring ve local failure/replay tests mevcut; live V3, external services, funded E2E ve audit yok |
+| Entegrasyon | Kısmen hazır | Manifest/ABI/API/OpenAPI/`llms.txt` mevcut; package publication ve hosted agent cutover bekliyor |
+| CI tanımı | Source-ready | SHA-pinned GitHub Actions workflow mevcut; commit/push, başarılı run ve branch protection ayrıca doğrulanmalı |
+| Release gate | Hazır | `pnpm release:check` environment/deployment girdilerini; `pnpm hosted:check` final-origin page/manifest/ABI/OpenAPI/llms/MCP/x402 parity'sini kontrol eder |
 
-## Production oncesi zorunlu
+## Production öncesi zorunlu
 
-1. **Metadata URI cutover:** Kontrattaki localhost metadata base URI final HTTPS API'ye admin islemiyle alinmali; manifest yeniden uretilmeli ve `pnpm deployment:check` tekrar kosmali.
-2. **Authenticated RPC:** Kod server-only `RPC_URL` ile public browser RPC'sini ayirir; hosted ortamda rate limit ve availability SLA'si olan provider degeri halen tanimlanmalidir. Secret provider URL'si `NEXT_PUBLIC_*` icine konmamalidir.
-3. **WalletConnect:** Production mobile/QR coverage icin project ID eklenmeli ve gercek cihaz smoke'u kosmali.
-4. **Package release:** `@sepbase/sdk` ve `@sepbase/react` semver, provenance ve changelog ile npm'e yayinlanmali. Bugun iki package da workspace/source olarak hazirdir.
-5. **Yetki operasyonu:** Owner ve treasury deger tasiyan release'te multisig adreslerine alinmali; raw deployer key rutin admin araci olarak kullanilmamali.
-6. **Bagimsiz audit:** Mainnet veya ekonomik deger oncesi kontrat ve deployment/admin runbook'u bagimsiz guvenlik incelemesinden gecmeli.
-7. **Hosted write smoke:** Final domain uzerinde wallet connect, register, referral deep link, list/buy/claim ve metadata cutover sonrasi cross-origin SDK akisi yeniden kosmali.
+1. **Metadata URI cutover:** Kontrattaki `http://localhost:3000/api/metadata/` değeri final HTTPS API'ye owner işlemiyle alınmalı; manifest yeniden üretilmeli ve `pnpm deployment:check` tekrar çalışmalıdır.
+2. **Authenticated RPC:** Hosted ortamda rate-limit ve availability hedefi olan server-only `RPC_URL` tanımlanmalıdır. Secret provider URL'si hiçbir `NEXT_PUBLIC_*`, manifest, hata veya log alanına yazılmamalıdır.
+3. **WalletConnect:** Production mobile/QR coverage için project ID eklenmeli ve gerçek iOS/Android wallet smoke'u çalışmalıdır.
+4. **Agent hosted cutover:** Source değişiklikleri Vercel production alias'a deploy edilmeli; agent manifest `200`, MCP initialize/tool list, ücretsiz x402 quote ve fail-closed paid `POST` final origin üzerinde doğrulanmalıdır.
+5. **MCP edge güvenliği:** Streamable HTTP Origin doğrulaması, bounded body/timeouts, rate limiting ve abuse monitoring production trafiğine açılmadan tamamlanmalıdır.
+6. **Package release:** `@sepbase/sdk`, `@sepbase/react` ve `@sepbase/mcp`; README, license, repository metadata, semver, changelog, signed tag ve npm provenance ile yayınlanmalıdır. Bugün package'lar yalnız workspace/source kullanımına hazırdır.
+7. **Yetki operasyonu:** Owner ve treasury değer taşıyan release'te reviewed multisig adreslerine alınmalı; raw deployer key rutin admin aracı olmamalıdır.
+8. **Bağımsız audit:** Mainnet veya ekonomik değer öncesi kontrat, deployment/admin runbook'u ve agent/payment trust boundary bağımsız güvenlik incelemesinden geçmelidir.
+9. **Hosted write smoke:** Metadata cutover sonrasında final domain üzerinde wallet connect, register, referral deep link, list/buy/claim ve cross-origin SDK akışı yeniden çalıştırılmalıdır.
 
-Server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tamamlanana kadar `pnpm release:check` bilerek basarisiz olur. HTTPS site origin Vercel production ortaminda tamamlanmistir; lokal `.env` gelistirme icin localhost kullanmaya devam eder.
+Server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tamamlanana kadar `pnpm release:check` bilerek başarısız olur. `X402_REGISTRATION_ENABLED=true` de bu release'te ayrıca başarısızdır; paid execution environment ile açılamaz.
 
-## Olsa daha iyi olurdu
+## Mevcut otomasyon ve sonraki kalite adımları
 
-### P1, release kalitesi
+SHA-pinned CI workflow frozen install, project/integration artifact validation, build, lint, typecheck, test, production dependency audit ve Foundry fmt/build/size/test adımlarını tanımlar. Canlı deployment check opt-in'dir; funded write smoke CI içinde otomatik çalışmaz. Workflow ancak source commit edilip GitHub'a push edildikten ve başarılı run görüldükten sonra aktif kanıt sayılır.
 
-1. **CI release gate:** Her pull request'te zorunlu Foundry/web testleri, contract size diff, ABI/manifest checksum diff ve production build calissin.
-2. **Observability:** RPC hata orani, API latency, failed simulation, stale manifest ve solvency read'leri icin privacy-preserving metrik/alert eklenmeli.
-3. **Wallet coverage:** WalletConnect project ID eklenip QR/mobile deep-link akislari gercek iOS ve Android cuzdanlariyla test edilmeli.
-4. **Admin runbook:** Pause, price update, fee update, metadata URI, treasury withdrawal ve ownership transfer islemleri icin multisig checklist'i ve rollback karari dokumante edilmeli.
-5. **Package trust:** SDK release'ine signed tag, npm provenance, generated API reference ve compatibility matrix eklenmeli.
+Önerilen sonraki adımlar:
 
-### P2, urun gelisimi
+1. CI workflow'u protected branch için required check yap; contract-size ve generated artifact diff'lerini review'da görünür tut.
+2. RPC/API/MCP hata oranı, latency, failed simulation, stale manifest ve solvency reads için privacy-preserving metric/alert ekle.
+3. Pause, price/fee update, metadata URI, treasury withdrawal ve ownership transfer için multisig runbook ve rollback kararı yayınla.
+4. Name sayfaları için label-specific Open Graph görseli ve canonical metadata doğrulaması ekle.
+5. Public API talebi RPC sınırını aşarsa önce cache/rate policy ölç; indexer/read replica'yı yalnız ölçülebilir ihtiyaçla ayrı servis olarak değerlendir.
 
-1. **Activity view:** Name bazli register/renew/transfer/list/sale gecmisi eklenebilir. Trafik buyuyene kadar RPC event pagination kullanilmali; indexer ancak olculebilir ihtiyac olursa eklenmeli.
-2. **Watchlist:** Kullaniciya ait olmayan adlari tarayici-local favorilere ekleme ve expiry hatirlatma eklenebilir; wallet profiline gizli veri yazilmamali.
-3. **Shareable profile:** Name sayfasi icin richer Open Graph metadata ve deterministic sosyal paylasim karti eklenebilir.
-4. **Production fiat adapter:** Gercek production profilde tarihli fiat snapshot'ini guvenli release/config sureciyle yenileyen adapter eklenebilir. Fiat degeri hicbir zaman settlement veya guard hesabi olmamali.
-5. **Read scale:** Public API talebi RPC limitlerini asarsa event indexer/read replica ayri bir servis olarak eklenebilir; kontrat dogruluk kaynagi olmaya devam etmeli.
+## Canlı v2'ye eklenmemesi gerekenler ve v3 ayrımı
 
-## V2'ye eklenmemesi gerekenler
+- Contract runtime boyutu `24,502 B` ve EIP-170 marjı yalnızca `74 B`'dir. Yeni on-chain özellik v2'ye eklenmemeli; kodu bölünmüş yeni major contract version tasarlanmalıdır.
+- Auction, offer, subdomain, cross-chain routing, proxy upgrade ve harici name-service entegrasyonu mevcut v2 ürün sözleşmesine eklenmemelidir. Onaylı v3 target içindeki offer/auction ve ENS uyumluluğu; altı authority/state kontratı ile bounded read-only MarketLens'ten oluşan yedi-adres no-proxy release olarak teslim edilmelidir.
+- Testnet ETH için sahte USD değeri veya oracle olmayan bağlayıcı "canlı fiyat" gösterilmemelidir.
+- V2 core dApp'e database, indexer, queue veya microservice eklenmemelidir. Onaylı ve implementation'ı devam eden v3 paid-x402 target için durable idempotency yalnız ayrı ve denetlenmiş execution boundary içinde kullanılabilir.
 
-- Contract runtime boyutu `24,502 B` ve EIP-170 marji yalnizca `74 B`'dir. Yeni on-chain ozellik v2'ye eklenmemeli; kod bolunmus yeni bir major contract version'i tasarlanmalidir.
-- Auction, offer, subdomain, cross-chain routing, proxy upgrade ve harici name-service entegrasyonu mevcut urun sozlesmesine eklenmemelidir.
-- Testnet ETH icin sahte USD degeri veya oracle olmayan "canli fiyat" gosterilmemelidir.
-- Indexer, database veya queue olculebilir ihtiyac olmadan mimariye eklenmemelidir.
+## Bilinen release notları
 
-## Bilinen release notlari
-
-- V1 deployment canli kalir fakat v1 isimleri v2'ye migrate edilmemistir. Current app ve manifest yalnizca v2'yi cozer.
-- Test smoke isimleri zincirde public test verisi olarak kalir; private key veya secret artifact uretilmez.
-- Foundry timestamp lint uyarilari expiration/grace mantiginin bilincli `block.timestamp` kullanimidir.
+- V1 deployment canlı kalır fakat v1 isimleri v2'ye migrate edilmemiştir. Current app ve manifest yalnızca v2'yi çözer.
+- Test smoke isimleri zincirde public test verisi olarak kalır; private key veya secret artifact üretilmez.
+- Foundry timestamp lint uyarıları expiration/grace mantığının bilinçli `block.timestamp` kullanımıdır.
+- Source-ready bir route'un repository'de bulunması hosted availability kanıtı değildir; her release'te final-origin artifact ve endpoint smoke tekrarlanır.

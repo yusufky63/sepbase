@@ -9,7 +9,7 @@ export function ProtocolBanner() {
   const health = useProtocolHealth();
   const deployment = useDeploymentConsistency();
   if (!protocolDeployed || health.isLoading || deployment.isLoading) return null;
-  if (!deployment.ready) {
+  if (!deployment.ready || health.isError || health.solvent === null) {
     return (
       <div className={styles.banner} role="alert">
         <div>
@@ -20,7 +20,7 @@ export function ProtocolBanner() {
       </div>
     );
   }
-  if (health.solvent) return null;
+  if (health.solvent === true) return null;
   return (
     <div className={styles.banner} role="alert">
       <div>

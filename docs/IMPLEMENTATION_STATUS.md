@@ -2,9 +2,47 @@
 
 Last updated: 2026-07-12
 
+## V3 target status
+
+**V3 source implementation now exists and its local contract/integration baseline is green, and its reviewed 2-of-2 governance Safe is deployed, but the seven-contract suite is not acceptance-complete, deployed, hosted, audited or production-ready.** The new product decision supersedes the former no-ENS/no-Unicode/no-commit-reveal/no-offer/no-auction and permanently quote-only constraints for v3. It does not change the current v2 bytecode or make a paid route live through source code or documentation alone.
+
+Binding v3 requirements now cover:
+
+- seven-address no-proxy release: six authority/state contracts plus bounded read-only MarketLens, with four-argument one-time locked registry wiring and separately verified helper bindings;
+- ENS-compatible registry/resolver discovery, text records, bounded ENSIP-10/ENSIP-23 simple resolution and forward-confirmed reverse; first profile has no contenthash/CCIP-Read/smart-multicall/full-official-Universal-Resolver claim;
+- exact-pinned ENSIP-15 Unicode canonicalization shared by web/SDK/API/MCP plus immutable EIP-712 attestor verification in the controller;
+- commit-reveal registration;
+- fixed listings plus escrowed offers and English auctions;
+- unified referral/seller/offer/bid/x402 refund liabilities and solvency;
+- public npm SDK/React/MCP packages with compiled runnable examples;
+- official x402 V2 paid execution targeting manifest-verified Base Sepolia Circle test USDC (`eip155:84532`, `0x036CbD53842c5426634e7929541eC2318f3dCF7e`, 6 decimals), with separate test-ETH gas, no testnet fiat value, facilitator, durable idempotency/workflow and limited managed keeper;
+- v2→v3 migration, final HTTPS metadata/discovery cutover, multisig, audit and observability.
+
+Current v3 checklist:
+
+- [x] V3 requirements override recorded in `PROJECT_SPEC.md`.
+- [x] Target architecture, user guide, migration plan, acceptance matrix and evidence format documented.
+- [x] V3 threat model and exact-pinned ENSIP-15 fixture corpus documented and locally validated; complete web/API/MCP/controller conformance evidence remains pending where the acceptance matrix says `NOT RUN`.
+- [x] Seven V3 contract implementations are present in source (six authority/state + MarketLens), with immutable attestor logic, four-argument suite wiring and local Foundry coverage: 62 V3 tests pass within the 91/91 combined contract run. This is source evidence, not deployment or full acceptance.
+- [x] Fixed listings, offers, auctions, MarketLens and unified controller/marketplace accounting are implemented and locally unit/edge/invariant-tested; uncovered races and browser/Base Sepolia rows remain pending.
+- [x] The migration contract has local eligible-claim, owner/window guard, inclusive expiry-boundary and pre-window reservation-race tests. A fixed-block live-v2 eligibility preflight is reproducible at block `44054186`; migration deployment, claim transactions and cutover evidence remain pending.
+- [x] Seven-module draft manifest/ABI artifacts, fail-closed artifact validation, V3 SDK, V3 read API routes and opt-in V3 MCP source are present and locally tested.
+- [x] Deterministic Safe 1.4.1 governance account `0x4f1D07EB3BbB6c8c24f96CD5E5A14e4d53Afa630` is deployed on Base Sepolia with the reviewed two owners and 2-of-2 threshold; transaction/block evidence is versioned under `evidence/governance/`. This is governance preparation, not a V3 suite deployment.
+- [x] V3 React provider/identity source and workspace SDK/Viem/Wagmi/React/MCP consumer fixture are present and typecheck locally.
+- [x] V3 browser registration source now persists the exact reveal material before the wallet send, journals the transaction hash before receipt reconciliation, recovers nullable-hash commitments from same-block on-chain reads, and derives readiness/pruning only from confirmed chain timestamps. V3 referral attribution uses a release/controller-scoped cookie with self-referral removal, explicit review/clear and post-reveal consumption. Focused web evidence: 31/31 registration/session/executor/referral tests plus scoped ESLint and web TypeScript checks pass; funded browser/Base Sepolia E2E remains pending.
+- [x] SDK/React/MCP are packed as real tarballs and installed into an isolated NodeNext consumer by `pnpm packages:smoke`; package export/runtime/type resolution passes outside the workspace.
+- [ ] Funded V3 browser-wallet completion, Cast/runtime example coverage, public-registry consumer smoke, and public npm releases with provenance.
+- [ ] Durable official x402 V2 service, facilitator integration and limited keeper.
+- [ ] Independent audit, remediation and Base Sepolia soak.
+- [ ] Final-origin metadata/discovery cutover, full E2E matrix and monitored release.
+
+Every unchecked item is pending. See `docs/V3_ACCEPTANCE_MATRIX.md`: only rows carrying an explicit `PASS <command/artifact>` have local evidence. V3 deployment, final-origin/browser, public npm, paid-x402 runtime, audit, soak and operations rows remain `NOT RUN`.
+
 ## Current phase
 
-The v2 Base Sepolia test release is implemented, deployed, source-verified, and exercised with a real multi-account write smoke. The web app is live at `https://sepbase.vercel.app`; the read-only API, manifest, ABI, OpenAPI, SDK/React package sources, referral flow, fixed-price marketplace, verified identity reads, and local renewal watch all target the same live registry. A live home-page platform summary reuses the global health Multicall without adding polling. The onchain metadata URI cutover and the remaining value-bearing release gates are still pending.
+The following is the **historical/current v2 state**, not v3 completion: the v2 Base Sepolia contract release is deployed, source-verified, and exercised with a real multi-account write smoke. Its metadata base URI was cut over on-chain from localhost to `https://sepbase.vercel.app/api/metadata/` in transaction `0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b`, then verified after five confirmations; evidence is versioned under `evidence/v2-metadata-cutover/`. The previous web release is live at `https://sepbase.vercel.app` and targets the same registry. Agent manifest schema v4 source now separates current-v2 `/api/mcp` from opt-in `/api/v3/mcp` and publishes x402 as `activation-gated`: the paid source runtime is wired, but the current address-free V3 draft and hosted alias remain unavailable. MCP protocol/Origin hardening, encrypted paid-plan preparation, SDK SSRF protections, accessibility work, and updated documentation in this branch are source-ready but are not yet deployed to that hosted alias. A separate web rollout and live endpoint smoke remain required. The remaining value-bearing release gates are still pending.
+
+Separately, the repository now contains the seven V3 Solidity implementations, generated per-module ABIs, an address-free `releaseStatus: "draft"` manifest, V3 SDK/API/MCP adapters and local tests. `pnpm artifacts:v3:check` validates seven modules and rejects nine drift/partial-release cases. None of this supplies V3 addresses, transaction receipts, source verification on Base Sepolia, final-origin parity, public package provenance or paid execution.
 
 Live contract: `0xe000de3efe798Aa4F834fd952Bef35BAE1B16945`, version `2.0.0`, deployment block `44011800`. No private deployment credential is present in public artifacts.
 
@@ -22,7 +60,35 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - Referral reward: `1000` BPS; marketplace fee: `0` BPS
 - Design: Modular Typography, black/white with configured Base Blue `#0000ff`, alternating left/right section headings, a structured sticky-bottom footer, restrained reveal motion, and reduced-motion support
 
+## Architecture Deviation
+
+### 2026-07-13 — Shared owner/treasury governance Safe
+
+The product owner selected one governance address for both V3 `owner` and `treasury`. The reviewed implementation uses a deterministic Safe 1.4.1 account with two owners and threshold two. The deploy/configurator EOA and the independent immutable normalization-attestor EOA are the two Safe signers, while the resulting Safe address, attestor address and one-time suite-configurator address remain distinct. Deployment preflight now rejects separate owner/treasury values, an unreviewed or weak-threshold Safe, and any authority collision. This reduces address sprawl without converting the single-use configurator or attestor into protocol owner authority.
+
+The selected configurator currently carries an EIP-7702 delegation designator. Deployment preflight does not treat arbitrary account code as an EOA: it accepts only the exact `0xef0100 || target` form, requires the target to be deployed and explicitly reviewed through configuration, and still requires the raw deployment credential to derive the configurator address. This exception recognizes delegated-EOA transaction semantics without silently approving an unknown smart-account implementation.
+
+### 2026-07-12 — V3 production target supersedes former V1 exclusions
+
+The product owner authorized a new major-version target. ENS/text/Unicode canonicalization, commit-reveal, offers/bids/auctions and production paid x402 are now in v3 scope. They use seven no-proxy addresses because the live v2 runtime has only 74 bytes of EIP-170 margin: six authority/state contracts plus bounded read-only MarketLens. Public resolver, bounded Universal Resolver helper and MarketLens are separate contracts; the lens is not authority or an indexer. Full ENSIP-15 tables remain off-chain under one exact profile; the controller verifies a short-lived EIP-712 statement from an immutable attestor, and each commitment binds its exact hash. V2 remains immutable historical state; migration is explicit and liabilities remain claimable on v2. The architecture and acceptance gates are defined in `PROJECT_SPEC.md` and the v3 documents under `docs/`.
+
+This deviation authorizes in-scope v3 implementation, Base Sepolia contract deployment, hosted cutover, public npm release, managed limited-keeper integration and paid-x402 testnet E2E/payment execution once their stated prerequisites are satisfied. It does not waive audit, multisig, facilitator, durable-store, secret-management, simulation, reconciliation, migration-proof or acceptance gates; missing resources must fail closed, and no operation may be documented as complete/live before transaction and hosted evidence exists.
+
+### 2026-07-12 — Agent interoperability and x402 quote boundary
+
+This subsection records the implemented v2 deviation. The product owner requested first-class AI-agent interoperability, a public MCP surface, and an x402 registration path after the original V1 scope was completed. It expanded the v2 integration layer beyond the original SDK/REST-only boundary, but it did not change the deployed `ChainNameService` contract or claim ENS compatibility.
+
+- MCP is a read-only adapter over the canonical manifest, SDK, HTTP API, and contract reads. It may return a fully scoped registration transaction plan, but it never stores a private key, signs, or broadcasts a user transaction.
+- The remote MCP endpoint uses stateless Streamable HTTP; the package also exposes stdio for local agent hosts. Tool results preserve the SDK's typed invalid-input, transport, deployment, and manifest-mismatch semantics.
+- x402 paid source is activation-gated and is not a hidden dependency of normal wallet registration or name resolution. The current V3 draft returns `503` before reading request/payment material; a paid-enabled live V3 manifest plus every external runtime gate is required for `402/202/200` behavior.
+- An x402 payment must be scoped to the manifest chain, contract, label, recipient, duration, referrer, expected amount, and expected referral BPS. Quotes expire quickly and are re-read before any keeper broadcast.
+- Any future production x402 implementation requires payment-identifier deduplication, durable order state, retry/reconciliation monitoring, a keeper spending limit, and a runbook for the rare case where protocol registration succeeds but payment settlement or the HTTP response fails.
+- No database or queue is introduced for the core dApp. A future separately reviewed paid handler may add a durable store only inside that execution boundary because paid write idempotency cannot be made reliable with serverless in-memory state.
+- ENS compatibility, subdomains, cross-chain resolution, and changes to the deployed v2 contract remain out of scope for v2. The subsequently approved v3 target supersedes the adapter-only restriction through a separate major-version design and audit; it does not backport those features to v2.
+
 ## Phase checklist
+
+The checklist below records v2 historical delivery. It must not be used as a v3 Definition of Done.
 
 - [x] Phase 0: repository and pinned toolchain
 - [x] Phase 1: contract and unit tests
@@ -39,32 +105,54 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - [x] Phase 10C: verified identity SDK/React adapter, renewal watch, and Blockscout BENS handoff
 - [x] Phase 10D: private GitHub source release and Vercel HTTPS testnet deployment
 - [ ] Phase 10E: metadata URI cutover, authenticated RPC, WalletConnect, multisig, and audit gates
+- [x] Phase 10F: source implementation for agent discovery schema v2, MCP transports/tools, quote-only x402 boundary, and pinned CI gates
+- [ ] Phase 10G: deploy the new web/agent artifacts to the hosted alias and pass final-origin browser/API/MCP smoke
 
 ## Implemented surfaces
 
 - `ChainNameService.sol`: ERC-721 Enumerable names, 1-32 character validation, short-name tiers, lifecycle/grace, profiles, forward-confirmed primary names, referrals, fixed-price marketplace, pull payments, pause controls, expected-value guards, and solvency checks.
-- Web routes: `/`, `/name/[label]`, `/me`, `/market`, `/developers`, plus wallet-gated `/admin`.
+- V3 source-only suite: registry, controller, public resolver, bounded Universal Resolver helper, marketplace, migration and read-only MarketLens compile as separate no-proxy contracts and are exercised by local unit/edge/fuzz/invariant tests. They have no published deployment address.
+- V3 source-only integrations: schema-4 draft manifest plus seven ABI artifacts, manifest-first SDK reads/plans (including bounded account reads, per-token marketplace approval, stale-listing invalidation and explicit primary-name clearing), fail-closed V3 HTTP routes and an opt-in 39-tool MCP surface. Draft routes return `V3_NOT_DEPLOYED` rather than falling through to v2.
+- Web routes: `/`, `/name/[label]`, `/me`, `/market`, `/developers`, `/security`, `/privacy`, plus wallet-gated `/admin`.
 - UX: page-level registration term/quote/referral configuration, automatic configured-chain switching with manual retry, chain-aware registration network-fee estimates, concise cached USD market references, summary-only registration confirmation, receipt-driven active-query refresh, explicit transaction completion states, market/account destinations after writes, one-time accessible market transaction toasts, in-modal wallet connection, settlement amounts, and config-driven optional dated fiat references.
+- Local/source-ready v2 UX delta: account referral/seller claims accept checksum-validated alternate recipients, and market empty state is distinct from filter-only no-match with a `/me?tab=listings` handoff. The alternate-recipient helper has targeted unit coverage in source. Neither delta is attributed to the hosted alias until redeploy and final-origin wallet/browser smoke.
+- V2 account runtime safety: owned-name pages are published to `/me` only after the complete enumeration/detail multicall is present and runtime type-valid; transient post-registration refetches and malformed `fullName`/`expiresAt` values fail closed as unavailable instead of reaching `BigInt` or string rendering. Wrong-chain account reads are disabled. Network switching is shared single-flight across header/page instances, pins the exact active connector, verifies the provider's resulting chain ID, remains locked through initiating-component unmount, and exposes a visible retry explanation. Injected wallets are now discovered only through their named EIP-6963 providers; the targetless `window.ethereum` fallback was removed so Rabby/MetaMask ownership collisions cannot silently select the wrong provider. If multiple persisted Wagmi connections are still restored, the header blocks network/signing actions behind an explicit named-wallet conflict and visible `Disconnect all` recovery instead of falling through to another wallet.
+- V3 market source safety: every visible listing/offer/auction and every transaction review now resolves token ID to label/full name, lifecycle and expiry at its pinned block; context-read failure is fail-closed. A module-scoped lease prevents a second market write across component unmount/account-chain remount, and all composer, row, network, pagination and refresh controls disable while the lease is held. Wallet/chain scope remounts reset recipient, intent and review state. Targeted market coverage is 9 files / 23 tests; funded browser and deployed Base Sepolia evidence remain pending.
 - Renewal watch: device-local opt-in, 30-day in-app attention window, 24-hour dismissal, renewal-date resync, and portable ICS export with 30/7/1-day alarms.
 - Home stats: onchain name-object count plus registration, marketplace, and payment availability; unavailable reads remain distinct from a real zero.
 - Admin: live owner/pending-owner plus configured viewer allowlist, overview health/economics, chunked contract event activity, viewer read-only controls, and simulated owner/pending-owner writes for every supported admin function.
 - Content boundary: general routes use user-facing language while SDK, ABI, manifest, OpenAPI, endpoint, and guarded-write details remain available on `/developers` and in machine-readable artifacts.
 - Production hardening: API errors are non-cacheable, market server reads consolidate initial state in one Multicall, private `RPC_URL` is isolated from public browser RPC metadata, invalid name routes return 404, and robots/sitemap/security headers are present.
-- Support routes: referral attribution, name/resolve/verified-reverse/market APIs, ERC-721 metadata/image, OpenAPI, well-known manifest, integration handoff artifacts, and `llms.txt`.
-- SDK: manifest-first client, exact ABI checksum and contract-version validation, runtime/Multicall checks, typed errors, name/profile/state/market/settlement/health reads, single-block `verifyAddress`/`verifyName`, and manifest-declared API paths.
+- Agent interoperability: a generated `/.well-known/chain-name-agent.json` schema v4 discovery document; current-v2 `/api/mcp` with eight stable tools; separate opt-in `/api/v3/mcp` with 39 bounded V3 read/unsigned-plan tools, including `owned_names`, `account_balances`, `prepare_listing_invalidate`, `prepare_primary_name_clear` and per-token `prepare_marketplace_approval`; a candidate/live-only same-origin `/api/v3/normalization-attestation` proxy with no local signer/private-key path; MCP `2025-11-25` stateless Streamable HTTP, explicit Origin/body limits, local stdio support, sanitized errors, same-origin/redirect SSRF protection, single-block snapshots, no signer/broadcast authority, and separate x402 availability/milestone metadata.
+- x402 boundary: legacy `GET` keeps the free v2 quote; activation-gated `POST` quote issuance obtains the external normalization attestation, builds exact V3 commit/register calldata, checks price/referral plus keeper token allowance/balance and gas at a pinned block, and stores the secret-bearing plan only in encrypted CAS. The paid resource implements official x402 `2.18.0` `402` negotiation, durable payment/authorization deduplication, managed signing, receipt/post-state reconciliation, `202` Workflow `4.6.0` continuation and settled `200` replay. Current deployment/runtime services and funded E2E remain missing, so production availability is not claimed.
+- Support routes: referral attribution, name/resolve/verified-reverse/market APIs, ERC-721 metadata/image, OpenAPI, MCP, free x402 registration quotes, two well-known manifests, integration handoff artifacts, and `llms.txt`.
+- SDK: manifest-first client, exact ABI checksum and contract-version validation, runtime/Multicall checks, typed errors, origin-locked/manual-redirect manifest resources, RPC redirect rejection, name/profile/state/market/settlement/health reads, reusable single-block snapshots, single-block `verifyAddress`/`verifyName`, and manifest-declared API paths.
 - React integration: `@sepbase/react` provider, hook, and address-fallback identity component with stable loading/verified/unverified/error states and CSS custom-property theming.
 - Explorer handoff: configured explorer links on name details plus a public Blockscout BENS event/semantics runbook. The required external subgraph and BENS service are not claimed as deployed.
 - Portability: gas and settlement metadata remain separate; common code uses configured decimals/base units and selects standard or OP Stack fee estimation from chain config.
+- Release automation: SHA-pinned GitHub Actions run frozen installs, offline artifact validation, build/lint/typecheck/tests/audit, the complete Foundry suite and isolated packed-package consumer smoke. A separate npm-production workflow publishes SDK, then React, then MCP with public access and provenance after release validation; the live deployment check remains explicitly opt-in and no funded smoke runs in CI.
 
 ## Verification
 
+- `pnpm --filter @sepbase/web exec vitest run features/account/account-workspace.test.ts`: 1 file, 3 tests passed; this covers alternate-recipient normalization/rejection helpers only and is not hosted browser evidence.
 - `forge fmt --check --root contracts`: passed.
 - `forge build --root contracts`: passed with Solidity `0.8.36`.
-- `forge build --sizes --root contracts`: passed; runtime `24,502 B`, EIP-170 margin `74 B`.
-- `forge test -vvv --root contracts`: 29 passed, 0 failed, including native and 6-decimal ERC-20 settlement, fee-on-transfer rejection, fuzz, and invariant suites.
-- `pnpm lint`, `pnpm typecheck`, and `pnpm build`: passed.
-- `pnpm test`: SDK 10 passed; React 2 passed; web 56 passed.
+- `pnpm contracts:build` and `pnpm contracts:sizes`: passed; the historical v2 runtime remains `24,502 B` with `74 B` EIP-170 margin, while the separate V3 modules pass the size gate.
+- `pnpm contracts:test`: 91 passed, 0 failed, 0 skipped: 62 V3 and 29 historical v2 tests, including native/6-decimal ERC-20, failed ERC-20 claim rollback, reentrant bid settlement rejection, fee-on-transfer/rebasing rejection, commit-reveal, resolver, fixed/offer/auction acceptance guards, liabilities, exact historical-V2 migration label grammar, migration-boundary/race protection, fuzz and invariant suites.
+- `V3_MIGRATION_SOURCE_BLOCK=44054186 pnpm migration:v3:dry-run`: passed against the immutable Base Sepolia v2 block/hash snapshot and reproduced `evidence/v3-migration/84532-44054186.json` with 6/6 enumerated names eligible and active; embedded `reportSha256` `492ab72338895dc101b3ce4b0b4bb1971d7521fd9797c28ddb20882ded5b4551`. This is eligibility preflight only: it deploys no V3 contract, creates no claim/proof transaction and does not satisfy a migration E2E acceptance row.
+- `pnpm lint`, `pnpm typecheck`, and `pnpm build`: passed, including the bundled Node/stdio MCP package, separate Next.js `/api/mcp` and `/api/v3/mcp` routes, and the fail-closed `/api/v3/normalization-attestation` route.
+- Current package tests: SDK 55 passed; MCP 34 passed; React 4 passed; web 229 passed across 71 files.
+- V3 migration source parity now includes exact-byte legacy label rejection in SDK/MCP, block-pinned SDK eligibility over live migration/v2 state, optional account-scoped MCP eligibility, and a guarded `/me` review/claim flow with explicit recipient versus legacy-address initialization. Focused SDK/MCP/account UI tests pass; no deployed migration claim receipt exists yet.
+- Current wallet connector regression subset: 12/12 passed across the connector-pinned/cross-instance network-switch suite, wallet controls and Wagmi configuration. Named EIP-6963 discovery is required, the ambiguous targetless `injected` connector is absent, multi-wallet conflict/disconnect-all is explicit, and retry/single-flight/unmount recovery remains covered. The broader `/me` account tests continue to cover incomplete owned-name snapshots, invalid detail values, defensive rendering and wrong-chain read gating.
+- `pnpm packages:smoke`: passed after packing all three public packages and installing their tarballs into an isolated temporary NodeNext consumer; this caught and fixed extensionless packed ESM imports. This is clean local artifact evidence, not proof of a public npm release.
+- Current Vercel Preview candidate `dpl_2pEWFeWsqSestVf7n4xkZwLicAci` is `Ready` at `https://sepbase-fd1ancpvz-yusufky63s-projects.vercel.app` (not promoted). This exact artifact includes the migration-aware SDK/MCP/account UI additions. Vercel-authenticated evidence verifies OpenAPI `1.7.0`, agent schema 4 with `activation-gated` x402, matching `llms.txt`, address-free V3 draft status, paid registration and order status `503 X402_PAID_EXECUTION_AWAITING_V3`, `/me` `200` without the application error boundary, and origin-less V3 MCP `tools/list` `200` with all 39 tools; `migration_status` exposes the optional account eligibility input. A forced Preview `Origin` correctly returns `403` because it is not the configured canonical site origin. Preview has no `NEXT_PUBLIC_SITE_URL`, server-only quote authenticator or authenticated `RPC_URL`, so OpenAPI/canonical metadata still falls back to `http://localhost:3000` and the free quote returns `503 QUOTE_AUTHENTICATION_NOT_CONFIGURED`. The rendered deployment ID matches this candidate, the recent deployment error-log query returned zero entries, the protected full final-origin smoke is intentionally incomplete, and the stale public production alias was not modified.
+- V3 browser-security focused tests: 31/31 passed across registration flow/session, pre-submit journal/hash persistence, chain-time recovery, referral scope/consumption, panel single-flight and shared executor behavior. Candidate/live-only normalization-attestation proxy scope, Origin, body-limit, canonical-confirmation, issuer-response, immutable-attestor signature checks and coherent fail-closed/operational x402 discovery states are also included in the green 215-test web suite. Draft HTTP smoke remains fail-closed before issuer access.
+- Final local Playwright check: `/`, `/me` and `/market` loaded from the single `localhost:3000` dev server with meaningful content, no Next.js error overlay and zero application console errors; `/me` at 390px had no horizontal overflow. This disconnected/read-only check is not a funded wallet or transaction E2E.
+- `pnpm examples:v3:typecheck`: passed for the workspace SDK, Viem, Wagmi, React and MCP consumer fixture. It is not a public-npm install, Cast example or runtime/deployment smoke.
 - `pnpm audit --prod`: no known vulnerabilities; pnpm 11 overrides Next's vulnerable transitive PostCSS `8.4.31` with exact patched `8.5.16`.
+- `pnpm artifacts:v3:check`: passed one positive and ten fail-closed cases; seven ABI modules, draft release ID, normalization fixture checksum, immutable attestor and immutable Universal Resolver/MarketLens bindings agree.
+- `pnpm normalization:validate`: passed 8 accepted and 6 rejected fixtures for the exact pinned profile.
+- `pnpm exec tsx scripts/validate-integration-artifacts.ts`: deployment/agent manifests, V2 ABI hash/read surface, V3 target discovery, x402 target metadata, MCP inventory, `llms.txt`, project config and deployment record agree offline.
 - `pnpm deployment:check`: passed against v2 bytecode, contract/version, collection, suffix, owner, treasury, settlement, short-name quotes, fees, grace period, Multicall3, and metadata URI.
 - `pnpm smoke:base-sepolia`: passed with ephemeral buyer/referrer wallets across guarded registration, renewal, profile, primary, referral accrual/claim, listing, cancellation, purchase, seller claim, treasury withdrawal, and solvency checks. Temporary gas was swept in cleanup.
 - API live smoke: manifest/well-known parity, name, resolve, reverse, market, metadata, image, OpenAPI, `llms.txt`, invalid-input status behavior, and cross-origin public artifact headers passed.
@@ -74,21 +162,27 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 - Registration browser QA: term changes update the verified settlement quote before confirmation; configured-chain mismatch triggers an automatic wallet switch and retains a manual switch action; the modal preserves the selected term and amount without duplicating the selector. A live Base Sepolia OP Stack smoke returned a total fee estimate, application/network amounts render concise cached USD references, and desktop/375px layouts have no horizontal overflow or application console errors.
 - Market-reference API smoke: the no-auth Coinbase spot route returned a validated ETH/USD quote with 60-second shared caching; malformed/upstream failures remain non-cacheable UI-only errors and never affect protocol quote/write state.
 - HTTP smoke: API success/error cache policy, cross-origin resource policy, real invalid-label 404, robots, sitemap, and public artifact caching passed.
-- Hosted release: private `yusufky63/sepbase` `main` source and the READY Vercel production alias `https://sepbase.vercel.app` are live.
-- Production browser/API smoke: seven application routes passed desktop and 375px mobile checks with no overflow, overlays, or console errors; public API and integration artifacts returned expected status, CORS, cache, CSP, and HSTS headers; Vercel reported no runtime errors or warnings after the smoke.
+- Hosted baseline: `https://sepbase.vercel.app` remains the live historical v2 alias and predates the current agent/V3 source; the current protected Preview and its exact remaining gates are recorded above.
+- Previous production browser/API smoke: seven application routes passed desktop and 375px mobile checks with no overflow, overlays, or console errors; the then-current public artifacts returned expected status and headers. This evidence does not cover the new agent routes.
+- Local agent-page QA: `/developers`, `/security`, and `/privacy` passed desktop/375px checks without overflow, framework overlay, or console errors. Mobile navigation moves focus into the menu, closes on Escape, and restores trigger focus; developer tabs implement arrow/Home/End roving focus. Visual QA also caught and fixed a literal `\n` in the install snippet.
+- Historical Phase 10F local endpoint smoke: MCP initialize negotiated `2025-11-25`; the then-generated agent discovery returned schema v2 and OpenAPI `1.1.0`; Origin/body-limit and fail-closed paid-POST checks passed without payment or transaction. Current source has since advanced to agent schema v4, separate `/api/v3/mcp`, a fail-closed normalization-attestation proxy, the V3 account snapshot and OpenAPI `1.7.0`; this historical smoke is not evidence for those new artifacts or hosted V3 routes.
 
 Expected Foundry timestamp lint notices remain because expiration and grace-period behavior is intentionally timestamp-based.
 
 ## Release pending
 
-1. Update the on-chain metadata base URI from localhost to the final site URL, regenerate the manifest, and rerun `pnpm deployment:check`.
-2. Use an authenticated production RPC and add availability/rate monitoring for the hosted read API.
-3. Add a WalletConnect project ID for production mobile wallet coverage.
-4. Publish and version `@sepbase/sdk` and `@sepbase/react`; until then consumers must use workspace packages or ABI/OpenAPI surfaces.
-5. Before any value-bearing mainnet profile, move owner/treasury roles to reviewed multisig operations and obtain an independent smart-contract audit.
+1. Deploy the seven-address V3 suite on Base Sepolia, source-verify every module, publish non-null runtime hashes/receipts and prove the four registry plus two helper bindings before changing draft status.
+2. Update the on-chain v2 metadata base URI from localhost to the final site URL, regenerate the v2 manifest, and rerun `pnpm deployment:check`.
+3. Use an authenticated production RPC and add availability/rate monitoring for hosted read APIs.
+4. Complete funded V3 wallet/browser E2E for the implemented source UI: external normalization attestation, pre-submit commit recovery, guarded reveal, resolver records, primary set/clear, fixed listings, offers, auctions and every proceeds/refund claim. Source flows and regression tests exist, but no deployed V3 address or funded transaction receipt currently exercises them.
+5. Add a WalletConnect project ID and complete funded desktop/mobile V3 wallet E2E, including a live non-empty marketplace fixture.
+6. Create/assign the npm `sepbase` organization scope to the authenticated publisher, then publish and version `@sepbase/sdk`, `@sepbase/react` and `@sepbase/mcp` with provenance and repeat the consumer smoke from the public registry. Registry authentication succeeds, but npm currently reports that the `@sepbase` scope does not exist; the packed-tarball isolated consumer already passes locally.
+7. Move release roles to reviewed multisig operations, obtain an independent smart-contract/operations audit, remediate findings and complete the defined Base Sepolia soak.
+8. Complete the approved V3 paid x402 V2 boundary as a separate reviewed activation. Adapter/workflow/store/signer source and unit tests exist, but the shipped route is not wired to a deployed V3 suite or real durable store, managed signer, facilitator and reconciliation service; no funded payment/replay/failure E2E exists.
+9. Deploy the source-ready web/agent/MCP/x402 quote artifacts and complete final-origin status, header, protocol, discovery, desktop and mobile smoke.
 
 The Vercel production environment has the final HTTPS site origin. `pnpm release:check` remains intentionally blocked until the server-only `RPC_URL`, WalletConnect project ID, and manifest/on-chain metadata base URI all match the hosted release. Local development continues to use `http://localhost:3000`.
 
 ## Architecture notes
 
-The product remains one standalone dApp, one chain, one suffix, one non-upgradeable protocol contract, and no database or indexer. Blockscout BENS enablement remains an external adapter/subgraph deployment, not a hidden app dependency. Runtime bytecode is only `74 B` below EIP-170, so future contract features require a new version with code split/reduction rather than adding logic to v2.
+The deployed v2 product remains one standalone dApp, one chain, one suffix, one non-upgradeable protocol contract, and no core database or indexer. The pending V3 release now has source implementations for seven immutable/no-proxy addresses: six authority/state contracts for registry, controller, public resolver, bounded Universal Resolver helper, marketplace and migration, plus bounded read-only MarketLens. Registry wiring locks controller, resolver, migration and marketplace once through the immutable suite configurator; Universal Resolver and MarketLens bindings are verified separately. The immutable normalization attestor is a separate signer trust boundary, not an owner-rotatable eighth protocol module, and MarketLens is not authority. V3 may use a durable store only inside its separately reviewed paid-x402 execution boundary because paid-write idempotency cannot be reliable in process memory. Blockscout BENS enablement remains an external adapter/subgraph deployment, not a hidden app dependency. V2 runtime bytecode is only `74 B` below EIP-170, so future contract features require the separate V3 release rather than adding logic to v2.

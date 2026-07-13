@@ -1,0 +1,650 @@
+.inner {
+  width: min(100%, var(--content-max));
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.boundary {
+  width: min(100%, var(--content-max));
+  min-height: 460px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--space-6);
+}
+
+.boundary span,
+.kicker,
+.metrics span,
+.accountState span,
+.snapshotBar span,
+.panelHeading > span,
+.nameList span,
+.nameSummary span,
+.formHeading span,
+.reviewValue span,
+.claimAmount span,
+.transactionState span,
+.state > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.boundary h1,
+.state h2 {
+  max-width: 14ch;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: .95;
+}
+
+.boundary p,
+.state p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.hero {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.hero .inner {
+  padding-top: var(--space-12);
+}
+
+.titleRow {
+  min-width: 0;
+  padding-block: var(--space-8) var(--space-12);
+  display: grid;
+  grid-template-columns: 8fr 4fr;
+  align-items: end;
+  gap: var(--grid-gutter);
+}
+
+.titleRow h1 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-display);
+  line-height: .8;
+}
+
+.titleRow h1 span {
+  color: var(--accent);
+  font-size: .28em;
+}
+
+.accountState {
+  min-width: 0;
+  padding-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  border-top: 1px solid var(--foreground);
+}
+
+.accountState strong,
+.accountState small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono), monospace;
+}
+
+.accountState small {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--foreground);
+}
+
+.metrics > div {
+  min-width: 0;
+  min-height: 92px;
+  padding: var(--space-3);
+  display: grid;
+  align-content: space-between;
+  border-right: 1px solid var(--line);
+}
+
+.metrics > div:last-child {
+  border-right: 0;
+}
+
+.metrics strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono), monospace;
+}
+
+.workspace {
+  min-height: 600px;
+  padding-block: var(--space-12) var(--space-18);
+}
+
+.snapshotBar {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  border-top: 1px solid var(--foreground);
+}
+
+.snapshotBar strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--foreground);
+}
+
+.tabs button {
+  min-height: 64px;
+  padding: var(--space-3);
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  border: 0;
+  border-right: 1px solid var(--foreground);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+}
+
+.tabs button:last-child {
+  border-right: 0;
+}
+
+.tabs button > span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.tabs button[aria-selected="true"] {
+  background: var(--surface-inverse);
+  color: var(--foreground-inverse);
+}
+
+.tabs button[aria-selected="true"] > span {
+  color: var(--accent-on-inverse);
+}
+
+.tabs button:focus-visible,
+.nameList button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -4px;
+}
+
+.state {
+  min-height: 260px;
+  padding-block: var(--space-12);
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.errorState {
+  border-left: 6px solid var(--accent);
+  padding-left: var(--space-6);
+}
+
+.panel {
+  padding-top: var(--space-12);
+}
+
+.panelHeading {
+  margin-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 3fr 7fr 2fr;
+  gap: var(--grid-gutter);
+}
+
+.panelHeading h2 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.panelHeading small {
+  color: var(--muted);
+}
+
+.emptyState {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--line);
+}
+
+.emptyState p {
+  color: var(--muted);
+}
+
+.emptyState a,
+.marketLink a,
+.transactionState a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.nameLayout {
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  gap: var(--grid-gutter);
+  border-top: 1px solid var(--foreground);
+}
+
+.nameList {
+  min-width: 0;
+  border-right: 1px solid var(--foreground);
+}
+
+.nameList > button {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-3);
+  display: grid;
+  justify-items: start;
+  align-content: space-between;
+  gap: var(--space-2);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+}
+
+.nameList > button[aria-pressed="true"] {
+  border-left: 6px solid var(--accent);
+  background: var(--surface-muted);
+}
+
+.nameList strong {
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+}
+
+.nameList small {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.pagination {
+  min-height: 64px;
+  padding: var(--space-2);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.pagination span {
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.nameActions {
+  min-width: 0;
+}
+
+.nameSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-bottom: 1px solid var(--foreground);
+}
+
+.nameSummary > div {
+  min-width: 0;
+  min-height: 88px;
+  padding: var(--space-3);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.nameSummary > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.nameSummary code {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.actionForm {
+  padding: var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(140px, 3fr) minmax(0, 6fr) minmax(140px, 3fr);
+  align-items: end;
+  gap: var(--space-3) var(--grid-gutter);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.actionForm > .formHeading,
+.actionForm > p,
+.actionForm > .reviewValue {
+  align-self: stretch;
+}
+
+.formHeading,
+.reviewValue {
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-2);
+}
+
+.formHeading strong,
+.reviewValue strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-lg);
+}
+
+.actionForm label {
+  align-self: end;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.actionForm input,
+.actionForm select,
+.actionForm textarea,
+.claimGrid input {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-mono), monospace;
+}
+
+.actionForm textarea {
+  resize: vertical;
+}
+
+.actionForm input[aria-invalid="true"],
+.claimGrid input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.actionForm input:focus-visible,
+.actionForm select:focus-visible,
+.actionForm textarea:focus-visible,
+.claimGrid input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.actionForm small,
+.actionForm p,
+.reviewValue small {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.actionForm > label:not(:first-of-type),
+.actionForm > textarea,
+.actionForm > small {
+  grid-column: 2;
+}
+
+.actionForm > button {
+  grid-column: 3;
+}
+
+.dangerForm {
+  border-left: 6px solid var(--danger);
+}
+
+.fieldHint,
+.fieldError {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.fieldHint {
+  color: var(--muted);
+}
+
+.fieldError {
+  color: var(--danger) !important;
+}
+
+.claimGrid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+
+.claimAmount,
+.claimGrid form {
+  min-width: 0;
+  min-height: 260px;
+  padding: var(--space-6);
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-4);
+}
+
+.claimAmount {
+  border-right: 1px solid var(--foreground);
+}
+
+.claimAmount[data-zero="true"] {
+  border-left: 6px solid var(--foreground);
+}
+
+.claimAmount strong {
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-2xl);
+}
+
+.claimAmount p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.claimGrid form label {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.claimGrid form button {
+  justify-self: start;
+}
+
+.marketLink,
+.transactionState {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.migrationSection {
+  margin-top: var(--space-12);
+  border-top: 1px solid var(--foreground);
+}
+
+.migrationSection > .panelHeading {
+  padding-top: var(--space-8);
+}
+
+.marketLink p {
+  max-width: 680px;
+  color: var(--muted);
+}
+
+.marketLink a,
+.transactionState a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.transactionState {
+  margin-top: var(--space-12);
+  border-top: 1px solid var(--foreground);
+}
+
+.transactionState > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.transactionState strong {
+  font-size: var(--text-sm);
+}
+
+.transactionState[data-state="error"] {
+  border-left: 6px solid var(--danger);
+  padding-left: var(--space-4);
+}
+
+.transactionState p {
+  color: var(--danger);
+}
+
+@media (max-width: 900px) {
+  .titleRow,
+  .panelHeading,
+  .nameLayout,
+  .claimGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .nameList,
+  .claimAmount {
+    border-right: 0;
+    border-bottom: 1px solid var(--foreground);
+  }
+
+  .actionForm {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .actionForm > button {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 680px) {
+  .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs button,
+  .tabs button:last-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--foreground);
+  }
+
+  .tabs button:last-child {
+    border-bottom: 0;
+  }
+
+  .snapshotBar,
+  .panelHeading,
+  .actionForm,
+  .nameSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .snapshotBar {
+    padding-block: var(--space-3);
+    justify-items: start;
+  }
+
+  .nameSummary > div {
+    border-right: 0;
+  }
+
+  .actionForm {
+    padding-inline: var(--space-4);
+  }
+
+  .actionForm > label,
+  .actionForm > input,
+  .actionForm > select,
+  .actionForm > textarea,
+  .actionForm > small,
+  .actionForm > button,
+  .actionForm > p,
+  .actionForm > .formHeading,
+  .actionForm > .reviewValue {
+    grid-column: 1;
+  }
+
+  .emptyState,
+  .marketLink,
+  .transactionState {
+    padding-block: var(--space-4);
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .claimAmount,
+  .claimGrid form {
+    padding-inline: var(--space-4);
+  }
+
+  .pagination {
+    grid-template-columns: 1fr;
+  }
+}

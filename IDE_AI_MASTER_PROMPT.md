@@ -4,6 +4,22 @@ Aşağıdaki prompt'u IDE içindeki AI ajanına, `PROJECT_SPEC.md` dosyası repo
 
 ---
 
+## V3 bağlayıcı override — önce bunu uygula
+
+Bu dosyanın aşağıdaki eski V1 prompt'unda yer alan tek-kontrat, ASCII-only, fixed-price-only, no-ENS, no-auction/no-offer ve quote-only hükümleri yalnız canlı v2 baseline'ını anlatır. 12 Temmuz 2026 v3 hedefi için `PROJECT_SPEC.md` başındaki **V3 bağlayıcı hedef ve öncelik kuralı**, `AGENTS.md` içindeki **V3 binding override** ve `docs/V3_ACCEPTANCE_MATRIX.md` önceliklidir.
+
+V3'te:
+
+- canlı v2 yerinde upgrade edilmez; Base Sepolia için yeni immutable/no-proxy contract suite ve migration yolu kurulur;
+- ENSIP-15 normalized Unicode, ENS registry/resolver/text/reverse ve commit-reveal registration uygulanır;
+- fixed listing'e ek olarak exact-funded offer/bid ve English auction state machine'leri uygulanır;
+- liability/solvency, expected-value/nonce/deadline guards, pull proceeds/refunds ve native/6-decimal ERC-20/FOT testleri korunur ve genişletilir;
+- paid x402 yalnız resmi V2 adapter, matching ERC-20, durable idempotency/workflow, managed signer, facilitator, reconciliation/refund ve monitoring ile etkinleşir;
+- public SDK/React/MCP paketleri provenance ile npm'e, site ve bütün discovery artifact'ları final HTTPS origin'e doğrulanarak yayınlanır;
+- henüz kod/test/deployment kanıtı olmayan hedef tamamlandı veya live diye yazılmaz.
+
+---
+
 Sen bu repository'nin lead full-stack Web3 mühendisisin. Repository kökündeki `PROJECT_SPEC.md` belgesini eksiksiz oku ve oradaki mimariyi değiştirmeden uygula.
 
 ## Ana hedef
@@ -26,6 +42,8 @@ Tek bir EVM chain ve tek bir suffix için çalışan, bağımsız, klonlanabilir
 - fixed-price settlement-asset marketplace, listing, buy ve seller proceeds claim akışı,
 - admin health/statistics, chunked contract event activity ve owner-authorized controls,
 - SDK, name-state/resolve/reverse/market read-only API, OpenAPI, `llms.txt` ve well-known entegrasyon manifesti,
+- public read ve unsigned guarded transaction preparation ile sınırlı MCP Streamable HTTP/stdio yüzeyi,
+- ücretsiz x402 registration quote/readiness endpoint'i ve paid execution'ı bulunmadığını açıkça yayınlayan fail-closed `POST`,
 - siyah/beyaz + Base Blue `#0000ff`, `Modular Typography` yönünde özgün UI,
 - config ve brand asset'leri değiştirerek başka chain için klonlanabilir yapı.
 
@@ -40,9 +58,7 @@ Tek bir EVM chain ve tek bir suffix için çalışan, bağımsız, klonlanabilir
 - subdomain,
 - DAO/token,
 - upgradeable proxy,
-- backend database,
-- indexer,
-- microservice,
+- core dApp backend database, indexer, queue veya microservice,
 - Unicode domain,
 - commit-reveal,
 - account abstraction,
@@ -50,7 +66,12 @@ Tek bir EVM chain ve tek bir suffix için çalışan, bağımsız, klonlanabilir
 - Tailwind/shadcn dashboard görünümü,
 - generic bento-card landing page ve vibecoding estetiği.
 
-V1'de yalnızca `PROJECT_SPEC.md` içindeki kapsamı uygula.
+V1'de yalnızca `PROJECT_SPEC.md` içindeki kapsamı ve `docs/IMPLEMENTATION_STATUS.md` altında onaylanmış Architecture Deviation'ı uygula. Bu deviation MCP read/preparation ve quote-only x402 ile sınırlıdır:
+
+- MCP private key tutamaz, wallet/payment approval isteyemez, imzalayamaz veya broadcast edemez.
+- Current x402 paid execution uygulanmamıştır; `X402_REGISTRATION_ENABLED` veya başka environment değerleri bunu etkinleştiremez.
+- Facilitator settlement, keeper signer ve durable idempotency store ancak ayrıca onaylanan gelecekteki paid-execution fazında eklenebilir. Bunlar için placeholder service veya sahte readiness üretme.
+- Core dApp'in database/indexer yasağı aynen devam eder.
 
 ## Teknoloji
 
@@ -90,6 +111,8 @@ Kurulum anındaki stable sürümleri seç, exact version olarak lockfile'a yaz. 
 12. Gerekmedikçe yeni dependency ekleme.
 13. Kodda gereksiz abstraction, factory, adapter veya generic plugin sistemi oluşturma.
 14. Browser-visible `NEXT_PUBLIC_RPC_URL` ile server-only `RPC_URL` değerini ayır; secret provider URL'sini manifest, API context veya client bundle'a taşıma.
+15. Source tree'deki route'u hosted kabul etme. Agent discovery, MCP ve x402 quote için final origin üzerinde status/content smoke olmadan "live" yazma.
+16. MCP Streamable HTTP `Origin` header'ını canonical/explicit allowlist ile doğrula; public endpoint için rate limit ve bounded request davranışını belgeleyip test et.
 
 ## İlk uygulama sırası
 
@@ -158,6 +181,14 @@ forge test -vvv
 
 `PROJECT_SPEC.md` içindeki Faz 2-Faz 10 sırasını uygula.
 
+Faz 7 entegrasyonu ayrıca şunları kapsar:
+
+- deployment manifestten ayrı fakat aynı deployment'a bağlı agent discovery,
+- sekiz read/preparation MCP tool'u, stateless Streamable HTTP ve stdio,
+- ücretsiz, kısa ömürlü, pinned-block x402 registration quote,
+- implementation status'u `quote-only` olan ve her durumda fail closed kalan paid registration route'u,
+- manifest/ABI/agent/OpenAPI/`llms.txt` parity doğrulaması.
+
 ## UI için katı kurallar
 
 - Beyaz/siyah temel palet, tek chain accent rengi.
@@ -208,9 +239,13 @@ Ayrıca:
 - native ve 6-decimal ERC-20 payment/approval E2E tamam,
 - fiyat/referral/fee değişikliğinde expected amount/BPS/fee/price koruması E2E tamam,
 - developer docs, SDK, OpenAPI, `llms.txt` ve well-known manifest tamam,
+- agent discovery aynı chain/contract/suffix'i yayınlıyor,
+- MCP Origin validation ile read/preparation sınırında kalıyor; signer/broadcast yolu yok,
+- x402 quote çalışıyor, paid route'un environment ile etkinleşemediği test ediliyor,
 - chain config ve deployment manifest tamam,
 - clone/reset dokümantasyonu tamam,
 - local Anvil smoke flow tamam.
 - hosted release öncesinde `pnpm release:check` final HTTPS origin, server RPC, WalletConnect ve metadata-origin tutarlılığıyla geçer.
+- hosted agent yüzeyleri yalnız final alias üzerinde agent manifest `200`, MCP initialize ve quote smoke tamamlandıktan sonra live işaretlenir.
 
 Şimdi Faz 0 ile başla. Önce mevcut repository durumunu incele, sonra dosyaları oluştur ve kontrolleri çalıştır. Gereksiz soru sorma; yalnızca uygulanmayı gerçekten engelleyen eksik bir bilgi varsa bunu açıkça bildir.

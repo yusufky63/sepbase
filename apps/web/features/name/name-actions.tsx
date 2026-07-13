@@ -26,6 +26,7 @@ import {
   useProtocolTransaction,
   useQuote,
   useAccountBalances,
+  useVerifiedListing,
 } from "@/lib/contract/hooks";
 import { NAME_STATUS, type NameProfile, type NameRecord } from "@/lib/contract/types";
 import { useSettlementApproval } from "@/features/transactions/settlement-approval";
@@ -121,7 +122,7 @@ function RegisterConfirmation({
   const { address, chainId } = useAccount();
   const health = useProtocolHealth();
   const transaction = useProtocolTransaction();
-  const approval = useSettlementApproval(amount);
+  const approval = useSettlementApproval(amount, "register");
   const wrongNetwork = Boolean(address && chainId !== configuredChain.id);
   const chainSwitch = useConfiguredChainSwitch(wrongNetwork);
   const confirmationHandled = useRef(false);
@@ -205,6 +206,8 @@ function RegisterConfirmation({
         </div>
       ) : null}
       {quoteError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The current registration quote could not be verified.</div> : null}
+      {health.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">Protocol health could not be verified. Registration is disabled.</div> : null}
+      {approval.sufficientBalance === false ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The connected wallet does not have enough settlement-token balance.</div> : null}
       {approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
       <div className={txStyles.actions}>
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
@@ -224,12 +227,12 @@ function RegisterConfirmation({
           <Button
             type="button"
             onClick={() => void approval.approve()}
-            disabled={!address || !quoteReady || approval.isPending || approval.isConfirming}
+            disabled={!address || !quoteReady || approval.sufficientBalance !== true || approval.isPending || approval.isConfirming}
           >
             {approval.isPending || approval.isConfirming ? "Approving..." : `Approve ${amountLabel(amount)}`}
           </Button>
         ) : (
-          <Button type="submit" disabled={!quoteReady || transaction.isPending || transaction.isConfirming || health.registrationsPaused || !health.solvent}>
+          <Button type="submit" disabled={!quoteReady || transaction.isPending || transaction.isConfirming || health.registrationsPaused !== false || health.solvent !== true || health.isError || approval.sufficientBalance !== true}>
             Register name
           </Button>
         )}
@@ -245,7 +248,7 @@ function RenewForm({ record, onClose }: { record: NameRecord; onClose: () => voi
   const transaction = useProtocolTransaction();
   const health = useProtocolHealth();
   const amount = (quote.data as bigint | undefined) ?? record.oneYearQuote * BigInt(years);
-  const approval = useSettlementApproval(amount);
+  const approval = useSettlementApproval(amount, "renew");
   const quoteReady = quote.data !== undefined && !quote.isError;
 
   if (transaction.isSuccess) {
@@ -279,6 +282,8 @@ function RenewForm({ record, onClose }: { record: NameRecord; onClose: () => voi
       </div>
       <TransactionStatus transaction={transaction} />
       {quote.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The current renewal quote could not be verified.</div> : null}
+      {health.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">Protocol health could not be verified. Renewal payment is disabled.</div> : null}
+      {approval.sufficientBalance === false ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The connected wallet does not have enough settlement-token balance.</div> : null}
       {approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
       <div className={txStyles.actions}>
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
@@ -287,11 +292,11 @@ function RenewForm({ record, onClose }: { record: NameRecord; onClose: () => voi
         ) : !approval.ready ? (
           <Button type="button" disabled>{approval.error ? "Payment unavailable" : "Checking allowance..."}</Button>
         ) : approval.required ? (
-          <Button type="button" onClick={() => void approval.approve()} disabled={!quoteReady || approval.isPending || approval.isConfirming}>
+          <Button type="button" onClick={() => void approval.approve()} disabled={!quoteReady || approval.sufficientBalance !== true || approval.isPending || approval.isConfirming}>
             Approve payment
           </Button>
         ) : (
-          <Button type="submit" disabled={!quoteReady || transaction.isPending || transaction.isConfirming || !health.solvent}>
+          <Button type="submit" disabled={!quoteReady || transaction.isPending || transaction.isConfirming || health.solvent !== true || health.isError || approval.sufficientBalance !== true}>
             Renew name
           </Button>
         )}
@@ -410,11 +415,14 @@ function ListForm({ record, onClose }: { record: NameRecord; onClose: () => void
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (baseUnits === 0n) return;
+    if (baseUnits === 0n || health.marketplaceFeeBps === null) return;
     await transaction.send({ functionName: "listForSale", args: [record.tokenId, baseUnits, health.marketplaceFeeBps] });
   }
-  const fee = (baseUnits / 10_000n) * BigInt(health.marketplaceFeeBps)
-    + ((baseUnits % 10_000n) * BigInt(health.marketplaceFeeBps)) / 10_000n;
+  const feeBps = health.marketplaceFeeBps;
+  const fee = feeBps === null
+    ? 0n
+    : (baseUnits / 10_000n) * BigInt(feeBps)
+      + ((baseUnits % 10_000n) * BigInt(feeBps)) / 10_000n;
   if (transaction.isSuccess) {
     return (
       <TransactionComplete
@@ -443,13 +451,14 @@ function ListForm({ record, onClose }: { record: NameRecord; onClose: () => void
       </div>
       <div className={txStyles.summary}>
         <div><span>Listing price</span><strong><SettlementAmount amountBaseUnits={baseUnits} /></strong></div>
-        <div><span>Marketplace fee</span><strong>{formatBps(health.marketplaceFeeBps)}</strong></div>
-        <div><span>Seller proceeds</span><strong><SettlementAmount amountBaseUnits={baseUnits - fee} /></strong></div>
+        <div><span>Marketplace fee</span><strong>{feeBps === null ? "Unavailable" : formatBps(feeBps)}</strong></div>
+        <div><span>Seller proceeds</span><strong>{feeBps === null ? "Unavailable" : <SettlementAmount amountBaseUnits={baseUnits - fee} />}</strong></div>
       </div>
       <TransactionStatus transaction={transaction} />
+      {health.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">Marketplace health and fee could not be verified. Listing is disabled.</div> : null}
       <div className={txStyles.actions}>
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
-        <Button type="submit" disabled={baseUnits === 0n || transaction.isPending || transaction.isConfirming || health.marketplacePaused || !health.solvent}>{record.listing ? "Update listing" : "List name"}</Button>
+        <Button type="submit" disabled={baseUnits === 0n || feeBps === null || transaction.isPending || transaction.isConfirming || health.marketplacePaused !== false || health.solvent !== true || health.isError}>{record.listing ? "Update listing" : "List name"}</Button>
       </div>
     </form>
   );
@@ -468,15 +477,26 @@ function ConfirmForm({
   const { address } = useAccount();
   const transaction = useProtocolTransaction();
   const health = useProtocolHealth();
-  const approval = useSettlementApproval(action === "buy" && record.listing ? record.listing.price : 0n);
+  const verified = useVerifiedListing(record.tokenId, action === "buy");
+  const buyListing = action === "buy" ? verified.listing : null;
+  const approval = useSettlementApproval(buyListing?.price ?? 0n, "buy");
+  const priceChanged = Boolean(action === "buy" && record.listing && buyListing && record.listing.price !== buyListing.price);
+  const marketWritable = health.marketplacePaused === false && health.solvent === true && !health.isError;
+  const refetchVerifiedListing = verified.refetch;
+
+  useEffect(() => {
+    if (action !== "buy") return;
+    void refetchVerifiedListing();
+  }, [action, record.tokenId, refetchVerifiedListing]);
+
   async function confirm() {
     if (action === "primary") await transaction.send({ functionName: "setPrimaryName", args: [record.tokenId] });
     if (action === "cancel") await transaction.send({ functionName: "cancelListing", args: [record.tokenId] });
-    if (action === "buy" && record.listing) {
+    if (action === "buy" && buyListing && !verified.isFetching && marketWritable) {
       await transaction.send({
         functionName: "buyListedName",
-        args: [record.tokenId, record.listing.price],
-        value: deploymentManifest.settlement.kind === "native" ? record.listing.price : undefined,
+        args: [record.tokenId, buyListing.price],
+        value: deploymentManifest.settlement.kind === "native" ? buyListing.price : undefined,
       });
     }
   }
@@ -523,11 +543,23 @@ function ConfirmForm({
     <div className={txStyles.form}>
       <div className={txStyles.summary}>
         <div><span>Name</span><strong>{record.label}.{projectConfig.brand.suffix}</strong></div>
-        {action === "buy" && record.listing ? <div><span>Price</span><strong><SettlementAmount amountBaseUnits={record.listing.price} /></strong></div> : null}
+        {action === "buy" && buyListing ? (
+          <>
+            <div><span>Seller</span><strong>{shortenAddress(buyListing.seller, 6)}</strong></div>
+            <div><span>Status</span><strong>ACTIVE / VERIFIED</strong></div>
+            <div><span>Price</span><strong><SettlementAmount amountBaseUnits={buyListing.price} /></strong></div>
+          </>
+        ) : null}
       </div>
+      {action === "buy" && (verified.isLoading || verified.isFetching) ? <div className={txStyles.notice} role="status">Re-checking the listing, seller, lifecycle, and exact price onchain...</div> : null}
+      {action === "buy" && verified.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The current listing could not be verified. No purchase can be submitted.</div> : null}
+      {action === "buy" && verified.isStale ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">This listing is no longer active or its seller no longer owns the name.</div> : null}
+      {priceChanged ? <p className={txStyles.warning} role="status">The price changed since this page loaded. Review the new verified amount before confirming.</p> : null}
       {action === "buy" ? <p className={txStyles.warning}>Purchase transfers the NFT and resets the seller profile and primary mapping.</p> : null}
       <TransactionStatus transaction={transaction} />
-      {approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
+      {action === "buy" && health.isError ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">Marketplace health could not be verified. Purchases are disabled.</div> : null}
+      {action === "buy" && approval.sufficientBalance === false ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">The connected wallet does not have enough settlement-token balance.</div> : null}
+      {action === "buy" && approval.error ? <div className={`${txStyles.notice} ${txStyles.error}`} role="alert">{protocolErrorMessage(approval.error)}</div> : null}
       <div className={txStyles.actions}>
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
         {action === "buy" && !address ? (
@@ -537,7 +569,7 @@ function ConfirmForm({
         ) : action === "buy" && approval.required ? (
           <Button
             onClick={() => void approval.approve()}
-            disabled={approval.isPending || approval.isConfirming}
+            disabled={approval.isPending || approval.isConfirming || approval.sufficientBalance !== true || !buyListing || verified.isFetching || !marketWritable}
           >
             {approval.isPending || approval.isConfirming ? "Approving..." : "Approve payment"}
           </Button>
@@ -547,7 +579,7 @@ function ConfirmForm({
             disabled={
               transaction.isPending
               || transaction.isConfirming
-              || (action === "buy" && (health.marketplacePaused || !health.solvent))
+              || (action === "buy" && (!buyListing || verified.isFetching || !marketWritable || approval.sufficientBalance !== true))
             }
           >
             {action === "primary" ? "Set primary" : action === "cancel" ? "Cancel listing" : "Buy name"}
@@ -597,8 +629,8 @@ export function NameActions({
   const registrationNetworkFee = useRegistrationNetworkFee({
     account: feeAccount,
     amount: registrationAmount,
-    enabled: canRegister && registrationQuoteReady,
-    expectedReferralRewardBps: health.referralRewardBps,
+    enabled: canRegister && registrationQuoteReady && health.referralRewardBps !== null && !health.isError,
+    expectedReferralRewardBps: health.referralRewardBps ?? 0,
     label: record.label,
     recipient: feeRecipient,
     referrer: feeUsesConnectedWallet ? effectiveReferrer : null,
@@ -611,6 +643,8 @@ export function NameActions({
   const consumeRegistrationReferral = useCallback(() => setRegistrationReferrer(null), []);
   const registrationState = wrongRegistrationNetwork
     ? `SWITCH TO ${configuredChain.name.toUpperCase()}`
+    : health.isError || health.registrationsPaused === null || health.solvent === null
+      ? "PROTOCOL CHECK FAILED"
     : health.registrationsPaused
       ? "REGISTRATION PAUSED"
       : !health.solvent
@@ -631,7 +665,7 @@ export function NameActions({
   }
 
   const buttons = [];
-  if (active || grace) buttons.push(<Button key="renew" variant="secondary" disabled={!health.solvent} onClick={() => setAction("renew")} icon={<RefreshCw size={18} />}>Renew</Button>);
+  if (active || grace) buttons.push(<Button key="renew" variant="secondary" disabled={health.solvent !== true || health.isError} onClick={() => setAction("renew")} icon={<RefreshCw size={18} />}>Renew</Button>);
   if (isOwner && (active || grace)) {
     buttons.push(<Button key="profile" variant="secondary" onClick={() => setAction("profile")} icon={<Pencil size={18} />}>Edit profile</Button>);
     const fullName = `${record.label}.${projectConfig.brand.suffix}`;
@@ -641,7 +675,7 @@ export function NameActions({
       <Button
         key="primary"
         variant="secondary"
-        disabled={balances.isLoading || isPrimary || !forwardConfirmed}
+        disabled={balances.isLoading || balances.isError || balances.primaryName === null || isPrimary || !forwardConfirmed}
         title={isPrimary ? "Current primary name" : forwardConfirmed ? undefined : "Resolve this name to the connected wallet first"}
         onClick={() => setAction("primary")}
         icon={isPrimary ? <BadgeCheck size={18} /> : <Tag size={18} />}
@@ -652,10 +686,10 @@ export function NameActions({
     buttons.push(<Button key="transfer" variant="secondary" onClick={() => setAction("transfer")} icon={<ArrowRightLeft size={18} />}>Transfer</Button>);
   }
   if (isOwner && active) {
-    buttons.push(<Button key="list" variant="secondary" disabled={health.marketplacePaused || !health.solvent} onClick={() => setAction("list")} icon={<CircleDollarSign size={18} />}>{record.listing ? "Update price" : "List for sale"}</Button>);
+    buttons.push(<Button key="list" variant="secondary" disabled={health.marketplacePaused !== false || health.solvent !== true || health.isError} onClick={() => setAction("list")} icon={<CircleDollarSign size={18} />}>{record.listing ? "Update price" : "List for sale"}</Button>);
     if (record.listing) buttons.push(<Button key="cancel" variant="quiet" onClick={() => setAction("cancel")} icon={<X size={18} />}>Cancel listing</Button>);
   }
-  if (!isOwner && active && record.listing) buttons.push(<Button key="buy" disabled={health.marketplacePaused || !health.solvent} onClick={() => setAction("buy")} icon={<ShoppingBag size={18} />}>Buy {amountLabel(record.listing.price)}</Button>);
+  if (!isOwner && active && record.listing) buttons.push(<Button key="buy" disabled={health.marketplacePaused !== false || health.solvent !== true || health.isError} onClick={() => setAction("buy")} icon={<ShoppingBag size={18} />}>Buy {amountLabel(record.listing.price)}</Button>);
 
   return (
     <>
@@ -685,7 +719,7 @@ export function NameActions({
                   />
                 </strong>
               </div>
-              <div><span>REFERRAL REWARD</span><strong>{effectiveReferrer ? `${formatBps(health.referralRewardBps)} to referrer` : "None"}</strong></div>
+              <div><span>REFERRAL REWARD</span><strong>{effectiveReferrer ? health.referralRewardBps === null ? "Unavailable" : `${formatBps(health.referralRewardBps)} to referrer` : "None"}</strong></div>
             </div>
           </div>
           {effectiveReferrer ? (
@@ -704,10 +738,13 @@ export function NameActions({
           {registrationQuote.isError ? (
             <div className={styles.registrationError} role="alert">The current registration quote could not be verified.</div>
           ) : null}
+          {health.isError ? (
+            <div className={styles.registrationError} role="alert">Protocol health and referral settings could not be verified.</div>
+          ) : null}
           <div className={styles.registrationFooter}>
             <div aria-live="polite"><span>QUOTE STATUS</span><strong>{registrationState}</strong></div>
             <Button
-              disabled={!registrationQuoteReady || health.registrationsPaused || !health.solvent}
+              disabled={!registrationQuoteReady || health.referralRewardBps === null || health.registrationsPaused !== false || health.solvent !== true || health.isError}
               onClick={() => setAction("register")}
               icon={wrongRegistrationNetwork ? <ArrowRightLeft size={18} /> : <BadgeCheck size={18} />}
             >
@@ -748,7 +785,7 @@ export function NameActions({
             onReferralConsumed={consumeRegistrationReferral}
             quoteError={registrationQuote.isError}
             quoteReady={registrationQuoteReady}
-            referralRewardBps={health.referralRewardBps}
+            referralRewardBps={health.referralRewardBps ?? 0}
             referrer={effectiveReferrer}
             years={registrationYears}
           />

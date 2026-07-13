@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withWorkflow } from "workflow/next";
 
 const secureProduction = process.env.NODE_ENV === "production"
   && process.env.NEXT_PUBLIC_SITE_URL?.startsWith("https://") === true;
@@ -45,7 +46,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@sepbase/sdk"],
+  transpilePackages: ["@sepbase/sdk", "@sepbase/mcp"],
   poweredByHeader: false,
   experimental: {
     typedEnv: true,
@@ -53,6 +54,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/deployment-manifest.json", headers: publicArtifactHeaders },
+      { source: "/deployment-manifest.v3.json", headers: publicArtifactHeaders },
+      { source: "/agent-integration.json", headers: publicArtifactHeaders },
       { source: "/abi/:path*", headers: publicArtifactHeaders },
       { source: "/integrations/:path*", headers: publicArtifactHeaders },
       { source: "/llms.txt", headers: publicArtifactHeaders },
@@ -64,4 +67,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withWorkflow(nextConfig);

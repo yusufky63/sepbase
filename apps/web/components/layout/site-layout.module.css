@@ -210,7 +210,7 @@
 }
 
 .footerLinks a {
-  min-height: 36px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -303,6 +303,11 @@
 
   .logo {
     width: min(112px, 100%);
+    height: auto;
+  }
+
+  .logo img {
+    height: auto;
   }
 
   .headerActions {

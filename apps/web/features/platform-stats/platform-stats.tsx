@@ -10,15 +10,15 @@ export function formatPlatformCount(value: bigint | null) {
   return value === null ? "--" : value.toLocaleString("en-US");
 }
 
-function availabilityLabel(paused: boolean, unavailable: boolean) {
+function availabilityLabel(paused: boolean | null, unavailable: boolean) {
   if (!protocolDeployed) return "PENDING";
-  if (unavailable) return "UNAVAILABLE";
-  return paused ? "PAUSED" : "OPEN";
+  if (unavailable || paused === null) return "UNAVAILABLE";
+  return paused === true ? "PAUSED" : "OPEN";
 }
 
-function availabilityState(paused: boolean, unavailable: boolean): MetricState {
-  if (!protocolDeployed || unavailable) return "unavailable";
-  return paused ? "attention" : "ready";
+function availabilityState(paused: boolean | null, unavailable: boolean): MetricState {
+  if (!protocolDeployed || unavailable || paused === null) return "unavailable";
+  return paused === true ? "attention" : "ready";
 }
 
 export function PlatformStats() {
@@ -29,12 +29,12 @@ export function PlatformStats() {
     ? "PENDING"
     : unavailable
       ? "UNAVAILABLE"
-      : health.solvent
+      : health.solvent === true
         ? "READY"
         : "REVIEW";
   const paymentState: MetricState = !protocolDeployed || unavailable
     ? "unavailable"
-    : health.solvent
+    : health.solvent === true
       ? "ready"
       : "attention";
 

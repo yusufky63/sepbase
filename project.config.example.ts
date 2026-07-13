@@ -29,6 +29,11 @@ export const projectConfig = {
       symbol: 'ETH',
       decimals: 18,
     },
+    feeEstimation: {
+      kind: 'op-stack' as const,
+      gasPriceOracleAddress: '0x420000000000000000000000000000000000000F',
+      l1BlockAddress: '0x4200000000000000000000000000000000000015',
+    },
     multicall3: {
       address: '0xca11bde05977b3631167028862be2a173976ca11',
       blockCreated: 1_059_647,
@@ -55,6 +60,8 @@ export const projectConfig = {
     annual: '0.0005',
     shortNameMultipliers: [100, 25, 5] as const,
     referenceFiat: null,
+    // Optional UI-only spot reference; never enters protocol pricing or write guards.
+    marketReference: null,
   },
 
   referrals: {
@@ -87,6 +94,10 @@ export const projectConfig = {
     wellKnownPath: '/.well-known/chain-name-service.json',
     marketApiPath: '/api/market',
     openApiPath: '/api/openapi.json',
+    agentManifestPath: '/.well-known/chain-name-agent.json',
+    mcpPath: '/api/mcp',
+    x402QuotePath: '/api/x402/registration/quote',
+    x402RegisterPath: '/api/x402/registration',
   },
 
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL!,

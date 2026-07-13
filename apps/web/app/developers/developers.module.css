@@ -58,7 +58,7 @@
 
 .jumpNav {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border-top: 1px solid var(--foreground);
 }
 
@@ -119,6 +119,11 @@
 
 .copy {
   max-width: var(--reading-max);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.codeStack {
   display: grid;
   gap: var(--space-4);
 }
@@ -269,6 +274,23 @@
   font-size: var(--text-sm);
 }
 
+.agentEndpoints {
+  margin-top: var(--space-8);
+  border-top-color: var(--foreground);
+}
+
+.agentEndpoints > div {
+  border-bottom-color: var(--line);
+}
+
+.agentEndpoints span {
+  color: var(--accent);
+}
+
+.agentEndpoints p {
+  color: var(--muted);
+}
+
 .rules {
   border-top: 1px solid var(--foreground);
 }
@@ -353,6 +375,20 @@
   font-size: var(--text-sm);
 }
 
+@media (max-width: 1100px) {
+  .jumpNav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .jumpNav a:nth-child(4n) {
+    border-right: 0;
+  }
+
+  .jumpNav a:last-child {
+    grid-column: span 2;
+  }
+}
+
 @media (max-width: 760px) {
   .titleRow,
   .sectionHeading,
@@ -364,6 +400,18 @@
 
   .jumpNav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jumpNav a:nth-child(4n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .jumpNav a:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .jumpNav a:last-child {
+    grid-column: 1 / -1;
   }
 
   .resourceRows a {

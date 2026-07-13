@@ -6,8 +6,8 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
   return (
     <section className="status-page">
       <p className="status-page__kicker">SYSTEM / ERROR</p>
-      <h1>The interface could not finish this request.</h1>
-      <p>The request could not be completed. No name status was changed; retry when you are ready.</p>
+      <h1>This page encountered an unexpected interface error.</h1>
+      <p>This screen does not determine transaction status. Check the wallet or explorer before retrying any write, then reload the page.</p>
       <Button onClick={reset}>Retry</Button>
     </section>
   );

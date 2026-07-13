@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "safeAddress": "0x4f1D07EB3BbB6c8c24f96CD5E5A14e4d53Afa630",
+  "safeVersion": "1.4.1",
+  "owners": [
+    "0x78de409a6306550882328E2a67160471368387FF",
+    "0xEAa823AB4C4eE00283d8ed7be713ddf8A5ba0Fac"
+  ],
+  "threshold": 2,
+  "saltNonce": "113424790347612256186261267723170448564877005018101063792264436822049432962596",
+  "deploymentTransaction": "0x755ce9e92af7e003872e55009877007a617e8ba8b53a9e6c031364b8786999f1",
+  "deploymentBlock": "44066312",
+  "deploymentBlockTimestamp": "1783900912",
+  "confirmationFloor": 5,
+  "explorerUrl": "https://sepolia.basescan.org/tx/0x755ce9e92af7e003872e55009877007a617e8ba8b53a9e6c031364b8786999f1"
+}

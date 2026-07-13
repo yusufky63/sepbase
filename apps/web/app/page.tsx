@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Nameplate } from "@/components/nameplate/nameplate";
 import { MotionReveal } from "@/components/motion/motion-reveal";
 import { SettlementAmount } from "@/components/price/settlement-amount";
@@ -5,12 +6,21 @@ import { projectConfig } from "@/config/project.config";
 import { PlatformStats } from "@/features/platform-stats/platform-stats";
 import { RecentNames } from "@/features/recent-names/recent-names";
 import { NameSearch } from "@/features/search/name-search";
+import { V3Home } from "@/features/v3/home/v3-home";
 import { deploymentManifest } from "@/lib/deployment-manifest";
 import { annualPriceForLength } from "@/lib/pricing";
 import { formatBps } from "@/lib/settlement";
+import { v3Deployed } from "@/lib/v3-api";
 import styles from "./home.module.css";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { url: "/" },
+};
+
 export default function HomePage() {
+  if (v3Deployed) return <V3Home />;
+
   const heroNameParts = projectConfig.brand.shortName.split("/");
   const standardAnnualPrice = BigInt(deploymentManifest.annualPriceBaseUnits);
   const pricingTiers = [
