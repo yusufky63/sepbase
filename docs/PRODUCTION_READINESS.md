@@ -6,7 +6,7 @@ Tarih: 2026-07-12
 
 SEPBASE, Base Sepolia test release'i icin hazirdir. V2 kontrati canli, source-verified ve gercek coklu hesap write smoke'undan gecmistir. HTTPS web release'i `https://sepbase.vercel.app` adresinde canlidir; web, SDK source, ABI, manifest, OpenAPI ve read-only API ayni deployment'i kullanir.
 
-Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uygulama veya test hatasi degil; metadata URI cutover, authenticated RPC, WalletConnect, SDK package release, multisig operasyonu ve bagimsiz audit gibi release gate'lerinin tamamlanmamis olmasidir.
+Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Metadata URI cutover tamamlanmistir; authenticated RPC operasyonu, WalletConnect cihaz kapsami, SDK package release, multisig operasyonu ve bagimsiz audit gibi release gate'leri halen aciktir.
 
 ## Hazir olanlar
 
@@ -28,15 +28,15 @@ Deger tasiyan production/mainnet release'i henuz hazir sayilmaz. Bunun nedeni uy
 
 ## Production oncesi zorunlu
 
-1. **Metadata URI cutover:** Kontrattaki localhost metadata base URI final HTTPS API'ye admin islemiyle alinmali; manifest yeniden uretilmeli ve `pnpm deployment:check` tekrar kosmali.
-2. **Authenticated RPC:** Kod server-only `RPC_URL` ile public browser RPC'sini ayirir; hosted ortamda rate limit ve availability SLA'si olan provider degeri halen tanimlanmalidir. Secret provider URL'si `NEXT_PUBLIC_*` icine konmamalidir.
-3. **WalletConnect:** Production mobile/QR coverage icin project ID eklenmeli ve gercek cihaz smoke'u kosmali.
+1. **Metadata URI cutover — tamamlandi:** Kontrat ve manifest `https://sepbase.vercel.app/api/metadata/` degerini kullanir; block `44066412` confirmation kaniti repository'dedir.
+2. **Authenticated RPC:** Kod server-only `RPC_URL` ile public browser RPC'sini ayirir; hosted ortamda rate limit ve availability SLA'si olan provider operasyonu izlenmelidir. Secret provider URL'si `NEXT_PUBLIC_*` icine konmamalidir.
+3. **WalletConnect:** Production mobile/QR coverage icin project ID ile gercek cihaz smoke'u kosmali.
 4. **Package release:** `@sepbase/sdk` ve `@sepbase/react` semver, provenance ve changelog ile npm'e yayinlanmali. Bugun iki package da workspace/source olarak hazirdir.
 5. **Yetki operasyonu:** Owner ve treasury deger tasiyan release'te multisig adreslerine alinmali; raw deployer key rutin admin araci olarak kullanilmamali.
 6. **Bagimsiz audit:** Mainnet veya ekonomik deger oncesi kontrat ve deployment/admin runbook'u bagimsiz guvenlik incelemesinden gecmeli.
-7. **Hosted write smoke:** Final domain uzerinde wallet connect, register, referral deep link, list/buy/claim ve metadata cutover sonrasi cross-origin SDK akisi yeniden kosmali.
+7. **Hosted write smoke:** Final domain uzerinde wallet connect, register, referral deep link, list/buy/claim ve cross-origin SDK akisi yeniden kosmali.
 
-Server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tamamlanana kadar `pnpm release:check` bilerek basarisiz olur. HTTPS site origin Vercel production ortaminda tamamlanmistir; lokal `.env` gelistirme icin localhost kullanmaya devam eder.
+`pnpm release:check` server-only `RPC_URL`, WalletConnect project ID ve final metadata origin tutarliligini zorunlu tutar. HTTPS site ve metadata origin tamamlanmistir; lokal `.env` gelistirme icin localhost kullanmaya devam eder.
 
 ## Olsa daha iyi olurdu
 

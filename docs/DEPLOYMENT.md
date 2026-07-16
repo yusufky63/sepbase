@@ -66,6 +66,6 @@ The Base Sepolia smoke is intentionally network-restricted and refuses mainnet o
 
 The archived v1 record is `deployments/84532-v1.0.0.json`. Its contract remains live, and names registered there, including `ethereum.sepbase`, are not assets in v2. The v2 manifest and application intentionally resolve only the v2 registry.
 
-The current test deployment metadata base URI is `http://localhost:3000/api/metadata/`. Before publishing the web app, set the final HTTPS `NEXT_PUBLIC_SITE_URL`, deploy the site, and update the contract through `Admin.s.sol` with `ADMIN_ACTION=setMetadataBaseURI`. Regenerate and recheck the manifest after that admin transaction.
+The current test deployment metadata base URI is `https://sepbase.vercel.app/api/metadata/`. The owner update was confirmed in transaction [`0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b`](https://sepolia.basescan.org/tx/0x80a501b33c00e93e2bb6b87f0623b53ed3a42d054cdaa64d37097d3d11032c4b) at block `44066412`; the machine-readable receipt is retained in `evidence/v2-metadata-cutover/84532-44066412.json`.
 
-After the metadata cutover and hosted environment configuration, run `pnpm release:check`. It intentionally fails in the current localhost profile and prevents a release with localhost metadata, a missing private server RPC, or missing mobile wallet configuration.
+For a hosted release, run `pnpm release:check` with the final HTTPS site origin and hosted environment configuration. It intentionally prevents a release with localhost metadata, a missing private server RPC, or missing mobile wallet configuration.
