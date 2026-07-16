@@ -18,6 +18,62 @@
   background: var(--accent);
 }
 
+.accountDotWarning {
+  background: var(--danger);
+}
+
+.accountSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.accountSummary > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.accountSummary strong {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-base);
+}
+
+.accountLabel,
+.walletSectionHeading,
+.networkReady,
+.networkWarning {
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-xs);
+}
+
+.accountLabel {
+  color: var(--muted);
+}
+
+.networkReady {
+  color: var(--accent);
+}
+
+.networkWarning,
+.walletError {
+  color: var(--danger);
+}
+
+.fullWidthAction {
+  width: 100%;
+}
+
+.walletSectionHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-bottom: var(--space-3);
+  color: var(--muted);
+}
+
 .connectorList {
   display: grid;
   border-top: 1px solid var(--line);
@@ -41,8 +97,46 @@
   background: var(--surface-muted);
 }
 
+.connector:disabled {
+  cursor: not-allowed;
+}
+
 .connectorAction {
   color: var(--accent);
   font-family: var(--font-mono), monospace;
   font-size: var(--text-xs);
+}
+
+.emptyWallets {
+  margin: 0;
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.walletError {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+}
+
+.walletFooter {
+  margin-top: var(--space-6);
+}
+
+.disconnectButton {
+  width: 100%;
+}
+
+@media (max-width: 520px) {
+  .accountSummary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .walletSectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
 }

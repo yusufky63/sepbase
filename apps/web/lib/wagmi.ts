@@ -5,7 +5,7 @@ import { configuredChain } from "./chain";
 
 const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 const connectors = [
-  injected(),
+  injected({ shimDisconnect: true }),
   coinbaseWallet({ appName: projectConfig.brand.name }),
   ...(walletConnectProjectId
     ? [walletConnect({ projectId: walletConnectProjectId, showQrModal: true })]
@@ -15,6 +15,7 @@ const connectors = [
 export const wagmiConfig = createConfig({
   chains: [configuredChain],
   connectors,
+  multiInjectedProviderDiscovery: true,
   ssr: true,
   transports: {
     [configuredChain.id]: http(projectConfig.chain.rpcUrl),

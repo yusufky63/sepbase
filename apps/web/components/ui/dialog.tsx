@@ -8,13 +8,22 @@ import styles from "./ui.module.css";
 type DialogProps = {
   open: boolean;
   onClose: () => void;
+  eyebrow?: string;
   title: string;
   description: string;
   children: ReactNode;
   critical?: boolean;
 };
 
-export function Dialog({ open, onClose, title, description, children, critical = false }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  eyebrow = "TRANSACTION",
+  title,
+  description,
+  children,
+  critical = false,
+}: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -44,7 +53,7 @@ export function Dialog({ open, onClose, title, description, children, critical =
       <div className={styles.dialogInner}>
         <div className={styles.dialogHeader}>
           <div>
-            <p className={styles.moduleLabel}>TRANSACTION</p>
+            <p className={styles.moduleLabel}>{eyebrow}</p>
             <h2 id={titleId}>{title}</h2>
             <p id={descriptionId}>{description}</p>
           </div>

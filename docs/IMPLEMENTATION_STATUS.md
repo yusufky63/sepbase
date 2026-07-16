@@ -45,7 +45,7 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 
 - `ChainNameService.sol`: ERC-721 Enumerable names, 1-32 character validation, short-name tiers, lifecycle/grace, profiles, forward-confirmed primary names, referrals, fixed-price marketplace, pull payments, pause controls, expected-value guards, and solvency checks.
 - Web routes: `/`, `/name/[label]`, `/me`, `/market`, `/developers`, plus wallet-gated `/admin`.
-- UX: page-level registration term/quote/referral configuration, automatic configured-chain switching with manual retry, chain-aware registration network-fee estimates, concise cached USD market references, summary-only registration confirmation, receipt-driven active-query refresh, explicit transaction completion states, market/account destinations after writes, one-time accessible market transaction toasts, in-modal wallet connection, settlement amounts, and config-driven optional dated fiat references.
+- UX: page-level registration term/quote/referral configuration, automatic configured-chain switching with manual retry, connector-aware wallet switching, disconnect-all cleanup across simultaneous injected-wallet connections, chain-aware registration network-fee estimates, concise cached USD market references, summary-only registration confirmation, receipt-driven active-query refresh, explicit transaction completion states, market/account destinations after writes, one-time accessible market transaction toasts, in-modal wallet connection, settlement amounts, and config-driven optional dated fiat references.
 - Renewal watch: device-local opt-in, 30-day in-app attention window, 24-hour dismissal, renewal-date resync, and portable ICS export with 30/7/1-day alarms.
 - Home stats: onchain name-object count plus registration, marketplace, and payment availability; unavailable reads remain distinct from a real zero.
 - Admin: live owner/pending-owner plus configured viewer allowlist, overview health/economics, chunked contract event activity, viewer read-only controls, and simulated owner/pending-owner writes for every supported admin function.
@@ -61,12 +61,13 @@ The v1 deployment is retained only as `deployments/84532-v1.0.0.json`. Its names
 
 - 2026-07-16 V2 restore verification: all required Foundry and pnpm checks were rerun from the clean `e56320f` V2 baseline; the live deployment check also matched contract `2.0.0`, address `0xe000de3efe798Aa4F834fd952Bef35BAE1B16945`, and deployment block `44011800`.
 - 2026-07-16 local production browser smoke: `/`, `/market`, and disconnected `/me` rendered meaningful V2 content with no framework error overlay, console error/warning, or horizontal overflow.
+- 2026-07-16 wallet-control regression: wrong-network recovery keeps disconnect available, EIP-6963 wallet choices can switch between existing Rabby/MetaMask connections, the ambiguous generic injected fallback is hidden when dedicated wallets are discovered, new connectors target Base Sepolia, and disconnect clears every tracked connection instead of silently activating a fallback. Six focused component tests, the full test suite, lint, typecheck, and production build passed; local production browser smoke confirmed the updated wallet dialog and configured connector list on port 3001.
 - `forge fmt --check --root contracts`: passed.
 - `forge build --root contracts`: passed with Solidity `0.8.36`.
 - `forge build --sizes --root contracts`: passed; runtime `24,502 B`, EIP-170 margin `74 B`.
 - `forge test -vvv --root contracts`: 29 passed, 0 failed, including native and 6-decimal ERC-20 settlement, fee-on-transfer rejection, fuzz, and invariant suites.
 - `pnpm lint`, `pnpm typecheck`, and `pnpm build`: passed.
-- `pnpm test`: SDK 10 passed; React 2 passed; web 56 passed.
+- `pnpm test`: SDK 10 passed; React 2 passed; web 62 passed.
 - `pnpm audit --prod`: no known vulnerabilities; pnpm 11 overrides Next's vulnerable transitive PostCSS `8.4.31` with exact patched `8.5.16`.
 - `pnpm deployment:check`: passed against v2 bytecode, contract/version, collection, suffix, owner, treasury, settlement, short-name quotes, fees, grace period, Multicall3, and metadata URI.
 - `pnpm smoke:base-sepolia`: passed with ephemeral buyer/referrer wallets across guarded registration, renewal, profile, primary, referral accrual/claim, listing, cancellation, purchase, seller claim, treasury withdrawal, and solvency checks. Temporary gas was swept in cleanup.
